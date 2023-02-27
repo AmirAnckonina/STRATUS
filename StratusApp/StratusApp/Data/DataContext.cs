@@ -7,6 +7,7 @@ namespace StratusApp.Data
     {
         public DataContext(DbContextOptions<DataContext> options) : base(options) 
         {
+
         }
 
         public DbSet<StratusUser> Users { get; set; }   
