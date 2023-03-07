@@ -4,6 +4,7 @@ using System.Text.Json.Serialization;
 using StratusApp.Services;
 
 var builder = WebApplication.CreateBuilder(args);
+//var startup = new Startup(builder.Configuration);
 
 builder.Services.AddControllers().AddJsonOptions(options =>
 {
@@ -18,7 +19,6 @@ builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-
 builder.Services.AddTransient<IStratusService, StratusService>();
 var app = builder.Build();
 
@@ -36,3 +36,5 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
+

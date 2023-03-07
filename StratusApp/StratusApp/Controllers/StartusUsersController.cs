@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Razor.TagHelpers;
 using StratusApp.Models;
 using StratusApp.Models.Responses;
 using StratusApp.Services;
@@ -8,6 +9,7 @@ namespace StratusApp.Controllers
     public class StartusUsersController : Controller
     {
         private readonly IStratusService _stratusService;
+        //private readonly CloudApiClient _cloudApiClient;
 
         public StartusUsersController(IStratusService stratusService) 
         {
@@ -37,5 +39,17 @@ namespace StratusApp.Controllers
             return Ok(getllStratusUsersResp);
            
         }
+
+        [HttpGet("GetAllAwsPackages")]
+        public async Task<ActionResult<StratusResponse<StratusUser>>> GetAllAwsPackages()
+        {
+            // var getllStratusUsersResp = await _cloudApiClient.GetAllAwsPackages();
+
+            // return Ok(getllStratusUsersResp);
+            return Ok();
+        }
+
+
+
     }
 }
