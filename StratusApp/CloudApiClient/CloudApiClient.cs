@@ -3,23 +3,30 @@ using System.Collections.Generic;
 using Amazon;
 using Amazon.CloudWatch;
 using Amazon.CloudWatch.Model;
-using Amazon.EC2;
-using Amazon.Pricing;
-using Amazon.Pricing.Model;
+using Amazon.Runtime;
+
 namespace CloudApiClient
 {
     public class CloudApiClient
     {
-        static void PrintInstanceData()
+        private BasicAWSCredentials _credentials;
+        private AmazonCloudWatchClient _cloudWatchClient;
+
+        public CloudApiClient()
         {
-            var session = new AmazonSessionAWSCredentials("", "");
+            _credentials = new BasicAWSCredentials("AKIA5HZY22LQTC2MGB5K", "yf0dbGCgKCeMaZelIWsExJCmuJx3bdgoPkR7lQl0");
+            _cloudWatchClient = new AmazonCloudWatchClient(_credentials, RegionEndpoint.USEast1);
+        }
 
-            // Create an EC2 client
-            var ec2Client = new AmazonEC2Client(session, RegionEndpoint.USEast1);
-            var cloudwatchClient = new AmazonCloudWatchClient(session, RegionEndpoint.USEast1);
-
+        //public 
+        public async void PrintInstanceData()
+        {
             // Get the EC2 instance usage data
-            var response = cloudwatchClient.GetMetricStatistics(new GetMetricStatisticsRequest
+            /*GetMetricStatisticsRequest request= new GetMetricStatisticsRequest()
+            {
+
+            }*/
+            var response = await _cloudWatchClient.GetMetricStatisticsAsync(new GetMetricStatisticsRequest
             {
                 Namespace = "AWS/EC2",
                 MetricName = "CPUUtilization",
@@ -35,7 +42,7 @@ namespace CloudApiClient
                 Statistics = new List<string> { "Minimum", "Maximum", "Average", "Sum" }
             });
 
-            var datapoints = response.Datapoints;
+            var datapoints = response.Datapoints; // .Datapoints;
 
             double avgCpuUsage, maxCpuUsage, minCpuUsage, sumCpuUsage;
 
@@ -57,6 +64,7 @@ namespace CloudApiClient
             Console.WriteLine($"Avg cpu usage: {avgCpuUsage}, Max cpu usage: {maxCpuUsage}, Min cpu usage: {minCpuUsage}, Sum cpu usage: {sumCpuUsage}");
         }
 
+        /*
         static void ShowPricesOfVms()
         {
             var ec2Client = new AmazonEC2Client(RegionEndpoint.USEast1);
@@ -148,4 +156,6 @@ namespace CloudApiClient
                 }
             }
         }
+    }*/
+    }
 }
