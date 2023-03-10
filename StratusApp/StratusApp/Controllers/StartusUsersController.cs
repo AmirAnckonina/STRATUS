@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Razor.TagHelpers;
 using StratusApp.Models;
 using StratusApp.Models.Responses;
 using StratusApp.Services;
@@ -40,21 +39,7 @@ namespace StratusApp.Controllers
            
         }
 
-       /* [HttpGet("GetAllAwsPackages")]
-        public async Task<ActionResult<StratusResponse<StratusUser>>> GetAllAwsPackages()
-        {
-            
-        }
-
-        [HttpGet("GetUserAwsCloudServers")]
-        public async Task<ActionResult<StratusResponse<StratusUser>>> GetUserAwsCloudServers()
-        {
-            /// Logic related Aws Api.
-            /// _cloudApiClient.GetUserAwsCloudServers
-            /// Calculate Avg
-            /// Create alert..
-            /// 
-        }*/
+      
 
 
 
