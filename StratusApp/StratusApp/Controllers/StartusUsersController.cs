@@ -40,14 +40,23 @@ namespace StratusApp.Controllers
            
         }
 
-        [HttpGet("GetAllAwsPackages")]
+       /* [HttpGet("GetAllAwsPackages")]
         public async Task<ActionResult<StratusResponse<StratusUser>>> GetAllAwsPackages()
         {
-            // var getllStratusUsersResp = await _cloudApiClient.GetAllAwsPackages();
-
-            // return Ok(getllStratusUsersResp);
-            return Ok();
+            
         }
+
+        [HttpGet("GetUserAwsCloudServers")]
+        public async Task<ActionResult<StratusResponse<StratusUser>>> GetUserAwsCloudServers()
+        {
+            /// Logic related Aws Api.
+            /// _cloudApiClient.GetUserAwsCloudServers
+            /// Calculate Avg
+            /// Create alert..
+            /// 
+        }*/
+
+
 
 
 
