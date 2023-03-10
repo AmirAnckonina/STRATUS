@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using Amazon;
 using Amazon.CloudWatch;
 using Amazon.CloudWatch.Model;
@@ -15,17 +16,14 @@ namespace CloudApiClient
         public CloudApiClient()
         {
             _credentials = new BasicAWSCredentials("AKIA5HZY22LQTC2MGB5K", "yf0dbGCgKCeMaZelIWsExJCmuJx3bdgoPkR7lQl0");
-            _cloudWatchClient = new AmazonCloudWatchClient(_credentials, RegionEndpoint.USEast1);
+            _cloudWatchClient = new AmazonCloudWatchClient(_credentials, RegionEndpoint.USEast2);
         }
 
         //public 
-        public async void PrintInstanceData()
+        public async Task<List<Datapoint>> GetInstanceData()
         {
             // Get the EC2 instance usage data
-            /*GetMetricStatisticsRequest request= new GetMetricStatisticsRequest()
-            {
 
-            }*/
             var response = await _cloudWatchClient.GetMetricStatisticsAsync(new GetMetricStatisticsRequest
             {
                 Namespace = "AWS/EC2",
@@ -33,7 +31,7 @@ namespace CloudApiClient
                 Dimensions = new List<Dimension> {
                 new Dimension {
                     Name = "InstanceId",
-                    Value = "i-0512bbb55f1a2f85c"
+                    Value = "i-00329d0c2a2aac67b"
                 }
             },
                 StartTime = DateTime.UtcNow.AddDays(-2),
@@ -42,7 +40,7 @@ namespace CloudApiClient
                 Statistics = new List<string> { "Minimum", "Maximum", "Average", "Sum" }
             });
 
-            var datapoints = response.Datapoints; // .Datapoints;
+            var datapoints = response.Datapoints; 
 
             double avgCpuUsage, maxCpuUsage, minCpuUsage, sumCpuUsage;
 
@@ -61,7 +59,9 @@ namespace CloudApiClient
                 sumCpuUsage = 0.0;
             }
 
-            Console.WriteLine($"Avg cpu usage: {avgCpuUsage}, Max cpu usage: {maxCpuUsage}, Min cpu usage: {minCpuUsage}, Sum cpu usage: {sumCpuUsage}");
+            return datapoints;
+
+            //Console.WriteLine($"Avg cpu usage: {avgCpuUsage}, Max cpu usage: {maxCpuUsage}, Min cpu usage: {minCpuUsage}, Sum cpu usage: {sumCpuUsage}");
         }
 
         /*
