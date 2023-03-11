@@ -40,7 +40,7 @@ namespace CloudApiClient
                 Statistics = new List<string> { "Minimum", "Maximum", "Average", "Sum" }
             });
 
-            var datapoints = response.Datapoints; 
+            var datapoints = response.Datapoints;
 
             double avgCpuUsage, maxCpuUsage, minCpuUsage, sumCpuUsage;
 
@@ -64,6 +64,68 @@ namespace CloudApiClient
             //Console.WriteLine($"Avg cpu usage: {avgCpuUsage}, Max cpu usage: {maxCpuUsage}, Min cpu usage: {minCpuUsage}, Sum cpu usage: {sumCpuUsage}");
         }
 
+        public async Task<List<CpuUsageData>> GetInstanceCpuUsageOverTime()
+        {
+
+            var cloudWatchClient = new AmazonCloudWatchClient();
+
+            // Set the dimensions for the CPUUtilization metric
+            var dimensions = new List<Dimension>()
+            {
+                new Dimension() { Name = "InstanceId", Value = "i-00329d0c2a2aac67b" }
+            };
+
+            // Set the start and end time for the metric data
+            var startTime = DateTime.UtcNow.AddDays(-7);
+            var endTime = DateTime.UtcNow;
+
+            // Create a request to get the CPUUtilization metric data
+            var request = new GetMetricDataRequest()
+            {
+                MetricDataQueries = new List<MetricDataQuery>()
+                {
+                    new MetricDataQuery()
+                    {
+                        Id = "cpu",
+                        MetricStat = new MetricStat()
+                        {
+                            Metric = new Amazon.CloudWatch.Model.Metric()
+                            {
+                                Namespace = "AWS/EC2",
+                                MetricName = "CPUUtilization",
+                                Dimensions = dimensions
+                            },
+                            Period = 3600,
+                            Stat = "Average"
+                        },
+                        ReturnData = true
+                    }
+                },
+                StartTime = startTime,
+                EndTime = endTime
+            };
+
+            // Retrieve the metric data and create a list of CPU usage data objects
+            var response = cloudWatchClient.GetMetricDataAsync(request);
+            var cpuUsageDataByDays = new List<CpuUsageData>();
+            foreach (var result in response.Result.MetricDataResults[0].Values)
+            {
+                var usageData = new CpuUsageData()
+                {
+                    Date = startTime.ToShortDateString(),
+                    Usage = result
+                };
+                cpuUsageDataByDays.Add(usageData);
+                startTime = startTime.AddDays(1);
+            }
+
+            // Serialize the CPU usage data to a JSON string and return it as a response
+            //var json = JsonConvert.SerializeObject(cpuUsageData);
+            return cpuUsageDataByDays;
+        }
+
+    }
+}
         /*
         static void ShowPricesOfVms()
         {
@@ -157,5 +219,3 @@ namespace CloudApiClient
             }
         }
     }*/
-    }
-}

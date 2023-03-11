@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using AwsClient = CloudApiClient.CloudApiClient;
+using CloudApiClient;
 using StratusApp.Models;
 using StratusApp.Models.Responses;
 using Amazon.CloudWatch.Model;
@@ -30,6 +31,14 @@ namespace StratusApp.Controllers
             userInstanceDataStartusResp.Data = await _awsClient.GetInstanceData();
             
             return Ok(userInstanceDataStartusResp);
+        }
+        [HttpGet("GetUserInstanceCpuUsageDataOverTime")]
+        public async Task<ActionResult<StratusResponse<StratusUser>>> GetUserAwsInstanceCpuUsageDataOverTime()
+        {
+            var userInstanceCpuUsageDataOverTimeStartusResp = new StratusResponse<List<CpuUsageData>>();
+
+            userInstanceCpuUsageDataOverTimeStartusResp.Data = await _awsClient.GetInstanceCpuUsageOverTime();
+            return Ok(userInstanceCpuUsageDataOverTimeStartusResp);
         }
     }
 }
