@@ -66,9 +66,6 @@ namespace CloudApiClient
 
         public async Task<List<CpuUsageData>> GetInstanceCpuUsageOverTime()
         {
-
-            var cloudWatchClient = new AmazonCloudWatchClient();
-
             // Set the dimensions for the CPUUtilization metric
             var dimensions = new List<Dimension>()
             {
@@ -95,20 +92,21 @@ namespace CloudApiClient
                                 MetricName = "CPUUtilization",
                                 Dimensions = dimensions
                             },
-                            Period = 3600,
+                            Period = 3600 * 24,
                             Stat = "Average"
                         },
                         ReturnData = true
                     }
                 },
-                StartTime = startTime,
-                EndTime = endTime
+                StartTimeUtc = startTime,
+                EndTimeUtc = endTime
             };
 
             // Retrieve the metric data and create a list of CPU usage data objects
-            var response = cloudWatchClient.GetMetricDataAsync(request);
+            var response = await _cloudWatchClient.GetMetricDataAsync(request);
             var cpuUsageDataByDays = new List<CpuUsageData>();
-            foreach (var result in response.Result.MetricDataResults[0].Values)
+
+            foreach (var result in response.MetricDataResults[0].Values)
             {
                 var usageData = new CpuUsageData()
                 {

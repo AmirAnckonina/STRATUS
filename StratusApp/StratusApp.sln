@@ -5,9 +5,9 @@ VisualStudioVersion = 17.4.33122.133
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StratusApp", "StratusApp\StratusApp.csproj", "{296BF8CD-1A04-42E9-923E-93C1D479E605}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MonitoringClient", "MonitoringClient\MonitoringClient.csproj", "{CDC50C6F-3316-456A-A569-5CE918203699}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PrometheusClient", "MonitoringClient\PrometheusClient.csproj", "{CDC50C6F-3316-456A-A569-5CE918203699}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CloudApiClient", "CloudApiClient\CloudApiClient.csproj", "{A74B3918-D57A-46F9-9A22-3F6474112DDC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CloudApiClient", "CloudApiClient\CloudApiClient.csproj", "{A74B3918-D57A-46F9-9A22-3F6474112DDC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
