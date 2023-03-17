@@ -5,6 +5,9 @@ using Amazon;
 using Amazon.CloudWatch;
 using Amazon.CloudWatch.Model;
 using Amazon.Runtime;
+using Amazon.EC2;
+using Amazon.Runtime.SharedInterfaces;
+using Amazon.EC2.Model;
 
 namespace CloudApiClient
 {
@@ -73,7 +76,7 @@ namespace CloudApiClient
             };
 
             // Set the start and end time for the metric data
-            var startTime = DateTime.UtcNow.AddDays(-7);
+            var startTime = DateTime.UtcNow.AddDays(-6);
             var endTime = DateTime.UtcNow;
 
             // Create a request to get the CPUUtilization metric data
@@ -103,6 +106,7 @@ namespace CloudApiClient
             };
 
             // Retrieve the metric data and create a list of CPU usage data objects
+
             var response = await _cloudWatchClient.GetMetricDataAsync(request);
             var cpuUsageDataByDays = new List<CpuUsageData>();
 
@@ -121,9 +125,72 @@ namespace CloudApiClient
             //var json = JsonConvert.SerializeObject(cpuUsageData);
             return cpuUsageDataByDays;
         }
-
+        //public async Task<Datapoint> GetRecommendedVirtualMachines()
+        //{
+        //    // Your AWS credentials and region
+        //    string accessKey = "YOUR_ACCESS_KEY";
+        //    string secretKey = "YOUR_SECRET_KEY";
+        //    RegionEndpoint region = RegionEndpoint.USEast2;
+        //
+        //    // The user's EC2 instance ID and CPU usage percentage
+        //    string instanceId = "YOUR_INSTANCE_ID";
+        //    double cpuUsage = 50.0;
+        //
+        //    // Get the EC2 instance and its current specs
+        //    Instance instance =  GetInstance(accessKey, secretKey, region, instanceId);
+        //    string instanceType = instance.InstanceType;
+        //    int instanceCPU =  instance.CpuOptions.CoreCount * instance.CpuOptions.ThreadsPerCore;
+        //    int instanceMemory = instance;
+        //    double instancePrice = GetInstancePrice(accessKey, secretKey, region, instanceType);
+        //
+        //    // Get the available instance types in the same availability zone and their specs
+        //    List<InstanceType> availableTypes = GetAvailableInstanceTypes(accessKey, secretKey, region, instance.Placement.AvailabilityZone);
+        //    List<InstanceTypeSpec> availableSpecs = availableTypes.Select(type =>
+        //    {
+        //        return new InstanceTypeSpec
+        //        {
+        //            Type = type,
+        //            CPU = type.CpuInfo.SustainedClockSpeedInGhz * type.CpuOptions.TargetCapacity,
+        //            Memory = type.MemoryInfo.SizeInMiB,
+        //            Price = GetInstancePrice(accessKey, secretKey, region, type.Value)
+        //        };
+        //    }).ToList();
+        //
+        //    // Find the cheapest instance type that can accommodate the current CPU usage
+        //    var bestOption = availableSpecs.Where(spec => spec.CPU >= cpuUsage * instanceCPU / 100)
+        //                                               .OrderBy(spec => spec.Price)
+        //                                               .FirstOrDefault();
+        //
+        //    // Recommend the best instance type to the user, if found
+        //    if (bestOption != null && bestOption.Price < instancePrice)
+        //    {
+        //        Console.WriteLine("Your current VM type: {0} (CPU: {1}, Memory: {2} MiB, Price: {3})", instanceType, instanceCPU, instanceMemory, instancePrice);
+        //        Console.WriteLine("Recommended VM type: {0} (CPU: {1}, Memory: {2} MiB, Price: {3})", bestOption.Type, bestOption.CPU, bestOption.Memory, bestOption.Price);
+        //    }
+        //    else
+        //    {
+        //        Console.WriteLine("No better VM type found for your usage.");
+        //    }
+        //}
+        //
+        //private static Instance GetInstance(string accessKey, string secretKey, RegionEndpoint region, string instanceId)
+        //{
+        //    // Set up the AWS client for EC2
+        //    AmazonEC2Client ec2Client = new AmazonEC2Client(accessKey, secretKey, region);
+        //
+        //    // Get the instance data from EC2
+        //    DescribeInstancesRequest request = new DescribeInstancesRequest
+        //    {
+        //        InstanceIds = new List<string> { instanceId }
+        //    };
+        //
+        //    DescribeInstancesResponse response = ec2Client.DescribeInstancesAsync(request);
+        //    return response.Reservations[0].Instances[0];
+        //}
     }
+
 }
+
         /*
         static void ShowPricesOfVms()
         {
