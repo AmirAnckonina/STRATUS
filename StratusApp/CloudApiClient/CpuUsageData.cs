@@ -9,6 +9,7 @@ namespace CloudApiClient
     public class CpuUsageData
     {
         public string Date { get; set; }
+
         public double Usage { get; set; }
     }
 }
