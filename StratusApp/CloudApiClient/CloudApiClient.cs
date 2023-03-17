@@ -125,6 +125,36 @@ namespace CloudApiClient
             //var json = JsonConvert.SerializeObject(cpuUsageData);
             return cpuUsageDataByDays;
         }
+        public async Task<List<Instance>> GetInstances()
+        {
+            var instances = new List<Instance>();
+
+            var client = new AmazonEC2Client(RegionEndpoint.USWest2); // Replace with your desired region
+
+            var request = new DescribeInstancesRequest
+            {
+                Filters = new List<Filter>
+        {
+            new Filter
+            {
+                Name = "instance-state-name",
+                Values = new List<string> { "running" }
+            }
+        }
+            };
+
+            var response = client.DescribeInstancesAsync(request);
+
+            foreach (var reservation in response.Result.Reservations)
+            {
+                foreach (var instance in reservation.Instances)
+                {
+                    instances.Add(instance);
+                }
+            }
+
+            return instances;
+        }
         //public async Task<Datapoint> GetRecommendedVirtualMachines()
         //{
         //    // Your AWS credentials and region
