@@ -155,6 +155,113 @@ namespace CloudApiClient
 
             return instances;
         }
+        public async Task<List<Instance>> GetMoreFittedInstances()
+        {
+            List<Instance> instancesToReturn = new List<Instance>();
+            var accessKey = "AKIA5HZY22LQTC2MGB5K";
+            var secretKey = "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";
+            var region = RegionEndpoint.USWest2;
+
+            // Get the current VM CPU usage metrics
+            var currentVMUsage = GetCurrentVMCPUUsage(accessKey, secretKey, region);
+
+            // Calculate the average CPU usage over the past 5 minutes
+            var averageCPUUsage = currentVMUsage.Sum() / currentVMUsage.Count;
+
+            // Calculate the max CPU capacity of a VM that can handle the current CPU usage
+            var maxCPUCapacity = averageCPUUsage * 1.2;
+
+            // Get a list of all available instances in the specified region
+            var availableInstances = await GetAvailableInstances(accessKey, secretKey, region);
+
+            // Filter the available instances by those with a CPU max capacity of at least maxCPUCapacity
+            var filteredInstances = availableInstances.Where(instance =>
+                instance.CpuOptions != null && instance.CpuOptions.CoreCount != null && instance.CpuOptions.ThreadsPerCore != null &&
+                instance.CpuOptions.CoreCount * instance.CpuOptions.ThreadsPerCore * 100 >= maxCPUCapacity);
+            // Loop through each filtered instance and print its details
+            foreach (var instance in filteredInstances)
+            {
+                instancesToReturn.Add(instance);
+                Console.WriteLine("Instance ID: {0}\nInstance Type: {1}\nMax CPU Capacity: {2}\n",
+                    instance.InstanceId, instance.InstanceType, instance.CpuOptions.CoreCount * instance.CpuOptions.ThreadsPerCore * 100);
+            }
+
+            return instancesToReturn;
+        }
+
+        static List<double> GetCurrentVMCPUUsage(string accessKey, string secretKey, RegionEndpoint region)
+        {
+            // Instantiate an AmazonCloudWatchClient object with the specified credentials and region
+            var cloudWatchClient = new AmazonCloudWatchClient(accessKey, secretKey, region);
+
+            // Build a request to get the current CPU usage metrics for the instance
+            var getMetricDataRequest = new GetMetricDataRequest
+            {
+                MetricDataQueries = new List<MetricDataQuery>
+                {
+                    new MetricDataQuery
+                    {
+                        Id = "m1",
+                        MetricStat = new MetricStat
+                        {
+                            Metric = new Amazon.CloudWatch.Model.Metric
+                            {
+                                Namespace = "AWS/EC2",
+                                MetricName = "CPUUtilization",
+                                Dimensions = new List<Dimension>
+                                {
+                                    new Dimension
+                                    {
+                                        Name = "InstanceId",
+                                        Value ="i-0e7b7b70d1327c5a6" // Replace this with a method that gets the current instance ID
+                                    }
+                                }
+                            },
+                            Period = 300,
+                            Stat = "Average",
+                            Unit = StandardUnit.Percent
+                        }
+                    }
+                },
+                StartTimeUtc = DateTime.UtcNow.AddMinutes(-5),
+                EndTimeUtc = DateTime.UtcNow
+            };
+
+            // Send the request and store the response in getMetricDataResponse
+            var getMetricDataResponse = cloudWatchClient.GetMetricDataAsync(getMetricDataRequest);
+
+            // Extract the CPU utilization values from the response
+            var cpuUtilization = new List<double>();
+            foreach (var result in getMetricDataResponse.Result.MetricDataResults)
+            {
+                if(result.Values.Count > 0)
+                {
+                    cpuUtilization.Add(result.Values[0]);
+                }
+            }
+            return cpuUtilization;
+        }
+        public async Task<List<Instance>> GetAvailableInstances(string accessKey, string secretKey, RegionEndpoint region)
+        {
+            // Instantiate an AmazonEC2Client object with the specified credentials and region
+            var ec2Client = new AmazonEC2Client(accessKey, secretKey, region);
+
+            // Build a request to get a list of all available instances in the region
+            var describeInstancesRequest = new DescribeInstancesRequest();
+
+            // Send the request and store the response in describeInstancesResponse
+            var describeInstancesResponse = await ec2Client.DescribeInstancesAsync(describeInstancesRequest);
+
+            // Extract the instances from the response
+            var instances = new List<Instance>();
+            foreach (var reservation in describeInstancesResponse.Reservations)
+            {
+                instances.AddRange(reservation.Instances);
+            }
+
+            return instances;
+        }
+
         //public async Task<Datapoint> GetRecommendedVirtualMachines()
         //{
         //    // Your AWS credentials and region

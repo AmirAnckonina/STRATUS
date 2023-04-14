@@ -52,5 +52,13 @@ namespace StratusApp.Controllers
 
             return Ok(userInstanceStartusResp);
         }
+
+        [HttpGet("GetMoreFittedInstancesFromAWS")]
+        public async Task<ActionResult<List<Instance>>> GetMoreFittedInstancesFromAWS()
+        {
+            var instancesListResponse = new StratusResponse<List<Instance>>();
+            instancesListResponse.Data = await _awsClient.GetMoreFittedInstances();
+            return Ok(instancesListResponse);
+        }
     }
 }
