@@ -2,24 +2,19 @@ using StratusApp.Data;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json.Serialization;
 using StratusApp.Services;
+using StratusApp;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Hosting;
 
-var builder = WebApplication.CreateBuilder(args);
-//var startup = new Startup(builder.Configuration);
+/*var builder = WebApplication.CreateBuilder(args); 
+
+var startup = new Startup(builder.Configuration);
 
 builder.Services.AddControllers().AddJsonOptions(options =>
 {
     options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
 });
 
-// Add services to the container.
-builder.Services.AddDbContext<DataContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
-
-builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
-builder.Services.AddTransient<IStratusService, StratusService>();
 
 var app = builder.Build();
 
@@ -36,6 +31,15 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-app.Run();
+app.Run();*/
 
+
+CreateHostBuilder(args).Build().Run();
+
+static IHostBuilder CreateHostBuilder(string[] args) =>
+            Host.CreateDefaultBuilder(args)
+                .ConfigureWebHostDefaults(webBuilder =>
+                {
+                    webBuilder.UseStartup<Startup>();
+                });
 
