@@ -26,6 +26,16 @@ namespace StratusApp
             services.AddDbContext<DataContext>(options =>
                 options.UseSqlServer(ConfigRoot.GetConnectionString("DefaultConnection")));
 
+            services.AddCors(options =>
+            {
+                options.AddPolicy("AllowAnyOrigin", builder =>
+                builder.WithOrigins("http://localhost:3000")
+                .AllowAnyMethod()
+                .AllowAnyHeader()
+                .AllowCredentials());
+                //.AllowAnyOrigin());
+            });
+
             services.AddControllers();
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             services.AddEndpointsApiExplorer();
@@ -53,6 +63,7 @@ namespace StratusApp
             app.UseStaticFiles();
             app.UseRouting();
             app.UseCors();
+            //app.UseCors("AllowAnyOrigin");
             app.UseAuthorization();
             app.UseEndpoints(endPoints => endPoints.MapControllers());
             //app.Run();

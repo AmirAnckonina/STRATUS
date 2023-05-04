@@ -5,9 +5,12 @@ using StratusApp.Models;
 using StratusApp.Models.Responses;
 using Amazon.CloudWatch.Model;
 using Amazon.EC2.Model;
+using Microsoft.AspNetCore.Cors;
 
 namespace StratusApp.Controllers
 {
+    //[EnableCors()]
+    [EnableCors("AllowAnyOrigin")]
     public class AwsController : Controller
     {
 
