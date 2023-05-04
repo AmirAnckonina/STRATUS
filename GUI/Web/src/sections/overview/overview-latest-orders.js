@@ -1,6 +1,9 @@
 import { format } from 'date-fns';
 import PropTypes from 'prop-types';
 import ArrowRightIcon from '@heroicons/react/24/solid/ArrowRightIcon';
+import axios from 'axios';
+import React, { useEffect, useState } from 'react'; 
+
 import {
   Box,
   Button,
@@ -26,20 +29,30 @@ const statusMap = {
 
 export const OverviewLatestOrders = (props) => {
   const { orders = [], sx } = props;
+  const [data, setData] = useState({})
+  useEffect(() => {
+  axios.get('https://localhost:7094/GetUserInstanceData')
+  .then(response => {
+    setData(respone.json())
+    console.log("Response test", response.json());
+  })
+  .catch(error => console.error(error));
+  },[]);
 
-  return (
+
+  return (   
     <Card sx={sx}>
-      <CardHeader title="Latest Orders" />
+      <CardHeader title="Latest Machines" />
       <Scrollbar sx={{ flexGrow: 1 }}>
         <Box sx={{ minWidth: 800 }}>
           <Table>
             <TableHead>
               <TableRow>
                 <TableCell>
-                  Order
+                  Id
                 </TableCell>
                 <TableCell>
-                  Customer
+                  OS
                 </TableCell>
                 <TableCell sortDirection="desc">
                   Date
