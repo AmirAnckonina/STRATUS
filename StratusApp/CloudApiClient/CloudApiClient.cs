@@ -34,7 +34,7 @@ namespace CloudApiClient
                 Dimensions = new List<Dimension> {
                 new Dimension {
                     Name = "InstanceId",
-                    Value = "i-00329d0c2a2aac67b"
+                    Value = "i-0e7b7b70d1327c5a6"
                 }
             },
                 StartTime = DateTime.UtcNow.AddDays(-2),
