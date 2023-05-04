@@ -17,7 +17,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\CloudApiClient\CloudApiClient.csproj" />
-    <ProjectReference Include="..\MonitoringClient\PrometheusClient.csproj" />
+    <ProjectReference Include="..\MonitoringClient\MonitoringClient.csproj" />
   </ItemGroup>
 
 </Project>
