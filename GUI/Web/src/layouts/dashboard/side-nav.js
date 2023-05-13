@@ -71,7 +71,7 @@ export const SideNav = (props) => {
                 color="inherit"
                 variant="subtitle1"
               >
-                Devias
+                STRATUS
               </Typography>
               <Typography
                 color="neutral.400"
@@ -130,18 +130,6 @@ export const SideNav = (props) => {
             py: 3
           }}
         >
-          <Typography
-            color="neutral.100"
-            variant="subtitle2"
-          >
-            Need more features?
-          </Typography>
-          <Typography
-            color="neutral.500"
-            variant="body2"
-          >
-            Check out our Pro solution template.
-          </Typography>
           <Box
             sx={{
               display: 'flex',
@@ -158,21 +146,6 @@ export const SideNav = (props) => {
               src="/assets/devias-kit-pro.png"
             />
           </Box>
-          <Button
-            component="a"
-            endIcon={(
-              <SvgIcon fontSize="small">
-                <ArrowTopRightOnSquareIcon />
-              </SvgIcon>
-            )}
-            fullWidth
-            href="https://material-kit-pro-react.devias.io/"
-            sx={{ mt: 2 }}
-            target="_blank"
-            variant="contained"
-          >
-            Pro Live Preview
-          </Button>
         </Box>
       </Box>
     </Scrollbar>
