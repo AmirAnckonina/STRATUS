@@ -1,6 +1,8 @@
 import PropTypes from 'prop-types';
 import ArrowPathIcon from '@heroicons/react/24/solid/ArrowPathIcon';
 import ArrowRightIcon from '@heroicons/react/24/solid/ArrowRightIcon';
+import axios from 'axios';
+import React, { useEffect, useState } from 'react'; 
 import {
   Button,
   Card,
@@ -106,8 +108,18 @@ const useChartOptions = () => {
 
 export const OverviewSales = (props) => {
   const { chartSeries, sx } = props;
+  const [data, setData] = useState([]);
   const chartOptions = useChartOptions();
 
+  useEffect(() => {
+    axios.get('https://localhost:7094/GetUserInstanceCpuUsageDataOverTime')
+    .then(response => {
+     setData(respone.json())
+     console.log("Response test", response.json());
+    })
+    .catch(error => {
+      console.log(error);
+    }); },[])
   return (
     <Card sx={sx}>
       <CardHeader
@@ -124,7 +136,7 @@ export const OverviewSales = (props) => {
             Sync
           </Button>
         )}
-        title="Sales"
+        title="CPU Usage Over Time"
       />
       <CardContent>
         <Chart
