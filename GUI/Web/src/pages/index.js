@@ -10,10 +10,32 @@ import { OverviewTasksProgress } from 'src/sections/overview/overview-tasks-prog
 import { OverviewTotalCustomers } from 'src/sections/overview/overview-total-customers';
 import { OverviewTotalProfit } from 'src/sections/overview/overview-total-profit';
 import { OverviewTraffic } from 'src/sections/overview/overview-traffic';
+import React, { useState, useEffect  } from 'react';
+import axios from 'axios';
+import {
+  Typography,
+  Select,
+  MenuItem
+} from '@mui/material';
+
 
 const now = new Date();
 
-const Page = () => (
+const Page = () => {
+  const [machines, setData] = useState([])
+  useEffect(() => {
+  axios.get('https://localhost:7094/GetUserInstanceData')
+  .then(response => {
+    setData(response.data.data)
+  })
+  .catch(error => console.error(error));
+  },[]);
+
+  const [selectedMachine, setSelectedMachine] = useState('');
+  const handleMachineChange = (event) => {
+    setSelectedMachine(event.target.value);
+  };
+  return (
   <>
     <Head>
       <title>
@@ -28,6 +50,19 @@ const Page = () => (
       }}
     >
       <Container maxWidth="xl">
+          <Typography variant="h4" mb={3}>
+            Choose Machine:
+            <Select value={selectedMachine} onChange={handleMachineChange} sx={{ ml: 2 }}>
+              {machines.map((machine) => (
+              <MenuItem key={machine} value={machine.id}>
+                 {machine.id}
+             </MenuItem>
+             ))}
+            </Select>
+          </Typography>
+          <Typography variant="h6" mb={3}>
+            Current Machine: {selectedMachine}
+          </Typography>
         <Grid
           container
           spacing={3}
@@ -221,7 +256,7 @@ const Page = () => (
       </Container>
     </Box>
   </>
-);
+)};
 
 Page.getLayout = (page) => (
   <DashboardLayout>
