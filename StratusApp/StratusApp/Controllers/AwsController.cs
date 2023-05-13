@@ -28,11 +28,11 @@ namespace StratusApp.Controllers
         }*/
 
         [HttpGet("GetUserInstanceData")]
-        public async Task<ActionResult<StratusResponse<List<Datapoint>>>> GetUserAwsInstanceData()
+        public async Task<ActionResult<StratusResponse<List<VirtualMachineBasicData>>>> GetUserAwsInstanceData()
         {
-            var userInstanceDataStartusResp = new StratusResponse<List<Datapoint>>();
+            var userInstanceDataStartusResp = new StratusResponse<List<VirtualMachineBasicData>>();
 
-            userInstanceDataStartusResp.Data = await _awsClient.GetInstanceData();
+            userInstanceDataStartusResp.Data = await _awsClient.GetInstanceFormalData();
             
             return Ok(userInstanceDataStartusResp);
         }

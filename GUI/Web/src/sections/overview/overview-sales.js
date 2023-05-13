@@ -2,7 +2,7 @@ import PropTypes from 'prop-types';
 import ArrowPathIcon from '@heroicons/react/24/solid/ArrowPathIcon';
 import ArrowRightIcon from '@heroicons/react/24/solid/ArrowRightIcon';
 import axios from 'axios';
-import React, { useEffect, useState } from 'react'; 
+import React, { useEffect, useState } from 'react';
 import {
   Button,
   Card,
@@ -73,20 +73,7 @@ const useChartOptions = () => {
         color: theme.palette.divider,
         show: true
       },
-      categories: [
-        'Jan',
-        'Feb',
-        'Mar',
-        'Apr',
-        'May',
-        'Jun',
-        'Jul',
-        'Aug',
-        'Sep',
-        'Oct',
-        'Nov',
-        'Dec'
-      ],
+      categories: getCategories(),
       labels: {
         offsetY: 5,
         style: {
@@ -96,15 +83,42 @@ const useChartOptions = () => {
     },
     yaxis: {
       labels: {
-        formatter: (value) => (value > 0 ? `${value}K` : `${value}`),
+        formatter: (value) => `${value}%`,
         offsetX: -10,
         style: {
           colors: theme.palette.text.secondary
         }
-      }
+      },
+      max: 100
     }
+    
   };
 };
+
+const getCategories = () => {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = today.getMonth() + 1;
+  const lastDayOfMonth = new Date(year, month, 0).getDate();
+
+  const categories = [];
+
+  for (let i = 1; i <= lastDayOfMonth; i++) {
+    categories.push(i);
+  }
+
+  return categories;
+};
+const now = new Date();
+const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+const percentageValues = [0, 25, 50, 75, 100];
+const seriesData = Array.from({ length: percentageValues.length }, (_, i) => {
+  const value = percentageValues[i];
+  return Array.from({ length: daysInMonth }, (_, j) => ({
+    x: `${j + 1}`,
+    y: value
+  }));
+});
 
 export const OverviewSales = (props) => {
   const { chartSeries, sx } = props;
@@ -142,7 +156,7 @@ export const OverviewSales = (props) => {
         <Chart
           height={350}
           options={chartOptions}
-          series={chartSeries}
+          series={seriesData}
           type="bar"
           width="100%"
         />
