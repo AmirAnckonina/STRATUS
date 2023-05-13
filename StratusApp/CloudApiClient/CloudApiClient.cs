@@ -23,7 +23,7 @@ namespace CloudApiClient
         }
 
         //public 
-        public async Task<List<Datapoint>> GetInstanceData()
+        public async Task<List<Datapoint>> GetInstanceCPUStatistics()
         {
             // Get the EC2 instance usage data
 
@@ -66,7 +66,41 @@ namespace CloudApiClient
 
             //Console.WriteLine($"Avg cpu usage: {avgCpuUsage}, Max cpu usage: {maxCpuUsage}, Min cpu usage: {minCpuUsage}, Sum cpu usage: {sumCpuUsage}");
         }
+        public async Task<List<VirtualMachineBasicData>> GetInstanceFormalData()
+        {
+            var ec2Client = new AmazonEC2Client(_credentials, RegionEndpoint.USEast2);
+            var request = new DescribeInstancesRequest();
+            var response = ec2Client.DescribeInstancesAsync(request).Result;
 
+            var vms = new List<VirtualMachineBasicData>();
+
+            foreach (var reservation in response.Reservations)
+            {
+                foreach (var instance in reservation.Instances)
+                {
+                    if (instance.State.Name == "running") // filter out non-running instances if desired
+                    {
+                        var vm = new VirtualMachineBasicData
+                        {
+                            Id = instance.InstanceId,
+                            OperatingSystem = instance.Platform ?? instance.ImageId,
+                            Price = CalculatePrice(instance.InstanceType), // replace with your price calculation method
+                            CpuSpecifications = $"{instance.CpuOptions.CoreCount} Core/s, {instance.CpuOptions.ThreadsPerCore} threads per Core",
+                            Storage = string.Join(", ", instance.BlockDeviceMappings.Select(bdm => $"{bdm.DeviceName}")).Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).ToList(),
+                        };
+
+                        vms.Add(vm);
+                    }
+                }
+            }
+
+            return vms;
+        }
+        private decimal CalculatePrice(string instanceType)
+        {
+            // replace with your own price calculation logic based on instance type
+            return 0.0m;
+        }
         public async Task<List<CpuUsageData>> GetInstanceCpuUsageOverTime()
         {
             // Set the dimensions for the CPUUtilization metric
