@@ -29,12 +29,12 @@ const statusMap = {
 
 export const OverviewLatestOrders = (props) => {
   const { orders = [], sx } = props;
-  const [data, setData] = useState({})
+  const [machines, setData] = useState([])
   useEffect(() => {
   axios.get('https://localhost:7094/GetUserInstanceData')
   .then(response => {
-    setData(respone.json())
-    console.log("Response test", response.json());
+    setData(response.data.data)
+    console.log("Response test", response.data.data);
   })
   .catch(error => console.error(error));
   },[]);
@@ -48,42 +48,42 @@ export const OverviewLatestOrders = (props) => {
           <Table>
             <TableHead>
               <TableRow>
-                <TableCell>
+                <TableCell sortDirection="desc">
                   Id
                 </TableCell>
                 <TableCell>
                   OS
                 </TableCell>
-                <TableCell sortDirection="desc">
-                  Date
+                <TableCell>
+                  Price
                 </TableCell>
                 <TableCell>
-                  Status
+                  CPU
+                </TableCell>
+                <TableCell>
+                  Storage
                 </TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
-              {orders.map((order) => {
-                const createdAt = format(order.createdAt, 'dd/MM/yyyy');
+              {machines.map((data) => {
 
                 return (
                   <TableRow
                     hover
-                    key={order.id}
+                    key={data.id}
                   >
                     <TableCell>
-                      {order.ref}
+                      {data.os}
                     </TableCell>
                     <TableCell>
-                      {order.customer.name}
+                      {data.price}
                     </TableCell>
                     <TableCell>
-                      {createdAt}
+                      {data.cpu}
                     </TableCell>
                     <TableCell>
-                      <SeverityPill color={statusMap[order.status]}>
-                        {order.status}
-                      </SeverityPill>
+                      {data.storage}
                     </TableCell>
                   </TableRow>
                 );

@@ -1,8 +1,6 @@
 ﻿//using Prometheus;
 using System.Net.Http;
 using Prometheus;
-using Prometheus.Client;
-using Prometheus.Client.Collectors;
 using static System.Net.WebRequestMethods;
 
 namespace MonitoringClient
@@ -26,10 +24,7 @@ namespace MonitoringClient
         {
             var response = await _promHttpClient.GetAsync("/metrics");
             return await response.Content.ReadAsStringAsync();
-        }
-
-
-         
+        }   
 
 
     }
