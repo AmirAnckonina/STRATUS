@@ -4,6 +4,7 @@ import { styled } from '@mui/material/styles';
 import { withAuthGuard } from 'src/hocs/with-auth-guard';
 import { SideNav } from './side-nav';
 import { TopNav } from './top-nav';
+import { ProfileProvider } from 'src/contexts/profile-picture-context';
 
 const SIDE_NAV_WIDTH = 280;
 
@@ -47,6 +48,7 @@ export const Layout = withAuthGuard((props) => {
 
   return (
     <>
+      <ProfileProvider>
       <TopNav onNavOpen={() => setOpenNav(true)} />
       <SideNav
         onClose={() => setOpenNav(false)}
@@ -57,6 +59,7 @@ export const Layout = withAuthGuard((props) => {
           {children}
         </LayoutContainer>
       </LayoutRoot>
+      </ProfileProvider>
     </>
   );
 });

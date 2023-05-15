@@ -8,6 +8,8 @@ import {
   Divider,
   Typography
 } from '@mui/material';
+import { ProfileProvider, ProfileContext } from 'src/contexts/profile-picture-context';
+import React, { useContext } from 'react';
 
 const user = {
   avatar: '/assets/avatars/avatar-anika-visser.png',
@@ -18,7 +20,12 @@ const user = {
   timezone: 'GTM-7'
 };
 
-export const AccountProfile = () => (
+
+export const AccountProfile = () => {
+  const { selectedPicture, handlePictureUpload } = useContext(ProfileContext);
+
+
+return (
   <Card>
     <CardContent>
       <Box
@@ -29,7 +36,7 @@ export const AccountProfile = () => (
         }}
       >
         <Avatar
-          src={user.avatar}
+          src={selectedPicture ? selectedPicture : user.avatar}
           sx={{
             height: 80,
             mb: 2,
@@ -58,12 +65,16 @@ export const AccountProfile = () => (
     </CardContent>
     <Divider />
     <CardActions>
-      <Button
-        fullWidth
-        variant="text"
-      >
-        Upload picture
-      </Button>
+    <Button fullWidth variant="text" onClick={() => document.getElementById('upload-picture-input').click()}>
+    Upload picture
+</Button>
+<input
+  id="upload-picture-input"
+  type="file"
+  style={{ display: 'none' }}
+  accept="image/*"
+  onChange={(event) => handlePictureUpload(event.target.files[0])}
+/>
     </CardActions>
   </Card>
-);
+)};

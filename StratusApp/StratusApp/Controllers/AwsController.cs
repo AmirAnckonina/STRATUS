@@ -37,6 +37,16 @@ namespace StratusApp.Controllers
             return Ok(userInstanceDataStartusResp);
         }
 
+        [HttpGet("GetInstanceCPUStatistics")]
+        public async Task<ActionResult<StratusResponse<List<Datapoint>>>> GetInstanceCPUStatistics()
+        {
+            var userInstanceDataStartusResp = new StratusResponse<List<Datapoint>>();
+
+            userInstanceDataStartusResp.Data = await _awsClient.GetInstanceCPUStatistics();
+
+            return Ok(userInstanceDataStartusResp);
+        }
+
         [HttpGet("GetUserInstanceCpuUsageDataOverTime")]
         public async Task<ActionResult<StratusResponse<List<CpuUsageData>>>> GetUserAwsInstanceCpuUsageDataOverTime()
         {

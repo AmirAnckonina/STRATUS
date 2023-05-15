@@ -3,12 +3,15 @@ import { Box, Container, Stack, Typography, Unstable_Grid2 as Grid } from '@mui/
 import { Layout as DashboardLayout } from 'src/layouts/dashboard/layout';
 import { AccountProfile } from 'src/sections/account/account-profile';
 import { AccountProfileDetails } from 'src/sections/account/account-profile-details';
+import { ProfileProvider } from 'src/contexts/profile-picture-context';
+
+
 
 const Page = () => (
   <>
     <Head>
       <title>
-        Account | Devias Kit
+        Account | STRATUS
       </title>
     </Head>
     <Box
@@ -35,7 +38,10 @@ const Page = () => (
                 md={6}
                 lg={4}
               >
-                <AccountProfile />
+               <ProfileProvider>
+      
+        <AccountProfile />      
+    </ProfileProvider>
               </Grid>
               <Grid
                 xs={12}

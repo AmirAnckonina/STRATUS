@@ -21,7 +21,7 @@ export const OverviewBudget = (props) => {
               color="text.secondary"
               variant="overline"
             >
-              Averge Usage
+              Minimum Usage
             </Typography>
             <Typography variant="h4">
               {value}
@@ -68,7 +68,6 @@ export const OverviewBudget = (props) => {
               color="text.secondary"
               variant="caption"
             >
-              Amir
             </Typography>
           </Stack>
         )}
