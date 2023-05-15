@@ -83,7 +83,7 @@ namespace CloudApiClient
                         var vm = new VirtualMachineBasicData
                         {
                             Id = instance.InstanceId,
-                            OperatingSystem = instance.Platform ?? instance.ImageId,
+                            OperatingSystem = instance.PlatformDetails,
                             Price = CalculatePrice(instance.InstanceType), // replace with your price calculation method
                             CpuSpecifications = $"{instance.CpuOptions.CoreCount} Core/s, {instance.CpuOptions.ThreadsPerCore} threads per Core",
                             Storage = string.Join(", ", instance.BlockDeviceMappings.Select(bdm => $"{bdm.DeviceName}")).Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).ToList(),

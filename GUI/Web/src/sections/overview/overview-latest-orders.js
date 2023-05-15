@@ -73,14 +73,17 @@ export const OverviewLatestOrders = (props) => {
                     hover
                     key={data.id}
                   >
+                     <TableCell>
+                      {data.id}
+                    </TableCell>
                     <TableCell>
-                      {data.os}
+                      {data.operatingSystem}
                     </TableCell>
                     <TableCell>
                       {data.price}
                     </TableCell>
                     <TableCell>
-                      {data.cpu}
+                      {data.cpuSpecifications}
                     </TableCell>
                     <TableCell>
                       {data.storage}
