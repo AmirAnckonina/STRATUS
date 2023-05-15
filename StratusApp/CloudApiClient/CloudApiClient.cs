@@ -8,6 +8,10 @@ using Amazon.Runtime;
 using Amazon.EC2;
 using Amazon.Runtime.SharedInterfaces;
 using Amazon.EC2.Model;
+using System.Text.Json;
+using System.Xml.Linq;
+using Newtonsoft.Json.Linq;
+using System.Text.RegularExpressions;
 
 namespace CloudApiClient
 {
@@ -83,8 +87,8 @@ namespace CloudApiClient
                         var vm = new VirtualMachineBasicData
                         {
                             Id = instance.InstanceId,
-                            OperatingSystem = instance.Platform ?? instance.ImageId,
-                            Price = CalculatePrice(instance.InstanceType), // replace with your price calculation method
+                            OperatingSystem = instance.Platform ?? instance.PlatformDetails,
+                            Price = await GetVMPrice(instance.InstanceId), // replace with your price calculation method
                             CpuSpecifications = $"{instance.CpuOptions.CoreCount} Core/s, {instance.CpuOptions.ThreadsPerCore} threads per Core",
                             Storage = string.Join(", ", instance.BlockDeviceMappings.Select(bdm => $"{bdm.DeviceName}")).Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).ToList(),
                         };
@@ -96,11 +100,50 @@ namespace CloudApiClient
 
             return vms;
         }
-        private decimal CalculatePrice(string instanceType)
+        private async Task<decimal> GetVMPrice(string instanceId)
         {
-            // replace with your own price calculation logic based on instance type
-            return 0.0m;
+            using (var client = new HttpClient())
+            {
+                // Construct the request URL for the AWS Store API
+                var url = $"https://aws.amazon.com/api/pricing/v1.0/ec2/region/us-east-2/instance/{instanceId}/current/index.json";
+
+                // Retrieve the pricing data from the AWS Store API
+                var response = await client.GetAsync(url);
+                var json = await response.Content.ReadAsStringAsync();
+
+                // Parse the pricing data and retrieve the VM price
+                try
+                {
+                    var jObject = JObject.Parse(json);
+                var pricePerUnit = jObject.SelectToken($"$..{instanceId}.pricePerUnit.USD")?.Value<string>();
+
+                if (decimal.TryParse(pricePerUnit, out var price))
+                {
+                    return price;
+                }
+                    else
+                    {
+                        return 0.0m;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.Message);
+                    return 0.0m;
+                }
+            }
+
         }
+        //private async string GetOperatingSystem(string platform)
+        //{
+        //    switch (platform.ToLower())
+        //    {
+        //        case "windows":
+        //            return "Windows";
+        //        default:
+        //            return "Linux";
+        //    }
+        //}
         public async Task<List<CpuUsageData>> GetInstanceCpuUsageOverTime()
         {
             // Set the dimensions for the CPUUtilization metric
