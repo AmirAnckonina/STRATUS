@@ -309,6 +309,7 @@ namespace CloudApiClient
             var secretKey = _credentials.GetCredentials().SecretKey;
             var region = _cloudWatchClient.Config.RegionEndpoint;
             await GetOptionalVms();
+
             // Get the current VM CPU usage metrics
             var currentVMUsage = GetCurrentVMCPUUsage(accessKey, secretKey, region);
 
