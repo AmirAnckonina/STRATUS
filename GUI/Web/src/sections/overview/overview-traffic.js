@@ -2,6 +2,7 @@ import PropTypes from 'prop-types';
 import ComputerDesktopIcon from '@heroicons/react/24/solid/ComputerDesktopIcon';
 import DeviceTabletIcon from '@heroicons/react/24/solid/DeviceTabletIcon';
 import PhoneIcon from '@heroicons/react/24/solid/PhoneIcon';
+import CPUIcon from '@heroicons/react/24/solid/CpuChipIcon'; 
 import {
   Box,
   Card,
@@ -63,6 +64,11 @@ const useChartOptions = (labels) => {
 };
 
 const iconMap = {
+  CPU: (
+    <SvgIcon>
+      <CPUIcon />
+    </SvgIcon>
+  ),
   Desktop: (
     <SvgIcon>
       <ComputerDesktopIcon />
@@ -86,7 +92,7 @@ export const OverviewTraffic = (props) => {
 
   return (
     <Card sx={sx}>
-      <CardHeader title="Traffic Source" />
+      <CardHeader title="Average CPU Utilization" />
       <CardContent>
         <Chart
           height={300}
@@ -114,7 +120,7 @@ export const OverviewTraffic = (props) => {
                   alignItems: 'center'
                 }}
               >
-                {iconMap[label]}
+                {iconMap["CPU"]}
                 <Typography
                   sx={{ my: 1 }}
                   variant="h6"
