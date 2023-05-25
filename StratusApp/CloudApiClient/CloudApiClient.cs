@@ -235,9 +235,9 @@ namespace CloudApiClient
         public async Task<List<Instance>> GetMoreFittedInstances()
         {
             List<Instance> instancesToReturn = new List<Instance>();
-            var accessKey = "AKIA5HZY22LQTC2MGB5K";
-            var secretKey = "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";
-            var region = RegionEndpoint.USWest2;
+            var accessKey = _credentials.GetCredentials().AccessKey;
+            var secretKey = _credentials.GetCredentials().SecretKey;
+            var region = RegionEndpoint.USEast2;
 
             // Get the current VM CPU usage metrics
             var currentVMUsage = GetCurrentVMCPUUsage(accessKey, secretKey, region);
