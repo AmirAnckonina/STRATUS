@@ -8,10 +8,15 @@ using Amazon.Runtime;
 using Amazon.EC2;
 using Amazon.Runtime.SharedInterfaces;
 using Amazon.EC2.Model;
+using Amazon.EC2.Model;
+using Amazon.Pricing;
 using System.Text.Json;
 using System.Xml.Linq;
 using Newtonsoft.Json.Linq;
 using System.Text.RegularExpressions;
+using System.Net;
+using Amazon.Pricing.Model;
+using System.Net.Sockets;
 
 namespace CloudApiClient
 {
@@ -84,11 +89,12 @@ namespace CloudApiClient
                 {
                     if (instance.State.Name == "running") // filter out non-running instances if desired
                     {
+                        var price = await GetVMPrice(instance.InstanceId);
                         var vm = new VirtualMachineBasicData
                         {
                             Id = instance.InstanceId,
                             OperatingSystem = instance.PlatformDetails,
-                            Price = await GetVMPrice(instance.InstanceId),
+                            Price = 0,//await GetVMPrice(instance.InstanceId),
                             CpuSpecifications = $"{instance.CpuOptions.CoreCount} Core/s, {instance.CpuOptions.ThreadsPerCore} threads per Core",
                             Storage = string.Join(", ", instance.BlockDeviceMappings.Select(bdm => $"{bdm.DeviceName}")).Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).ToList(),
                         };
@@ -102,38 +108,102 @@ namespace CloudApiClient
         }
         private async Task<decimal> GetVMPrice(string instanceId)
         {
-            using (var client = new HttpClient())
+            // Create a new AmazonEC2Client object.
+            AmazonEC2Client client = new AmazonEC2Client(_credentials, _cloudWatchClient.Config.RegionEndpoint);
+
+            // Get the instance details.
+            DescribeInstancesRequest describeInstancesRequest = new DescribeInstancesRequest();
+            describeInstancesRequest.InstanceIds.Add(instanceId);
+            try
             {
-                // Construct the request URL for the AWS Store API
-                var url = $"https://aws.amazon.com/api/pricing/v1.0/ec2/region/us-east-2/instance/{instanceId}/current/index.json";
+                DescribeInstancesResponse describeInstancesResponse = await client.DescribeInstancesAsync(describeInstancesRequest);
+                // Get the instance type.
+                string instanceType = describeInstancesResponse.Reservations[0].Instances[0].InstanceType;
+                // Get the region.
+                string region = _cloudWatchClient.Config.RegionEndpoint.ToString();
 
-                // Retrieve the pricing data from the AWS Store API
-                var response = await client.GetAsync(url);
-                var json = await response.Content.ReadAsStringAsync();
+                // Create a new AWSPrices object.
+                AmazonPricingClient pricingClient = new AmazonPricingClient();
 
-                // Parse the pricing data and retrieve the VM price
-                try
-                {
-                    var jObject = JObject.Parse(json);
-                var pricePerUnit = jObject.SelectToken($"$..{instanceId}.pricePerUnit.USD")?.Value<string>();
+                // Get the VM price.
+                var price = GetInstancePrice(pricingClient, instanceType, region);
+                return price;
+            }
+            catch (AmazonEC2Exception e)
+            {
+                Console.WriteLine(e.Message);
+                return 0;
+            }
+        }
 
-                if (decimal.TryParse(pricePerUnit, out var price))
-                {
-                    return price;
-                }
-                    else
-                    {
-                        return 0.0m;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine(ex.Message);
-                    return 0.0m;
-                }
+        private decimal GetInstancePrice(AmazonPricingClient pricingClient, string instanceType, string region)
+        {
+            // Set the product attributes for filtering.
+            var productAttributes = new[]
+            {
+            new Amazon.Pricing.Model.Filter
+            {
+                Field = "instanceType",
+                Value = instanceType
+            },
+            new Amazon.Pricing.Model.Filter
+            {
+                Field = "location",
+                Value = region
+            },
+            new Amazon.Pricing.Model.Filter
+            {
+                Field = "tenancy",
+                Value = "shared"
+            },
+            //new Amazon.Pricing.Model.Filter
+            //{
+            //    Field = "operatingSystem",
+            //    Value = "Linux"
+            //},
+            new Amazon.Pricing.Model.Filter
+            {
+                Field = "preInstalledSw",
+                Value = "NA"
+            },
+            new Amazon.Pricing.Model.Filter
+            {
+                Field = "capacitystatus",
+                Value = "Used"
+            }
+        };
+
+            // Set the service code for EC2.
+            var serviceCode = "AmazonEC2";
+
+            // Create the request to retrieve the price list.
+            var request = new GetProductsRequest
+            {
+                Filters = productAttributes.ToList(),
+                ServiceCode = serviceCode
+            };
+
+            // Retrieve the price list.
+            var response = pricingClient.GetProductsAsync(request).Result;
+
+            // Get the price per unit from the first product.
+            var pricePerUnit = JObject.Parse(response.PriceList[0])
+                               .SelectToken("terms.OnDemand")
+                               .First().First().First()
+                               .SelectToken("priceDimensions")
+                               .First().First()
+                               .SelectToken("pricePerUnit")
+                               .Value<string>("USD");
+
+            // Parse the price as decimal.
+            if (decimal.TryParse(pricePerUnit, out decimal price))
+            {
+                return price;
             }
 
+            return 0;
         }
+
         //private async string GetOperatingSystem(string platform)
         //{
         //    switch (platform.ToLower())
@@ -210,9 +280,9 @@ namespace CloudApiClient
 
             var request = new DescribeInstancesRequest
             {
-                Filters = new List<Filter>
+                Filters = new List<Amazon.EC2.Model.Filter>
         {
-            new Filter
+            new Amazon.EC2.Model.Filter
             {
                 Name = "instance-state-name",
                 Values = new List<string> { "running" }
@@ -235,10 +305,10 @@ namespace CloudApiClient
         public async Task<List<Instance>> GetMoreFittedInstances()
         {
             List<Instance> instancesToReturn = new List<Instance>();
-            var accessKey = "AKIA5HZY22LQTC2MGB5K";
-            var secretKey = "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";
-            var region = RegionEndpoint.USWest2;
-
+            var accessKey = _credentials.GetCredentials().AccessKey;
+            var secretKey = _credentials.GetCredentials().SecretKey;
+            var region = _cloudWatchClient.Config.RegionEndpoint;
+            await GetOptionalVms();
             // Get the current VM CPU usage metrics
             var currentVMUsage = GetCurrentVMCPUUsage(accessKey, secretKey, region);
 
@@ -264,6 +334,87 @@ namespace CloudApiClient
             }
 
             return instancesToReturn;
+        }
+
+        public async Task GetOptionalVms()
+        {
+            using (var ec2Client = new AmazonEC2Client(_credentials, _cloudWatchClient.Config.RegionEndpoint))
+            using (var pricingClient = new AmazonPricingClient())
+            {
+                var describeInstancesRequest = new Amazon.EC2.Model.DescribeInstancesRequest();
+                var describeInstancesResponse = await ec2Client.DescribeInstancesAsync(describeInstancesRequest);
+                var currentInstanceType = describeInstancesResponse.Reservations[0].Instances[0].InstanceType;
+                var currentInstanceId = describeInstancesResponse.Reservations[0].Instances[0].InstanceId;
+
+                Console.WriteLine($"Current Instance: {currentInstanceId} - Type: {currentInstanceType}");
+
+                var getProductsRequest = new GetProductsRequest
+                {
+                    ServiceCode = "AmazonEC2",
+                    Filters = new List<Amazon.Pricing.Model.Filter>
+            {
+                new Amazon.Pricing.Model.Filter { Type = "TERM_MATCH", Field = "operatingSystem", Value = "Linux" },
+                new Amazon.Pricing.Model.Filter { Type = "TERM_MATCH", Field = "preInstalledSw", Value = "NA" },
+                new Amazon.Pricing.Model.Filter { Type = "TERM_MATCH", Field = "capacitystatus", Value = "Used" },
+                new Amazon.Pricing.Model.Filter { Type = "TERM_MATCH", Field = "tenancy", Value = "Shared" },
+                new Amazon.Pricing.Model.Filter { Type = "TERM_MATCH", Field = "location", Value = "US East (N. Virginia)" }
+            },
+                    MaxResults = 100
+                };
+
+                var getProductsResponse = await pricingClient.GetProductsAsync(getProductsRequest);
+                var vmDataList = new List<VirtualMachineBasicData>();
+
+
+                foreach (var priceListItem in getProductsResponse.PriceList)
+                {
+                    var priceListItemJson = priceListItem;
+
+                    // Parse the price list item JSON using JObject
+                    var jObject = JObject.Parse(priceListItemJson);
+
+                    var vmData = new VirtualMachineBasicData
+                    {
+                        Id = (string)jObject["product"]["sku"],
+                        OperatingSystem = (string)jObject["product"]["attributes"]["operatingSystem"],
+                        Storage = new List<string>(),
+                        CpuSpecifications = (string)jObject["product"]["attributes"]["vcpu"],
+                    };
+
+                    // Get the price dimensions
+                    var priceDimensions = jObject["terms"]["OnDemand"].Values<JProperty>().FirstOrDefault()?.Value["priceDimensions"];
+
+                    if (priceDimensions != null)
+                    {
+                        foreach (var priceDimension in priceDimensions.Values<JProperty>())
+                        {
+                            var pricePerUnit = (string)priceDimension.Value["pricePerUnit"]["USD"];
+                            vmData.Price = decimal.Parse(pricePerUnit);
+                            vmData.Unit = (string)priceDimension.Value["unit"];
+                            break; // Consider only the first price dimension
+                        }
+                    }
+
+                    // Process storage attributes
+                    var storageAttributes = jObject["product"]?["attributes"]?["storage"];
+                    if (storageAttributes != null)
+                    {
+                        if (storageAttributes is JObject storageObject)
+                        {
+                            foreach (var storageValue in storageObject.Values<string>())
+                            {
+                                vmData.Storage.Add(storageValue);
+                            }
+                        }
+                        else if (storageAttributes is JValue storageValue)
+                        {
+                            vmData.Storage.Add(storageValue.Value.ToString());
+                        }
+                    }
+
+                    vmDataList.Add(vmData);
+                }
+            }
         }
 
         static List<double> GetCurrentVMCPUUsage(string accessKey, string secretKey, RegionEndpoint region)

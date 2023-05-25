@@ -13,5 +13,6 @@ namespace CloudApiClient
         public decimal Price { get; set; }
         public string CpuSpecifications { get; set; }
         public List<string> Storage { get; set; }
+        public string Unit { get; set; }
     }
 }
