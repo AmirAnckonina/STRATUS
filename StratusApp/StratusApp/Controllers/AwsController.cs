@@ -21,15 +21,15 @@ namespace StratusApp.Controllers
             _awsClient = new AwsClient();
         }
 
-        /*[HttpGet("GetUserInstanceData")]
+        [HttpGet("GetUserInstanceData")]
         public async Task<ActionResult<StratusResponse<List<InstanceDetails>>>> GetUserAwsInstanceData()
         {
             var userInstanceDataStartusResp = new StratusResponse<List<InstanceDetails>>();
 
             userInstanceDataStartusResp.Data = await _awsClient.GetInstanceFormalData();
-            
+
             return Ok(userInstanceDataStartusResp);
-        }*/
+        }
 
         [HttpGet("GetInstanceCPUStatistics")]
         public async Task<ActionResult<StratusResponse<List<Datapoint>>>> GetInstanceCPUStatistics()

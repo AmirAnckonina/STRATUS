@@ -138,7 +138,7 @@ namespace CloudApiClient
             //Console.WriteLine($"Avg cpu usage: {avgCpuUsage}, Max cpu usage: {maxCpuUsage}, Min cpu usage: {minCpuUsage}, Sum cpu usage: {sumCpuUsage}");
         }*/
 
-       /* public async Task<List<DTO.InstanceDetails>> GetInstanceFormalData()
+        public async Task<List<DTO.InstanceDetails>> GetInstanceFormalData()
         {
             var ec2Client = new AmazonEC2Client(_credentials, RegionEndpoint.USEast2);
             var request = new DescribeInstancesRequest();
@@ -157,7 +157,7 @@ namespace CloudApiClient
                         {
                             Id = instance.InstanceId,
                             OperatingSystem = instance.PlatformDetails,
-                            Price = 0,// await GetInstancePrice(instance.InstanceId),
+                            Price = await GetInstancePrice(instance.InstanceId),
                             CpuSpecifications = $"{instance.CpuOptions.CoreCount} Core/s, {instance.CpuOptions.ThreadsPerCore} threads per Core",
                             Storage = string.Join(", ", instance.BlockDeviceMappings.Select<InstanceBlockDeviceMapping, string>(bdm => $"{bdm.DeviceName}")).Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).ToList(),
                         };
@@ -168,38 +168,39 @@ namespace CloudApiClient
             }
 
             return vms;
-        }*/
+        }
 
         private async Task<decimal> GetInstancePrice(string instanceId)
         {
             instanceId = "i-0e7b7b70d1327c5a6";
-            using (var costExplorerClient = new AmazonCostExplorerClient(_credentials))
+            try
             {
-                var request = new GetCostAndUsageRequest
+                var costExplorerClient = new AmazonCostExplorerClient(_credentials, _region);
                 {
-                   TimePeriod = new DateInterval
-                   {
-                       Start = "2023-05-15",
-                       End =   "2023-05-25"
-                   },
-                   Filter = new Amazon.CostExplorer.Model.Expression
-                   {
-                       //Dimensions = new DimensionValues
-                       //{
-                       //    Key = "SERVICE",
-                       //    Values = new List<string> { "Amazon Elastic Compute Cloud - Compute" }
-                       //},
-                       Tags = new TagValues
-                       {
-                           Key = "InstanceId",
-                           Values = new List<string> { instanceId }
-                       }
-                   },
-                    Granularity = "DAILY",
-                    Metrics = new List<string> { "AmortizedCost" }
-                };
-                try
-                {
+                    var request = new GetCostAndUsageRequest
+                    {
+                        TimePeriod = new DateInterval
+                        {
+                            Start = "2023-05-15",
+                            End = "2023-05-25"
+                        },
+                        Filter = new Amazon.CostExplorer.Model.Expression
+                        {
+                            //Dimensions = new DimensionValues
+                            //{
+                            //    Key = "SERVICE",
+                            //    Values = new List<string> { "Amazon Elastic Compute Cloud - Compute" }
+                            //},
+                            Tags = new TagValues
+                            {
+                                Key = "InstanceId",
+                                Values = new List<string> { instanceId }
+                            }
+                        },
+                        Granularity = "DAILY",
+                        Metrics = new List<string> { "AmortizedCost" }
+                    };
+
                     var response = await costExplorerClient.GetCostAndUsageAsync(request);
 
                     if (response.ResultsByTime.Count > 0)
@@ -209,12 +210,12 @@ namespace CloudApiClient
                         return totalCost;
                     }
                 }
-                catch (Exception e)
-                {
-                    Console.WriteLine(e.Message);
-                    return 0;
-                }
             }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+                return 0;
+            }                
             
             return 0;
         }
@@ -349,14 +350,14 @@ namespace CloudApiClient
             var region = _cloudWatchClient.Config.RegionEndpoint;
             
             // Get the current VM CPU usage metrics
-            var currentVMUsage = GetCurrentVMCPUUsage(accessKey, secretKey, region, instanceId);
+            var currentInstanceDetails = GetInstanceBasicDetails(instanceId);
 
-            //InstanceFilterHelper currentVMUsageFilters = CreateVMInstanceFilters(currentVMUsage);
+            InstanceFilterHelper currentVMUsageFilters = CreateVMInstanceFilters(currentInstanceDetails.Result);
 
             List<DTO.InstanceDetails> fittedInstances = await GetOptionalVms(currentVMUsageFilters, 100);
 
 
-            var availableInstances = await GetAvailableInstances(accessKey, secretKey, region);
+            // availableInstances = await GetAvailableInstances(accessKey, secretKey, region);
 
             // Filter the available instances by those with a CPU max capacity of at least maxCPUCapacity
             //var filteredInstances = optionalVm.Where(instance =>
@@ -373,11 +374,19 @@ namespace CloudApiClient
             return fittedInstances;
         }
 
-        private InstanceFilterHelper CreateVMInstanceFilters(VirtualMachineBasicData instance)
+        private InstanceFilterHelper CreateVMInstanceFilters(DTO.InstanceDetails instance)
         {
             InstanceFilterHelper instanceFilterHelper = new();
-            //FilterType.TERM_MATCH
-            //instanceFilterHelper.AddFilter(FilterType.TERM_MATCH, )
+
+            instanceFilterHelper.AddFilter(FilterType.TERM_MATCH, "operatingSystem", instance.OperatingSystem);
+            instanceFilterHelper.AddFilter(FilterType.TERM_MATCH, "price", instance.Price.ToString());
+            instanceFilterHelper.AddFilter(FilterType.TERM_MATCH, "cpuUsageAverage", instance.CpuStatistics[0].Average.ToString());
+            instanceFilterHelper.AddFilter(FilterType.TERM_MATCH, "preInstalledSw", "NA");
+            instanceFilterHelper.AddFilter(FilterType.TERM_MATCH, "capacitystatus", "Used");
+            instanceFilterHelper.AddFilter(FilterType.TERM_MATCH, "tenancy", "Shared");
+            instanceFilterHelper.AddFilter(FilterType.TERM_MATCH, "location", "US East (N. Virginia)");
+            //instanceFilterHelper.AddFilter(FilterType.TERM_MATCH, "Storage", instance.Storage);
+
 
             return instanceFilterHelper;
         }
@@ -385,10 +394,11 @@ namespace CloudApiClient
         public async Task<List<DTO.InstanceDetails>> GetOptionalVms(InstanceFilterHelper instanceFilters, int maxResults)
         {
             var vmDataList = new List<DTO.InstanceDetails>();
-
-            using (var ec2Client = new AmazonEC2Client(_credentials, _cloudWatchClient.Config.RegionEndpoint))
-            using (var pricingClient = new AmazonPricingClient())
+            try 
             {
+                var ec2Client = new AmazonEC2Client(_credentials, _region);
+                var pricingClient = new AmazonPricingClient(_credentials, _region);
+            
                 var describeInstancesRequest = new DescribeInstancesRequest();
                 var describeInstancesResponse = await ec2Client.DescribeInstancesAsync(describeInstancesRequest);
                 var currentInstanceType = describeInstancesResponse.Reservations[0].Instances[0].InstanceType;
@@ -399,15 +409,15 @@ namespace CloudApiClient
                 var getProductsRequest = new GetProductsRequest
                 {
                     ServiceCode = "AmazonEC2",
-                    Filters = instanceFilters.Filters,
-                    //Filters = new List<Amazon.Pricing.Model.Filter>
-                    //{
-                    //    new Amazon.Pricing.Model.Filter { Type = "TERM_MATCH", Field = "operatingSystem", Value = "Linux" },
-                    //    new Amazon.Pricing.Model.Filter { Type = "TERM_MATCH", Field = "preInstalledSw", Value = "NA" },
-                    //    new Amazon.Pricing.Model.Filter { Type = "TERM_MATCH", Field = "capacitystatus", Value = "Used" },
-                    //    new Amazon.Pricing.Model.Filter { Type = "TERM_MATCH", Field = "tenancy", Value = "Shared" },
-                    //    new Amazon.Pricing.Model.Filter { Type = "TERM_MATCH", Field = "location", Value = "US East (N. Virginia)" }
-                    //},
+                    //Filters = instanceFilters.Filters,
+                    Filters = new List<Amazon.Pricing.Model.Filter>
+                    {
+                        new Amazon.Pricing.Model.Filter { Type = "TERM_MATCH", Field = "operatingSystem", Value = "Linux" },
+                        new Amazon.Pricing.Model.Filter { Type = "TERM_MATCH", Field = "preInstalledSw", Value = "NA" },
+                        new Amazon.Pricing.Model.Filter { Type = "TERM_MATCH", Field = "capacitystatus", Value = "Used" },
+                        new Amazon.Pricing.Model.Filter { Type = "TERM_MATCH", Field = "tenancy", Value = "Shared" },
+                        new Amazon.Pricing.Model.Filter { Type = "TERM_MATCH", Field = "location", Value = "US East (N. Virginia)" }
+                    },
                     MaxResults = maxResults,
                 };
 
@@ -462,6 +472,10 @@ namespace CloudApiClient
 
                     vmDataList.Add(vmData);
                 }
+            }
+            catch(Exception ex)
+            {
+                Console.WriteLine(ex);
             }
 
             return vmDataList;
@@ -599,13 +613,13 @@ namespace CloudApiClient
             instanceDetails.OperatingSystem = await GetInstanceOperatingSystem(instanceId);
 
             // Cpu Usage
-            instanceDetails.CpuSpecifications = await GetInstanceCPUStatistics(instanceId);
+            instanceDetails.CpuStatistics = await GetInstanceCPUStatistics(instanceId);
 
             // Volume Usage
             //instanceDetails.TotalVolumesSize = GetInstanceTotalVolumesSize(instanceId);
 
             // Price
-            //instanceDetails.Price = await GetInstancePrice(instanceId);
+            instanceDetails.Price = await GetInstancePrice(instanceId);
 
             return instanceDetails;
 
