@@ -46,6 +46,8 @@ namespace CloudApiClient
             _ec2Client = new AmazonEC2Client(_credentials, _region);
         }
 
+
+        //Please NOTE to change the hard-coded instanceID
         public async Task<List<Datapoint>> GetInstanceCPUStatistics(string instanceId)
         {
             instanceId = "i-0e7b7b70d1327c5a6";
@@ -231,7 +233,7 @@ namespace CloudApiClient
 
         public async Task<List<double>> GetInstanceCpuUsageOverTime(string instanceId)
         {
-            instanceId = "i-0e7b7b70d1327c5a6";
+            //instanceId = "i-0e7b7b70d1327c5a6";
 
             var cpuUsageDataByDays = new List<CpuUsageData>();
 
@@ -451,7 +453,7 @@ namespace CloudApiClient
 
         public async Task<string> GetInstanceOperatingSystem(string instanceId)
         {
-            instanceId = "i-0e7b7b70d1327c5a6";
+            //instanceId = "i-0e7b7b70d1327c5a6";
 
             var request = new DescribeInstancesRequest
             {
@@ -468,8 +470,6 @@ namespace CloudApiClient
             {
                 return instance.PlatformDetails;
             }
-          
-
 
             return string.Empty;
         }
@@ -500,7 +500,7 @@ namespace CloudApiClient
 
         static List<double> GetCurrentVMCPUUsage(string accessKey, string secretKey, RegionEndpoint region, string instanceId)
         {
-            instanceId =  "i-0e7b7b70d1327c5a6";
+            //instanceId =  "i-0e7b7b70d1327c5a6";
             // Instantiate an AmazonCloudWatchClient object with the specified credentials and regionEndPoint
             var cloudWatchClient = new AmazonCloudWatchClient(accessKey, secretKey, region);
 
@@ -575,7 +575,7 @@ namespace CloudApiClient
 
         public async Task<DTO.InstanceDetails> GetInstanceBasicDetails(string instanceId)
         {
-            instanceId = "i-0e7b7b70d1327c5a6";
+            //instanceId = "i-0e7b7b70d1327c5a6";
 
             DTO.InstanceDetails instanceDetails = new DTO.InstanceDetails();
 
