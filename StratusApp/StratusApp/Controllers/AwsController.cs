@@ -21,22 +21,22 @@ namespace StratusApp.Controllers
             _awsClient = new AwsClient();
         }
 
-        [HttpGet("GetUserInstanceData")]
-        public async Task<ActionResult<StratusResponse<List<VirtualMachineBasicData>>>> GetUserAwsInstanceData()
+        /*[HttpGet("GetUserInstanceData")]
+        public async Task<ActionResult<StratusResponse<List<InstanceDetails>>>> GetUserAwsInstanceData()
         {
-            var userInstanceDataStartusResp = new StratusResponse<List<VirtualMachineBasicData>>();
+            var userInstanceDataStartusResp = new StratusResponse<List<InstanceDetails>>();
 
             userInstanceDataStartusResp.Data = await _awsClient.GetInstanceFormalData();
             
             return Ok(userInstanceDataStartusResp);
-        }
+        }*/
 
         [HttpGet("GetInstanceCPUStatistics")]
         public async Task<ActionResult<StratusResponse<List<Datapoint>>>> GetInstanceCPUStatistics()
         {
             var userInstanceDataStartusResp = new StratusResponse<List<Datapoint>>();
 
-            userInstanceDataStartusResp.Data = await _awsClient.GetInstanceCPUStatistics();
+            userInstanceDataStartusResp.Data = await _awsClient.GetInstanceCPUStatistics("");
 
             return Ok(userInstanceDataStartusResp);
         }
@@ -63,7 +63,7 @@ namespace StratusApp.Controllers
         [HttpGet("GetMoreFittedInstancesFromAWS")]
         public async Task<ActionResult<List<Instance>>> GetMoreFittedInstancesFromAWS(string instanceId)
         {
-            var instancesListResponse = new StratusResponse<List<VirtualMachineBasicData>>();
+            var instancesListResponse = new StratusResponse<List<InstanceDetails>>();
             instancesListResponse.Data = await _awsClient.GetMoreFittedInstances(instanceId);
 
             return Ok(instancesListResponse);
@@ -87,6 +87,26 @@ namespace StratusApp.Controllers
             instanceVolumeResponse.Data = await _awsClient.GetInstanceTotalVolumesSize();
 
             return Ok(instanceVolumeResponse);
+        }
+
+        [HttpGet("GetInstanceOperatingSystem")]
+        public async Task<ActionResult<StratusResponse<string>>> GetInstanceOperatingSystem()
+        {
+            var instanceVolumeResponse = new StratusResponse<string>();
+
+            instanceVolumeResponse.Data = await _awsClient.GetInstanceOperatingSystem("");
+
+            return Ok(instanceVolumeResponse);
+        }
+
+        [HttpGet("GetInstanceBasicDetails")]
+        public async Task<ActionResult<InstanceDetails>> GetInstanceBasicDetails(string instanceId)
+        {
+            var instanceBasicDetailsResponse = new StratusResponse<InstanceDetails>();
+
+            instanceBasicDetailsResponse.Data = await _awsClient.GetInstanceBasicDetails(instanceId);
+
+            return Ok(instanceBasicDetailsResponse);
         }
     }
 }
