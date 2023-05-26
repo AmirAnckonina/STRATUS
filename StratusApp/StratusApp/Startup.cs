@@ -67,7 +67,6 @@ namespace StratusApp
             app.UseAuthorization();
             app.UseEndpoints(endPoints => endPoints.MapControllers());
             //app.Run();
-
         }
     }
 }

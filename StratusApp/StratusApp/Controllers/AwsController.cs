@@ -1,11 +1,11 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using AwsClient = CloudApiClient.CloudApiClient;
-using CloudApiClient;
 using StratusApp.Models;
 using StratusApp.Models.Responses;
 using Amazon.CloudWatch.Model;
 using Amazon.EC2.Model;
 using Microsoft.AspNetCore.Cors;
+using CloudApiClient.DTO;
 
 namespace StratusApp.Controllers
 {
@@ -67,10 +67,11 @@ namespace StratusApp.Controllers
         }
 
         [HttpGet("GetMoreFittedInstancesFromAWS")]
-        public async Task<ActionResult<List<Instance>>> GetMoreFittedInstancesFromAWS()
+        public async Task<ActionResult<List<Instance>>> GetMoreFittedInstancesFromAWS(string instanceId)
         {
-            var instancesListResponse = new StratusResponse<List<Instance>>();
-            instancesListResponse.Data = await _awsClient.GetMoreFittedInstances();
+            var instancesListResponse = new StratusResponse<List<VirtualMachineBasicData>>();
+            instancesListResponse.Data = await _awsClient.GetMoreFittedInstances(instanceId);
+
             return Ok(instancesListResponse);
         }
     }

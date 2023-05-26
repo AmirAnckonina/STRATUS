@@ -18,10 +18,14 @@ using Amazon.Pricing.Model;
 using Amazon.CostExplorer.Model;
 
 using System.Net.Sockets;
+
+using CloudApiClient.DTO;
+using CloudApiClient.Utils;
 using Microsoft.VisualBasic;
 using System.Linq.Expressions;
 using Amazon.CostExplorer;
 using DateInterval = Amazon.CostExplorer.Model.DateInterval;
+
 
 namespace CloudApiClient
 {
@@ -200,6 +204,7 @@ namespace CloudApiClient
         //            return "Linux";
         //    }
         //}
+
         public async Task<List<CpuUsageData>> GetInstanceCpuUsageOverTime()
         {
             // Set the dimensions for the CPUUtilization metric
@@ -258,6 +263,7 @@ namespace CloudApiClient
             //var json = JsonConvert.SerializeObject(cpuUsageData);
             return cpuUsageDataByDays;
         }
+
         public async Task<List<Instance>> GetInstances()
         {
             var instances = new List<Instance>();
@@ -267,13 +273,13 @@ namespace CloudApiClient
             var request = new DescribeInstancesRequest
             {
                 Filters = new List<Amazon.EC2.Model.Filter>
-        {
-            new Amazon.EC2.Model.Filter
-            {
-                Name = "instance-state-name",
-                Values = new List<string> { "running" }
-            }
-        }
+                {
+                    new Amazon.EC2.Model.Filter
+                    {
+                        Name = "instance-state-name",
+                        Values = new List<string> { "running" }
+                    }
+                }
             };
 
             var response = client.DescribeInstancesAsync(request);
@@ -288,47 +294,46 @@ namespace CloudApiClient
 
             return instances;
         }
-        public async Task<List<Instance>> GetMoreFittedInstances()
+        
+        public async Task<List<VirtualMachineBasicData>> GetMoreFittedInstances(string instanceId)
         {
-            List<Instance> instancesToReturn = new List<Instance>();
             var accessKey = _credentials.GetCredentials().AccessKey;
             var secretKey = _credentials.GetCredentials().SecretKey;
             var region = _cloudWatchClient.Config.RegionEndpoint;
-            await GetOptionalVms();
-
+            
             // Get the current VM CPU usage metrics
-            var currentVMUsage = GetCurrentVMCPUUsage(accessKey, secretKey, region);
+            var currentVMUsage = GetCurrentVMCPUUsage(accessKey, secretKey, region, instanceId);
 
-            // Calculate the average CPU usage over the past 5 minutes
-            var averageCPUUsage = currentVMUsage.Sum() / currentVMUsage.Count;
+            InstanceFilterHelper currentVMUsageFilters = new();//= CreateVMInstanceFilters(currentVMUsage);
 
-            // Calculate the max CPU capacity of a VM that can handle the current CPU usage
-            var maxCPUCapacity = averageCPUUsage * 1.2;
+            List<VirtualMachineBasicData> fittedInstances = await GetOptionalVms(currentVMUsageFilters, 100);
 
-            // Get a list of all available instances in the specified regionEndPoint
+
             var availableInstances = await GetAvailableInstances(accessKey, secretKey, region);
 
             // Filter the available instances by those with a CPU max capacity of at least maxCPUCapacity
-            var filteredInstances = availableInstances.Where(instance =>
-                instance.CpuOptions != null && instance.CpuOptions.CoreCount != null && instance.CpuOptions.ThreadsPerCore != null &&
-                instance.CpuOptions.CoreCount * instance.CpuOptions.ThreadsPerCore * 100 >= maxCPUCapacity);
+            //var filteredInstances = optionalVm.Where(instance =>
+            //    instance.CpuOptions != null && instance.CpuOptions.CoreCount != null && instance.CpuOptions.ThreadsPerCore != null &&
+            //    instance.CpuOptions.CoreCount * instance.CpuOptions.ThreadsPerCore * 100 >= maxCPUCapacity);
             // Loop through each filtered instance and print its details
-            foreach (var instance in filteredInstances)
-            {
-                instancesToReturn.Add(instance);
-                Console.WriteLine("Instance ID: {0}\nInstance Type: {1}\nMax CPU Capacity: {2}\n",
-                    instance.InstanceId, instance.InstanceType, instance.CpuOptions.CoreCount * instance.CpuOptions.ThreadsPerCore * 100);
-            }
+            //foreach (var instance in filteredInstances)
+            //{
+            //    instancesToReturn.Add(instance);
+            //    Console.WriteLine("Instance ID: {0}\nInstance Type: {1}\nMax CPU Capacity: {2}\n",
+            //        instance.InstanceId, instance.InstanceType, instance.CpuOptions.CoreCount * instance.CpuOptions.ThreadsPerCore * 100);
+            //}
 
-            return instancesToReturn;
+            return fittedInstances;
         }
 
-        public async Task GetOptionalVms()
+        public async Task<List<VirtualMachineBasicData>> GetOptionalVms(InstanceFilterHelper instanceFilters, int maxResults)
         {
+            var vmDataList = new List<VirtualMachineBasicData>();
+
             using (var ec2Client = new AmazonEC2Client(_credentials, _cloudWatchClient.Config.RegionEndpoint))
             using (var pricingClient = new AmazonPricingClient())
             {
-                var describeInstancesRequest = new Amazon.EC2.Model.DescribeInstancesRequest();
+                var describeInstancesRequest = new DescribeInstancesRequest();
                 var describeInstancesResponse = await ec2Client.DescribeInstancesAsync(describeInstancesRequest);
                 var currentInstanceType = describeInstancesResponse.Reservations[0].Instances[0].InstanceType;
                 var currentInstanceId = describeInstancesResponse.Reservations[0].Instances[0].InstanceId;
@@ -338,20 +343,19 @@ namespace CloudApiClient
                 var getProductsRequest = new GetProductsRequest
                 {
                     ServiceCode = "AmazonEC2",
-                    Filters = new List<Amazon.Pricing.Model.Filter>
-            {
-                new Amazon.Pricing.Model.Filter { Type = "TERM_MATCH", Field = "operatingSystem", Value = "Linux" },
-                new Amazon.Pricing.Model.Filter { Type = "TERM_MATCH", Field = "preInstalledSw", Value = "NA" },
-                new Amazon.Pricing.Model.Filter { Type = "TERM_MATCH", Field = "capacitystatus", Value = "Used" },
-                new Amazon.Pricing.Model.Filter { Type = "TERM_MATCH", Field = "tenancy", Value = "Shared" },
-                new Amazon.Pricing.Model.Filter { Type = "TERM_MATCH", Field = "location", Value = "US East (N. Virginia)" }
-            },
-                    MaxResults = 100
+                    Filters = instanceFilters.Filters,
+                    //Filters = new List<Amazon.Pricing.Model.Filter>
+                    //{
+                    //    new Amazon.Pricing.Model.Filter { Type = "TERM_MATCH", Field = "operatingSystem", Value = "Linux" },
+                    //    new Amazon.Pricing.Model.Filter { Type = "TERM_MATCH", Field = "preInstalledSw", Value = "NA" },
+                    //    new Amazon.Pricing.Model.Filter { Type = "TERM_MATCH", Field = "capacitystatus", Value = "Used" },
+                    //    new Amazon.Pricing.Model.Filter { Type = "TERM_MATCH", Field = "tenancy", Value = "Shared" },
+                    //    new Amazon.Pricing.Model.Filter { Type = "TERM_MATCH", Field = "location", Value = "US East (N. Virginia)" }
+                    //},
+                    MaxResults = maxResults,
                 };
 
                 var getProductsResponse = await pricingClient.GetProductsAsync(getProductsRequest);
-                var vmDataList = new List<VirtualMachineBasicData>();
-
 
                 foreach (var priceListItem in getProductsResponse.PriceList)
                 {
@@ -402,9 +406,11 @@ namespace CloudApiClient
                     vmDataList.Add(vmData);
                 }
             }
+
+            return vmDataList;
         }
 
-        static List<double> GetCurrentVMCPUUsage(string accessKey, string secretKey, RegionEndpoint region)
+        static List<double> GetCurrentVMCPUUsage(string accessKey, string secretKey, RegionEndpoint region, string instanceId)
         {
             // Instantiate an AmazonCloudWatchClient object with the specified credentials and regionEndPoint
             var cloudWatchClient = new AmazonCloudWatchClient(accessKey, secretKey, region);
@@ -456,6 +462,7 @@ namespace CloudApiClient
             }
             return cpuUtilization;
         }
+
         public async Task<List<Instance>> GetAvailableInstances(string accessKey, string secretKey, RegionEndpoint region)
         {
             // Instantiate an AmazonEC2Client object with the specified credentials and regionEndPoint
@@ -476,6 +483,7 @@ namespace CloudApiClient
 
             return instances;
         }
+
 
         //public async Task<Datapoint> GetRecommendedVirtualMachines()
         //{
