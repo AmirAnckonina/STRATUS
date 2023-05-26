@@ -30,7 +30,11 @@ const Page = () => {
       password: Yup
         .string()
         .max(255)
-        .required('Password is required')
+        .required('Password is required'),
+      accessKey: Yup
+        .string()
+        .max(255)
+        .required('Access Key is required')  
     }),
     onSubmit: async (values, helpers) => {
       try {
@@ -48,7 +52,7 @@ const Page = () => {
     <>
       <Head>
         <title>
-          Register | Devias Kit
+          Register | STARTUS
         </title>
       </Head>
       <Box
@@ -95,7 +99,7 @@ const Page = () => {
               noValidate
               onSubmit={formik.handleSubmit}
             >
-              <Stack spacing={3}>
+              <Stack spacing={4}>
                 <TextField
                   error={!!(formik.touched.name && formik.errors.name)}
                   fullWidth
@@ -127,6 +131,16 @@ const Page = () => {
                   onChange={formik.handleChange}
                   type="password"
                   value={formik.values.password}
+                />
+                <TextField
+                  error={!!(formik.touched.name && formik.errors.accessKey)}
+                  fullWidth
+                  helperText={formik.touched.name && formik.errors.accessKey}
+                  label="Accsess Key"
+                  name="Accsess Key"
+                  onBlur={formik.handleBlur}
+                  onChange={formik.handleChange}
+                  value={formik.values.name}
                 />
               </Stack>
               {formik.errors.submit && (

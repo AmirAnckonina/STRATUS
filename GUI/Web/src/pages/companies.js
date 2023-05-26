@@ -155,7 +155,7 @@ const Page = () => (
             }}
           >
             <Pagination
-              count={3}
+              count={companies.count}
               size="small"
             />
           </Box>
