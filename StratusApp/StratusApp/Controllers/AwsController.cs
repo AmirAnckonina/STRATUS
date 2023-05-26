@@ -48,11 +48,11 @@ namespace StratusApp.Controllers
         }
 
         [HttpGet("GetUserInstanceCpuUsageDataOverTime")]
-        public async Task<ActionResult<StratusResponse<List<CpuUsageData>>>> GetUserAwsInstanceCpuUsageDataOverTime()
+        public async Task<ActionResult<StratusResponse<List<CpuUsageData>>>> GetUserAwsInstanceCpuUsageDataOverTime(string instanceId)
         {
-            var userInstanceCpuUsageDataOverTimeStartusResp = new StratusResponse<List<CpuUsageData>>();
+            var userInstanceCpuUsageDataOverTimeStartusResp = new StratusResponse<List<double>>();
 
-            userInstanceCpuUsageDataOverTimeStartusResp.Data = await _awsClient.GetInstanceCpuUsageOverTime();
+            userInstanceCpuUsageDataOverTimeStartusResp.Data = await _awsClient.GetInstanceCpuUsageOverTime(instanceId);
 
             return Ok(userInstanceCpuUsageDataOverTimeStartusResp);
         }
