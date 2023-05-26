@@ -15,9 +15,9 @@ namespace CloudApiClient.DTO
 
         public decimal Price { get; set; }
 
-        //public string CpuSpecifications { get; set; }
+        public string CpuSpecifications { get; set; }
 
-        public List<Datapoint> CpuSpecifications { get; set; }
+        public List<Datapoint> CpuStatistics { get; set; }
 
         public List<string> Storage { get; set; }
 
