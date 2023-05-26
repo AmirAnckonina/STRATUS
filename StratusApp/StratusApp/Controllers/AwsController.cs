@@ -21,12 +21,6 @@ namespace StratusApp.Controllers
             _awsClient = new AwsClient();
         }
 
-        /*[HttpGet("GetAllAwsPackages")]
-        public async Task<ActionResult<StratusResponse<StratusUser>>> GetAllAwsPackages()
-        {
-
-        }*/
-
         [HttpGet("GetUserInstanceData")]
         public async Task<ActionResult<StratusResponse<List<VirtualMachineBasicData>>>> GetUserAwsInstanceData()
         {
@@ -73,6 +67,26 @@ namespace StratusApp.Controllers
             instancesListResponse.Data = await _awsClient.GetMoreFittedInstances(instanceId);
 
             return Ok(instancesListResponse);
+        }
+
+        [HttpGet("GetInstanceVolumes")]
+        public async Task<ActionResult<StratusResponse<List<Volume>>>> GetInstanceVolumes()
+        {
+            var instanceVolumeResponse = new StratusResponse<List<Volume>>();
+
+            instanceVolumeResponse.Data = await _awsClient.GetInstanceVolumes();
+
+            return Ok(instanceVolumeResponse);
+        }
+
+        [HttpGet("GetInstanceTotalVolumesSize")]
+        public async Task<ActionResult<StratusResponse<int>>> GetInstanceTotalVolumesSize()
+        {
+            var instanceVolumeResponse = new StratusResponse<int>();
+
+            instanceVolumeResponse.Data = await _awsClient.GetInstanceTotalVolumesSize();
+
+            return Ok(instanceVolumeResponse);
         }
     }
 }
