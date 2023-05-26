@@ -8,7 +8,6 @@ using Amazon.Runtime;
 using Amazon.EC2;
 using Amazon.Runtime.SharedInterfaces;
 using Amazon.EC2.Model;
-using Amazon.EC2.Model;
 using Amazon.Pricing;
 using System.Text.Json;
 using System.Xml.Linq;
@@ -16,9 +15,17 @@ using Newtonsoft.Json.Linq;
 using System.Text.RegularExpressions;
 using System.Net;
 using Amazon.Pricing.Model;
+using Amazon.CostExplorer.Model;
+
 using System.Net.Sockets;
+
 using CloudApiClient.DTO;
 using CloudApiClient.Utils;
+using Microsoft.VisualBasic;
+using System.Linq.Expressions;
+using Amazon.CostExplorer;
+using DateInterval = Amazon.CostExplorer.Model.DateInterval;
+
 
 namespace CloudApiClient
 {
@@ -42,8 +49,8 @@ namespace CloudApiClient
             {
                 Namespace = "AWS/EC2",
                 MetricName = "CPUUtilization",
-                Dimensions = new List<Dimension> {
-                new Dimension {
+                Dimensions = new List<Amazon.CloudWatch.Model.Dimension> {
+                new Amazon.CloudWatch.Model.Dimension {
                     Name = "InstanceId",
                     Value = "i-0e7b7b70d1327c5a6"
                 }
@@ -121,14 +128,14 @@ namespace CloudApiClient
                 DescribeInstancesResponse describeInstancesResponse = await client.DescribeInstancesAsync(describeInstancesRequest);
                 // Get the instance type.
                 string instanceType = describeInstancesResponse.Reservations[0].Instances[0].InstanceType;
-                // Get the region.
+                // Get the regionEndPoint.
                 string region = _cloudWatchClient.Config.RegionEndpoint.ToString();
 
                 // Create a new AWSPrices object.
                 AmazonPricingClient pricingClient = new AmazonPricingClient();
 
                 // Get the VM price.
-                var price = GetInstancePrice(pricingClient, instanceType, region);
+                var price = await GetInstancePrice(pricingClient, instanceType, region, instanceId);
                 return price;
             }
             catch (AmazonEC2Exception e)
@@ -138,73 +145,54 @@ namespace CloudApiClient
             }
         }
 
-        private decimal GetInstancePrice(AmazonPricingClient pricingClient, string instanceType, string region)
+        private async Task<decimal> GetInstancePrice(AmazonPricingClient pricingClient, string instanceType, string region, string instanceId)
         {
-            // Set the product attributes for filtering.
-            var productAttributes = new[]
+            using (var costExplorerClient = new AmazonCostExplorerClient(_credentials))
             {
-            new Amazon.Pricing.Model.Filter
-            {
-                Field = "instanceType",
-                Value = instanceType
-            },
-            new Amazon.Pricing.Model.Filter
-            {
-                Field = "location",
-                Value = region
-            },
-            new Amazon.Pricing.Model.Filter
-            {
-                Field = "tenancy",
-                Value = "shared"
-            },
-            //new Amazon.Pricing.Model.Filter
-            //{
-            //    Field = "operatingSystem",
-            //    Value = "Linux"
-            //},
-            new Amazon.Pricing.Model.Filter
-            {
-                Field = "preInstalledSw",
-                Value = "NA"
-            },
-            new Amazon.Pricing.Model.Filter
-            {
-                Field = "capacitystatus",
-                Value = "Used"
+                var request = new GetCostAndUsageRequest
+                {
+                   TimePeriod = new DateInterval
+                   {
+                       Start = "2023-05-15",
+                       End =   "2023-05-25"
+                   },
+                   Filter = new Amazon.CostExplorer.Model.Expression
+                   {
+                       //Dimensions = new DimensionValues
+                       //{
+                       //    Key = "SERVICE",
+                       //    Values = new List<string> { "Amazon Elastic Compute Cloud - Compute" }
+                       //},
+                       Tags = new TagValues
+                       {
+                           Key = "InstanceId",
+                           Values = new List<string> { "i- 0e7b7b70d1327c5a6" }
+                       }
+                   },
+                    Granularity = "DAILY",
+                    Metrics = new List<string> { "AmortizedCost" }
+                };
+                try
+                {
+                    var response = await costExplorerClient.GetCostAndUsageAsync(request);
+
+                    if (response.ResultsByTime.Count > 0)
+                    {
+                        var costResult = response.ResultsByTime[0].Total;
+                        decimal.TryParse(costResult["AmortizedCost"].Amount, out decimal totalCost);
+                        return totalCost;
+                    }
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e.Message);
+                    return 0;
+                }
             }
-        };
-
-            // Set the service code for EC2.
-            var serviceCode = "AmazonEC2";
-
-            // Create the request to retrieve the price list.
-            var request = new GetProductsRequest
-            {
-                Filters = productAttributes.ToList(),
-                ServiceCode = serviceCode
-            };
-
-            // Retrieve the price list.
-            var response = pricingClient.GetProductsAsync(request).Result;
-
-            // Get the price per unit from the first product.
-            var pricePerUnit = JObject.Parse(response.PriceList[0])
-                               .SelectToken("terms.OnDemand")
-                               .First().First().First()
-                               .SelectToken("priceDimensions")
-                               .First().First()
-                               .SelectToken("pricePerUnit")
-                               .Value<string>("USD");
-
-            // Parse the price as decimal.
-            if (decimal.TryParse(pricePerUnit, out decimal price))
-            {
-                return price;
-            }
-
+            
             return 0;
         }
+
 
         //private async string GetOperatingSystem(string platform)
         //{
@@ -220,9 +208,9 @@ namespace CloudApiClient
         public async Task<List<CpuUsageData>> GetInstanceCpuUsageOverTime()
         {
             // Set the dimensions for the CPUUtilization metric
-            var dimensions = new List<Dimension>()
+            var dimensions = new List<Amazon.CloudWatch.Model.Dimension>()
             {
-                new Dimension() { Name = "InstanceId", Value = "i-00329d0c2a2aac67b" }
+                new Amazon.CloudWatch.Model.Dimension() { Name = "InstanceId", Value = "i-00329d0c2a2aac67b" }
             };
 
             // Set the start and end time for the metric data
@@ -280,7 +268,7 @@ namespace CloudApiClient
         {
             var instances = new List<Instance>();
 
-            var client = new AmazonEC2Client(RegionEndpoint.USWest2); // Replace with your desired region
+            var client = new AmazonEC2Client(RegionEndpoint.USWest2); // Replace with your desired regionEndPoint
 
             var request = new DescribeInstancesRequest
             {
@@ -320,8 +308,8 @@ namespace CloudApiClient
 
             List<VirtualMachineBasicData> fittedInstances = await GetOptionalVms(currentVMUsageFilters, 100);
 
-            //// Calculate the average CPU usage over the past 5 minutes
-            //var averageCPUUsage = currentVMUsage.Sum() / currentVMUsage.Count;
+
+            var availableInstances = await GetAvailableInstances(accessKey, secretKey, region);
 
             // Filter the available instances by those with a CPU max capacity of at least maxCPUCapacity
             //var filteredInstances = optionalVm.Where(instance =>
@@ -424,7 +412,7 @@ namespace CloudApiClient
 
         static List<double> GetCurrentVMCPUUsage(string accessKey, string secretKey, RegionEndpoint region, string instanceId)
         {
-            // Instantiate an AmazonCloudWatchClient object with the specified credentials and region
+            // Instantiate an AmazonCloudWatchClient object with the specified credentials and regionEndPoint
             var cloudWatchClient = new AmazonCloudWatchClient(accessKey, secretKey, region);
 
             // Build a request to get the current CPU usage metrics for the instance
@@ -441,9 +429,9 @@ namespace CloudApiClient
                             {
                                 Namespace = "AWS/EC2",
                                 MetricName = "CPUUtilization",
-                                Dimensions = new List<Dimension>
+                                Dimensions = new List<Amazon.CloudWatch.Model.Dimension>
                                 {
-                                    new Dimension
+                                    new Amazon.CloudWatch.Model.Dimension
                                     {
                                         Name = "InstanceId",
                                         Value ="i-0e7b7b70d1327c5a6" // Replace this with a method that gets the current instance ID
@@ -475,26 +463,48 @@ namespace CloudApiClient
             return cpuUtilization;
         }
 
+        public async Task<List<Instance>> GetAvailableInstances(string accessKey, string secretKey, RegionEndpoint region)
+        {
+            // Instantiate an AmazonEC2Client object with the specified credentials and regionEndPoint
+            var ec2Client = new AmazonEC2Client(accessKey, secretKey, region);
+
+            // Build a request to get a list of all available instances in the regionEndPoint
+            var describeInstancesRequest = new DescribeInstancesRequest();
+
+            // Send the request and store the response in describeInstancesResponse
+            var describeInstancesResponse = await ec2Client.DescribeInstancesAsync(describeInstancesRequest);
+
+            // Extract the instances from the response
+            var instances = new List<Instance>();
+            foreach (var reservation in describeInstancesResponse.Reservations)
+            {
+                instances.AddRange(reservation.Instances);
+            }
+
+            return instances;
+        }
+
+
         //public async Task<Datapoint> GetRecommendedVirtualMachines()
         //{
-        //    // Your AWS credentials and region
+        //    // Your AWS credentials and regionEndPoint
         //    string accessKey = "YOUR_ACCESS_KEY";
         //    string secretKey = "YOUR_SECRET_KEY";
-        //    RegionEndpoint region = RegionEndpoint.USEast2;
+        //    RegionEndpoint regionEndPoint = RegionEndpoint.USEast2;
         //
         //    // The user's EC2 instance ID and CPU usage percentage
         //    string instanceId = "YOUR_INSTANCE_ID";
         //    double cpuUsage = 50.0;
         //
         //    // Get the EC2 instance and its current specs
-        //    Instance instance =  GetInstance(accessKey, secretKey, region, instanceId);
+        //    Instance instance =  GetInstance(accessKey, secretKey, regionEndPoint, instanceId);
         //    string instanceType = instance.InstanceType;
         //    int instanceCPU =  instance.CpuOptions.CoreCount * instance.CpuOptions.ThreadsPerCore;
         //    int instanceMemory = instance;
-        //    double instancePrice = GetInstancePrice(accessKey, secretKey, region, instanceType);
+        //    double instancePrice = GetInstancePrice(accessKey, secretKey, regionEndPoint, instanceType);
         //
         //    // Get the available instance types in the same availability zone and their specs
-        //    List<InstanceType> availableTypes = GetAvailableInstanceTypes(accessKey, secretKey, region, instance.Placement.AvailabilityZone);
+        //    List<InstanceType> availableTypes = GetAvailableInstanceTypes(accessKey, secretKey, regionEndPoint, instance.Placement.AvailabilityZone);
         //    List<InstanceTypeSpec> availableSpecs = availableTypes.Select(type =>
         //    {
         //        return new InstanceTypeSpec
@@ -502,7 +512,7 @@ namespace CloudApiClient
         //            Type = type,
         //            CPU = type.CpuInfo.SustainedClockSpeedInGhz * type.CpuOptions.TargetCapacity,
         //            Memory = type.MemoryInfo.SizeInMiB,
-        //            Price = GetInstancePrice(accessKey, secretKey, region, type.Value)
+        //            Price = GetInstancePrice(accessKey, secretKey, regionEndPoint, type.Value)
         //        };
         //    }).ToList();
         //
@@ -523,10 +533,10 @@ namespace CloudApiClient
         //    }
         //}
         //
-        //private static Instance GetInstance(string accessKey, string secretKey, RegionEndpoint region, string instanceId)
+        //private static Instance GetInstance(string accessKey, string secretKey, RegionEndpoint regionEndPoint, string instanceId)
         //{
         //    // Set up the AWS client for EC2
-        //    AmazonEC2Client ec2Client = new AmazonEC2Client(accessKey, secretKey, region);
+        //    AmazonEC2Client ec2Client = new AmazonEC2Client(accessKey, secretKey, regionEndPoint);
         //
         //    // Get the instance data from EC2
         //    DescribeInstancesRequest request = new DescribeInstancesRequest
@@ -553,9 +563,9 @@ namespace CloudApiClient
 
             Console.WriteLine($"Current Instance: {currentInstanceId} - Type: {currentInstanceType}");
 
-            var pricingClient = new AmazonPricingClient(RegionEndpoint.USEast1);
+            var AmazonPricingClient = new AmazonPricingClient(RegionEndpoint.USEast1);
 
-            var response = pricingClient.GetProducts(new GetProductsRequest
+            var response = AmazonPricingClient.GetProducts(new GetProductsRequest
             {
                 ServiceCode = "AmazonEC2",
                 Filters = new List<Filter> {
