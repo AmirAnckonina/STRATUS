@@ -1,7 +1,10 @@
 import PropTypes from 'prop-types';
 import ArrowDownOnSquareIcon from '@heroicons/react/24/solid/ArrowDownOnSquareIcon';
-import ClockIcon from '@heroicons/react/24/solid/ClockIcon';
+import DollarIcon from '@heroicons/react/24/solid/CurrencyDollarIcon';
+import { Button } from '@mui/material';
+import ShoppingBagIcon from '@heroicons/react/24/solid/ShoppingBagIcon';
 import { Avatar, Box, Card, CardContent, Divider, Stack, SvgIcon, Typography } from '@mui/material';
+
 
 export const CompanyCard = (props) => {
   const { company } = props;
@@ -23,8 +26,9 @@ export const CompanyCard = (props) => {
           }}
         >
           <Avatar
-            src={company.logo}
+            src={'/assets/logos/aws-logo.jpeg'}
             variant="square"
+            sx={{ width: 125, height: 100 }}
           />
         </Box>
         <Typography
@@ -35,11 +39,15 @@ export const CompanyCard = (props) => {
           {company.title}
         </Typography>
         <Typography
-          align="center"
-          variant="body1"
-        >
-          {company.description}
-        </Typography>
+  align="center"
+  variant="body1"
+>
+  Operating System: 
+  <br />
+  Cpu Specifications: 
+  <br />
+  Storage: 
+</Typography>
       </CardContent>
       <Box sx={{ flexGrow: 1 }} />
       <Divider />
@@ -59,14 +67,14 @@ export const CompanyCard = (props) => {
             color="action"
             fontSize="small"
           >
-            <ClockIcon />
+            <DollarIcon />
           </SvgIcon>
           <Typography
             color="text.secondary"
             display="inline"
             variant="body2"
           >
-            Updated 2hr ago
+            Price:
           </Typography>
         </Stack>
         <Stack
@@ -78,15 +86,14 @@ export const CompanyCard = (props) => {
             color="action"
             fontSize="small"
           >
-            <ArrowDownOnSquareIcon />
+            <ShoppingBagIcon />
           </SvgIcon>
-          <Typography
-            color="text.secondary"
-            display="inline"
-            variant="body2"
-          >
-            {company.downloads} Downloads
-          </Typography>
+          <Button
+        variant="outlined"
+        size="small"
+      >
+        Buy Now
+      </Button>
         </Stack>
       </Stack>
     </Card>

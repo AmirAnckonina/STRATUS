@@ -239,7 +239,7 @@ namespace CloudApiClient
 
             if(instanceId == null)
             {
-                return new List<double>();;
+                return new List<double>();
             }
 
             // Set the dimensions for the CPUUtilization metric
@@ -283,20 +283,27 @@ namespace CloudApiClient
             };
 
             // Retrieve the metric data and create a list of CPU usage data objects
-
-            var response = await _cloudWatchClient.GetMetricDataAsync(request);
             List<double> array = new List<double>();
-            foreach (var result in response.MetricDataResults[0].Values)
+            try
             {
-                var usageData = new CpuUsageData()
+                var response = await _cloudWatchClient.GetMetricDataAsync(request);
+                
+                foreach (var result in response.MetricDataResults[0].Values)
                 {
-                    Date = startTime.ToShortDateString(),
-                    Usage = result
-                };
-                cpuUsageDataByDays.Add(usageData);
-                startTime = startTime.AddDays(1);
+                    var usageData = new CpuUsageData()
+                    {
+                        Date = startTime.ToShortDateString(),
+                        Usage = result
+                    };
+                    cpuUsageDataByDays.Add(usageData);
+                    startTime = startTime.AddDays(1);
 
-                array.Add(result);
+                    array.Add(result);
+                }
+            }
+            catch(Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
             }
 
             // Serialize the CPU usage data to a JSON string and return it as a response
@@ -344,7 +351,7 @@ namespace CloudApiClient
             // Get the current VM CPU usage metrics
             var currentVMUsage = GetCurrentVMCPUUsage(accessKey, secretKey, region, instanceId);
 
-            InstanceFilterHelper currentVMUsageFilters = new();//= CreateVMInstanceFilters(currentVMUsage);
+            //InstanceFilterHelper currentVMUsageFilters = CreateVMInstanceFilters(currentVMUsage);
 
             List<DTO.InstanceDetails> fittedInstances = await GetOptionalVms(currentVMUsageFilters, 100);
 
@@ -364,6 +371,15 @@ namespace CloudApiClient
             //}
 
             return fittedInstances;
+        }
+
+        private InstanceFilterHelper CreateVMInstanceFilters(VirtualMachineBasicData instance)
+        {
+            InstanceFilterHelper instanceFilterHelper = new();
+            //FilterType.TERM_MATCH
+            //instanceFilterHelper.AddFilter(FilterType.TERM_MATCH, )
+
+            return instanceFilterHelper;
         }
 
         public async Task<List<DTO.InstanceDetails>> GetOptionalVms(InstanceFilterHelper instanceFilters, int maxResults)
