@@ -24,7 +24,18 @@ const now = new Date();
 const Page = () => {
   const [statistics, setStatistics] = useState([])
   const [machines, setMachine] = useState([])
-  const [selectedMachine, setSelectedMachine] = useState('');
+  const [selectedMachine, setSelectedMachine] = useState('')
+  const [cpuUsageArray, setcpuUsageArray] = useState([]);
+
+  useEffect(() => {
+    axios.get('https://localhost:7094/GetUserInstanceCpuUsageDataOverTime?instanceId=' + selectedMachine)
+    .then(response => {
+      const data = response.data.data;
+      setcpuUsageArray(data);
+ 
+    })
+    .catch(error => console.error(error));
+    },[]);
 
   useEffect(() => {
   axios.get('https://localhost:7094/GetUserInstanceData')
@@ -38,15 +49,23 @@ const Page = () => {
   })
   .catch(error => console.error(error));
   },[]);
-   
+  
 
 
   const handleMachineChange = (event) => {
     setSelectedMachine(event.target.value);
+    
+    axios.get('https://localhost:7094/GetUserInstanceCpuUsageDataOverTime?instanceId=' + selectedMachine)
+    .then(response => {
+      const data = response.data.data;
+      console.log("usage cpu", data)
+      setcpuUsageArray(data);
+ 
+    })
+    .catch(error => console.error(error));
 
-
-  axios.get('https://localhost:7094/GetInstanceCPUStatistics')
-  .then(response => {
+    axios.get('https://localhost:7094/GetInstanceCPUStatistics')
+    .then(response => {
     const statistics = response.data.data.filter(machine => machine.id === selectedMachine);
     console.log("current1",  statistics)
     console.log("current2",  response.data.data)
@@ -139,11 +158,7 @@ const Page = () => {
               chartSeries={[
                 {
                   name: 'This year',
-                  data: [18, 16, 5, 8, 3, 14, 14, 16, 17, 19, 18, 20]
-                },
-                {
-                  name: 'Last year',
-                  data: [12, 11, 4, 6, 2, 9, 9, 10, 11, 12, 13, 13]
+                  data: cpuUsageArray
                 }
               ]}
               sx={{ height: '100%' }}

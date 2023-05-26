@@ -7,7 +7,6 @@ using Amazon.CloudWatch.Model;
 using Amazon.Runtime;
 using Amazon.EC2;
 using Amazon.Runtime.SharedInterfaces;
-using Amazon.EC2.Model;
 using Amazon.Pricing;
 using System.Text.Json;
 using System.Xml.Linq;
@@ -16,6 +15,8 @@ using System.Text.RegularExpressions;
 using System.Net;
 using Amazon.Pricing.Model;
 using Amazon.CostExplorer.Model;
+using Amazon.EC2.Model;
+using EC2Model = Amazon.EC2.Model;
 
 using System.Net.Sockets;
 
@@ -33,11 +34,15 @@ namespace CloudApiClient
     {
         private BasicAWSCredentials _credentials;
         private AmazonCloudWatchClient _cloudWatchClient;
+        private RegionEndpoint _region;
+        private AmazonEC2Client _ec2Client;
 
         public CloudApiClient()
         {
             _credentials = new BasicAWSCredentials("AKIA5HZY22LQTC2MGB5K", "yf0dbGCgKCeMaZelIWsExJCmuJx3bdgoPkR7lQl0");
+            _region = RegionEndpoint.USEast2;
             _cloudWatchClient = new AmazonCloudWatchClient(_credentials, RegionEndpoint.USEast2);
+            _ec2Client = new AmazonEC2Client(_credentials, _region);
         }
 
         //public 
@@ -98,12 +103,12 @@ namespace CloudApiClient
                 {
                     if (instance.State.Name == "running") // filter out non-running instances if desired
                     {
-                        var price = await GetVMPrice(instance.InstanceId);
+
                         var vm = new VirtualMachineBasicData
                         {
                             Id = instance.InstanceId,
                             OperatingSystem = instance.PlatformDetails,
-                            Price = 0,//await GetVMPrice(instance.InstanceId),
+                            Price = 0,// await GetInstancePrice(instance.InstanceId),
                             CpuSpecifications = $"{instance.CpuOptions.CoreCount} Core/s, {instance.CpuOptions.ThreadsPerCore} threads per Core",
                             Storage = string.Join(", ", instance.BlockDeviceMappings.Select(bdm => $"{bdm.DeviceName}")).Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).ToList(),
                         };
@@ -115,37 +120,8 @@ namespace CloudApiClient
 
             return vms;
         }
-        private async Task<decimal> GetVMPrice(string instanceId)
-        {
-            // Create a new AmazonEC2Client object.
-            AmazonEC2Client client = new AmazonEC2Client(_credentials, _cloudWatchClient.Config.RegionEndpoint);
 
-            // Get the instance details.
-            DescribeInstancesRequest describeInstancesRequest = new DescribeInstancesRequest();
-            describeInstancesRequest.InstanceIds.Add(instanceId);
-            try
-            {
-                DescribeInstancesResponse describeInstancesResponse = await client.DescribeInstancesAsync(describeInstancesRequest);
-                // Get the instance type.
-                string instanceType = describeInstancesResponse.Reservations[0].Instances[0].InstanceType;
-                // Get the regionEndPoint.
-                string region = _cloudWatchClient.Config.RegionEndpoint.ToString();
-
-                // Create a new AWSPrices object.
-                AmazonPricingClient pricingClient = new AmazonPricingClient();
-
-                // Get the VM price.
-                var price = await GetInstancePrice(pricingClient, instanceType, region, instanceId);
-                return price;
-            }
-            catch (AmazonEC2Exception e)
-            {
-                Console.WriteLine(e.Message);
-                return 0;
-            }
-        }
-
-        private async Task<decimal> GetInstancePrice(AmazonPricingClient pricingClient, string instanceType, string region, string instanceId)
+        private async Task<decimal> GetInstancePrice(string instanceId)
         {
             using (var costExplorerClient = new AmazonCostExplorerClient(_credentials))
             {
@@ -166,7 +142,7 @@ namespace CloudApiClient
                        Tags = new TagValues
                        {
                            Key = "InstanceId",
-                           Values = new List<string> { "i- 0e7b7b70d1327c5a6" }
+                           Values = new List<string> { instanceId }
                        }
                    },
                     Granularity = "DAILY",
@@ -205,16 +181,27 @@ namespace CloudApiClient
         //    }
         //}
 
-        public async Task<List<CpuUsageData>> GetInstanceCpuUsageOverTime()
+        public async Task<List<double>> GetInstanceCpuUsageOverTime(string instanceId)
         {
+            var cpuUsageDataByDays = new List<CpuUsageData>();
+
+            if(instanceId == null)
+            {
+                return new List<double>();;
+            }
+
             // Set the dimensions for the CPUUtilization metric
             var dimensions = new List<Amazon.CloudWatch.Model.Dimension>()
             {
-                new Amazon.CloudWatch.Model.Dimension() { Name = "InstanceId", Value = "i-00329d0c2a2aac67b" }
+                new Amazon.CloudWatch.Model.Dimension() { Name = "InstanceId", Value = instanceId/*"i-00329d0c2a2aac67b"*/ }
             };
 
+            //calculate the total days past in the month
+            DateTime currentDate = DateTime.Today;
+            int daysPassed = currentDate.Day;
+
             // Set the start and end time for the metric data
-            var startTime = DateTime.UtcNow.AddDays(-6);
+            var startTime = DateTime.UtcNow.AddDays(daysPassed * -1);
             var endTime = DateTime.UtcNow;
 
             // Create a request to get the CPUUtilization metric data
@@ -234,7 +221,7 @@ namespace CloudApiClient
                                 Dimensions = dimensions
                             },
                             Period = 3600 * 24,
-                            Stat = "Average"
+                            Stat = "Maximum"
                         },
                         ReturnData = true
                     }
@@ -246,8 +233,7 @@ namespace CloudApiClient
             // Retrieve the metric data and create a list of CPU usage data objects
 
             var response = await _cloudWatchClient.GetMetricDataAsync(request);
-            var cpuUsageDataByDays = new List<CpuUsageData>();
-
+            List<double> array = new List<double>();
             foreach (var result in response.MetricDataResults[0].Values)
             {
                 var usageData = new CpuUsageData()
@@ -257,11 +243,13 @@ namespace CloudApiClient
                 };
                 cpuUsageDataByDays.Add(usageData);
                 startTime = startTime.AddDays(1);
+
+                array.Add(result);
             }
 
             // Serialize the CPU usage data to a JSON string and return it as a response
             //var json = JsonConvert.SerializeObject(cpuUsageData);
-            return cpuUsageDataByDays;
+            return array;
         }
 
         public async Task<List<Instance>> GetInstances()
@@ -408,6 +396,60 @@ namespace CloudApiClient
             }
 
             return vmDataList;
+        }
+
+        public async Task<string> GetInstanceOperatingSystem(string instanceId)
+        {
+            using (var ec2Client = new AmazonEC2Client(_credentials, _cloudWatchClient.Config.RegionEndpoint))
+            {
+                var request = new DescribeInstancesRequest
+                {
+                    InstanceIds = new List<string> { instanceId }
+                };
+
+
+
+                var response = await ec2Client.DescribeInstancesAsync(request);
+
+
+
+                var instance = response.Reservations.SelectMany(r => r.Instances).FirstOrDefault();
+
+
+
+                if (instance != null)
+                {
+                    return instance.Platform ?? instance.ImageId;
+                }
+            }
+
+
+
+            return string.Empty;
+        }
+
+        public async Task<List<Volume>> GetInstanceVolumes()
+        {
+            DescribeVolumesRequest descVolumeRequest = new DescribeVolumesRequest()
+            {
+                Filters = { new EC2Model.Filter { Name = "attachment.instance-id", Values = { "i-0e7b7b70d1327c5a6" } } }
+            };
+            DescribeVolumesResponse descVolumeResponse = await _ec2Client.DescribeVolumesAsync(descVolumeRequest);
+
+            return descVolumeResponse.Volumes;
+        }
+
+        public async Task<int> GetInstanceTotalVolumesSize()
+        {
+            List<Volume> volumes = await GetInstanceVolumes();
+            int totalVolumeSize = 0;
+
+            foreach(Volume vol in volumes)
+            {
+                totalVolumeSize += vol.Size;
+            }
+
+            return totalVolumeSize;
         }
 
         static List<double> GetCurrentVMCPUUsage(string accessKey, string secretKey, RegionEndpoint region, string instanceId)

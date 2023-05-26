@@ -89,6 +89,7 @@ const useChartOptions = () => {
           colors: theme.palette.text.secondary
         }
       },
+      min: 0,
       max: 100
     }
     
@@ -150,13 +151,13 @@ export const OverviewSales = (props) => {
             Sync
           </Button>
         )}
-        title="CPU Usage Over Time"
+        title="CPU Maximum Usage Last month"
       />
       <CardContent>
         <Chart
           height={350}
           options={chartOptions}
-          series={seriesData}
+          series={chartSeries}
           type="bar"
           width="100%"
         />
