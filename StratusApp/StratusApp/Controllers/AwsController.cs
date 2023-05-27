@@ -89,7 +89,15 @@ namespace StratusApp.Controllers
 
             return Ok(instanceVolumeResponse);
         }
+        [HttpGet("GetCurrentInstanceVolumesUsage")]
+        public async Task<ActionResult<StratusResponse<double>>> GetCurrentInstanceVolumesUsage(string instanceId)
+        {
+            var instanceVolumeResponse = new StratusResponse<double>();
 
+            instanceVolumeResponse.Data = await _awsClient.GetCurrentInstanceVolumesUsage(instanceId);
+
+            return Ok(instanceVolumeResponse);
+        }
         [HttpGet("GetInstanceOperatingSystem")]
         public async Task<ActionResult<StratusResponse<string>>> GetInstanceOperatingSystem()
         {
