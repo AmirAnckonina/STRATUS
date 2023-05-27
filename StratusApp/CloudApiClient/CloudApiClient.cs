@@ -23,7 +23,7 @@ using CloudApiClient.Utils;
 using Microsoft.VisualBasic;
 using System.Linq.Expressions;
 using Amazon.CostExplorer;
-
+using DateInterval = Amazon.CostExplorer.Model.DateInterval;
 
 namespace CloudApiClient
 {
@@ -228,7 +228,8 @@ namespace CloudApiClient
         //    }
         //}
 
-        public async Task<List<double>> GetInstanceCpuUsageOverTime(string instanceId)
+
+        public async Task<List<double>> GetInstanceCpuUsageOverTime(string instanceId, string filterTime)
         {
             //instanceId = "i-0e7b7b70d1327c5a6";
 
@@ -248,12 +249,37 @@ namespace CloudApiClient
             //calculate the total days past in the month
             DateTime currentDate = DateTime.Today;
             int daysPassed = currentDate.Day;
+            int monthPassed = currentDate.Month;
+            int hourPassed = currentDate.Hour;
 
             // Set the start and end time for the metric data
             var startTime = DateTime.UtcNow.AddDays(daysPassed * -1);
             var endTime = DateTime.UtcNow;
+            int peroid = 60 * 60 * 24;
 
-
+            switch(filterTime)
+            {
+                case "Day":
+                    startTime = new DateTime(currentDate.Year, currentDate.Month, currentDate.Day, 0, 0, 0, 0);            
+                    endTime = new DateTime(currentDate.Year, currentDate.Month, currentDate.Day, 23, 59, 59, 999);
+                    peroid = 60 * 60;
+                    break;
+                case "Week":
+                    startTime = new DateTime(currentDate.Year, currentDate.Month, 1, 0, 0, 0, 0);
+                    endTime = new DateTime(currentDate.Year, currentDate.Month, 7, 23, 59, 59, 999);
+                    peroid = 60 * 60 * 24;
+                    break;
+                case "Month":
+                    startTime = new DateTime(currentDate.Year, currentDate.Month, 1, 0, 0, 0, 0);
+                    endTime = new DateTime(currentDate.Year, currentDate.Month, daysPassed, 23, 59, 59, 999);
+                    peroid = 60 * 60 * 24;
+                    break;
+                case "Year":
+                    startTime = new DateTime(currentDate.Year, 1, 1, 0, 0, 0, 0);
+                    endTime = new DateTime(currentDate.Year, 12, daysPassed, 23, 59, 59, 999);
+                    peroid = 60 * 60 * 24 * 30;
+                    break;           
+            }
 
             // Create a request to get the CPUUtilization metric data
             var request = new GetMetricDataRequest()
@@ -271,7 +297,7 @@ namespace CloudApiClient
                                 MetricName = "CPUUtilization",
                                 Dimensions = dimensions
                             },
-                            Period = 3600 * 24,
+                            Period = peroid,
                             Stat = "Maximum"
                         },
                         ReturnData = true
@@ -288,9 +314,21 @@ namespace CloudApiClient
                 var response = await _cloudWatchClient.GetMetricDataAsync(request);
 
                 //padding zero's because the machine wasnt exsists all the days in the month
-                if (response.MetricDataResults[0].Values.Count < daysPassed)
+                if (filterTime == "Day" && response.MetricDataResults[0].Values.Count < hourPassed)
+                {
+                    array = Enumerable.Repeat(0.0, hourPassed - response.MetricDataResults[0].Values.Count).ToList();
+                }
+
+                //padding zero's because the machine wasnt exsists all the days in the month
+                if (filterTime == "Month" && response.MetricDataResults[0].Values.Count < daysPassed)
                 {
                     array = Enumerable.Repeat(0.0, daysPassed - response.MetricDataResults[0].Values.Count).ToList();
+                }
+
+                //padding zero's because the machine wasnt exsists all the days in the month
+                if (filterTime == "Year" && response.MetricDataResults[0].Values.Count < monthPassed)
+                {
+                    array = Enumerable.Repeat(0.0, monthPassed - response.MetricDataResults[0].Values.Count).ToList();
                 }
 
                 foreach (var result in response.MetricDataResults[0].Values)
