@@ -49,7 +49,7 @@ export const CompanyCard = (props) => {
 >
   Operating System: {machine.operatingSystem}
   <br />
-  Cpu Specifications: {machine.CpuSpecifications}
+  Cpu Specifications: {machine.cpuSpecifications}
   <br />
   Storage: {machine.storage}
 </Typography>
