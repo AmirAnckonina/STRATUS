@@ -27,7 +27,7 @@ using Microsoft.VisualBasic;
 using System.Linq.Expressions;
 using Amazon.CostExplorer;
 using DateInterval = Amazon.CostExplorer.Model.DateInterval;
-
+using CloudApiClient.AwsServices;
 
 namespace CloudApiClient
 {
@@ -37,6 +37,7 @@ namespace CloudApiClient
         private AmazonCloudWatchClient _cloudWatchClient;
         private RegionEndpoint _region;
         private AmazonEC2Client _ec2Client;
+        private readonly PricingService _pricingService;
 
         public CloudApiClient()
         {
@@ -44,8 +45,13 @@ namespace CloudApiClient
             _region = RegionEndpoint.USEast2;
             _cloudWatchClient = new AmazonCloudWatchClient(_credentials, RegionEndpoint.USEast2);
             _ec2Client = new AmazonEC2Client(_credentials, _region);
+            _pricingService = new PricingService(_credentials);
         }
 
+       /* public async Task<List<Datapoint>> GetInstanceMemory (string instanceId)
+        {
+
+        }*/
 
         //Please NOTE to change the hard-coded instanceID
         public async Task<List<Datapoint>> GetInstanceCPUStatistics(string instanceId)
@@ -68,7 +74,7 @@ namespace CloudApiClient
                 Period = 86400,
                 Statistics = new List<string> { "Minimum", "Maximum", "Average", "Sum" }
                 //Statistics = new List<string> { "Average" }
-            });
+            }); 
 
             var datapoints = response.Datapoints;
 
@@ -140,9 +146,9 @@ namespace CloudApiClient
 
         public async Task<List<DTO.InstanceDetails>> GetInstanceFormalData()
         {
-            var ec2Client = new AmazonEC2Client(_credentials, RegionEndpoint.USEast2);
+            //var ec2Client = new AmazonEC2Client(_credentials, RegionEndpoint.USEast2);
             var request = new DescribeInstancesRequest();
-            var response = ec2Client.DescribeInstancesAsync(request).Result;
+            var response = await _ec2Client.DescribeInstancesAsync(request);
 
             var vms = new List<DTO.InstanceDetails>();
 
@@ -378,13 +384,15 @@ namespace CloudApiClient
         {
             InstanceFilterHelper instanceFilterHelper = new();
 
-            instanceFilterHelper.AddFilter(FilterType.TERM_MATCH, "operatingSystem", instance.OperatingSystem);
-            instanceFilterHelper.AddFilter(FilterType.TERM_MATCH, "price", instance.Price.ToString());
-            instanceFilterHelper.AddFilter(FilterType.TERM_MATCH, "cpuUsageAverage", instance.CpuStatistics[0].Average.ToString());
+            //instanceFilterHelper.AddFilter(FilterType.TERM_MATCH, "operatingSystem", instance.OperatingSystem);
+            instanceFilterHelper.AddFilter(FilterType.TERM_MATCH, "operatingSystem", "Linux");
+            //instanceFilterHelper.AddFilter(FilterType.TERM_MATCH, "price", instance.Price.ToString());
+            //instanceFilterHelper.AddFilter(FilterType.TERM_MATCH, "cpuUsageAverage", instance.CpuStatistics[0].Average.ToString());
             instanceFilterHelper.AddFilter(FilterType.TERM_MATCH, "preInstalledSw", "NA");
             instanceFilterHelper.AddFilter(FilterType.TERM_MATCH, "capacitystatus", "Used");
             instanceFilterHelper.AddFilter(FilterType.TERM_MATCH, "tenancy", "Shared");
             instanceFilterHelper.AddFilter(FilterType.TERM_MATCH, "location", "US East (N. Virginia)");
+            instanceFilterHelper.AddFilter(FilterType.TERM_MATCH, "memory", "192 Gib");
             //instanceFilterHelper.AddFilter(FilterType.TERM_MATCH, "Storage", instance.Storage);
 
 
@@ -393,33 +401,32 @@ namespace CloudApiClient
 
         public async Task<List<DTO.InstanceDetails>> GetOptionalVms(InstanceFilterHelper instanceFilters, int maxResults)
         {
-            var vmDataList = new List<DTO.InstanceDetails>();
-            try 
+            return await _pricingService.GetOptionalVms(instanceFilters, maxResults);
+           
+            /*var vmDataList = new List<DTO.InstanceDetails>();
+            try
             {
                 var ec2Client = new AmazonEC2Client(_credentials, _region);
-                var pricingClient = new AmazonPricingClient(_credentials, _region);
-            
-                var describeInstancesRequest = new DescribeInstancesRequest();
-                var describeInstancesResponse = await ec2Client.DescribeInstancesAsync(describeInstancesRequest);
-                var currentInstanceType = describeInstancesResponse.Reservations[0].Instances[0].InstanceType;
-                var currentInstanceId = describeInstancesResponse.Reservations[0].Instances[0].InstanceId;
+                //var pricingClient = new AmazonPricingClient(_credentials, _region);
+                var pricingClient = new AmazonPricingClient(_credentials, RegionEndpoint.USEast1);
 
-                Console.WriteLine($"Current Instance: {currentInstanceId} - Type: {currentInstanceType}");
 
                 var getProductsRequest = new GetProductsRequest
                 {
                     ServiceCode = "AmazonEC2",
-                    //Filters = instanceFilters.Filters,
-                    Filters = new List<Amazon.Pricing.Model.Filter>
+                    Filters = instanceFilters.Filters,
+                    */
+            /*Filters = new List<Amazon.Pricing.Model.Filter>
                     {
-                        new Amazon.Pricing.Model.Filter { Type = "TERM_MATCH", Field = "operatingSystem", Value = "Linux" },
-                        new Amazon.Pricing.Model.Filter { Type = "TERM_MATCH", Field = "preInstalledSw", Value = "NA" },
-                        new Amazon.Pricing.Model.Filter { Type = "TERM_MATCH", Field = "capacitystatus", Value = "Used" },
-                        new Amazon.Pricing.Model.Filter { Type = "TERM_MATCH", Field = "tenancy", Value = "Shared" },
-                        new Amazon.Pricing.Model.Filter { Type = "TERM_MATCH", Field = "location", Value = "US East (N. Virginia)" }
-                    },
+                         new Amazon.Pricing.Model.Filter { Type = "TERM_MATCH", Field = "operatingSystem", Value = "Linux" },
+                         new Amazon.Pricing.Model.Filter { Type = "TERM_MATCH", Field = "preInstalledSw", Value = "NA" },
+                         new Amazon.Pricing.Model.Filter { Type = "TERM_MATCH", Field = "capacitystatus", Value = "Used" },
+                         new Amazon.Pricing.Model.Filter { Type = "TERM_MATCH", Field = "tenancy", Value = "Shared" },
+                         new Amazon.Pricing.Model.Filter { Type = "TERM_MATCH", Field = "location", Value = "US East (N. Virginia)" }
+                    },*//*
                     MaxResults = maxResults,
                 };
+                //var test = await pricingClient.ListPriceListsAsync(new ListPriceListsRequest());
 
                 var getProductsResponse = await pricingClient.GetProductsAsync(getProductsRequest);
 
@@ -473,13 +480,14 @@ namespace CloudApiClient
                     vmDataList.Add(vmData);
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Console.WriteLine(ex);
             }
 
-            return vmDataList;
+            return vmDataList;*/
         }
+
 
         public async Task<string> GetInstanceOperatingSystem(string instanceId)
         {
