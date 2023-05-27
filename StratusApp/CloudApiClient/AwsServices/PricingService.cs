@@ -62,7 +62,6 @@ namespace CloudApiClient.AwsServices
                         Unit = pricePlan.unit,
                         PriceDescription = pricePlan.description
                     };
-
                     potentialInstances.Add(singlePotentialInstance);
                 }
 
@@ -75,7 +74,6 @@ namespace CloudApiClient.AwsServices
                 return new List<InstanceDetails>();
             }
         }
-
-
     }
 }
+

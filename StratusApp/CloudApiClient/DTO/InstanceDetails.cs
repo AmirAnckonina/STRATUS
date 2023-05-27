@@ -21,6 +21,8 @@ namespace CloudApiClient.DTO
 
         public string Storage { get; set; }
 
+        public int TotalStorageSize { get; set; }
+
         public int TotalVolumesSize;
 
         public string? Unit { get; set; }

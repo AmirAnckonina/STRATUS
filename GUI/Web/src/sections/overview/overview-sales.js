@@ -3,6 +3,8 @@ import ArrowPathIcon from '@heroicons/react/24/solid/ArrowPathIcon';
 import ArrowRightIcon from '@heroicons/react/24/solid/ArrowRightIcon';
 import axios from 'axios';
 import React, { useEffect, useState } from 'react';
+import { FormControl, FormControlLabel, Radio, RadioGroup } from '@mui/material';
+
 import {
   Button,
   Card,
@@ -15,8 +17,42 @@ import {
 import { alpha, useTheme } from '@mui/material/styles';
 import { Chart } from 'src/components/chart';
 
-const useChartOptions = () => {
+
+
+
+
+const getCategories = (filter) => {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = today.getMonth() + 1;
+  const lastDayOfMonth = new Date(year, month, 0).getDate();
+
+  let categories = [];
+
+  switch (filter) {
+    case 'day':
+      categories = Array.from({ length: 24 }, (_, i) => i + 1);
+      break;
+    case 'week':
+      categories = Array.from({ length: 7 }, (_, i) => i + 1);
+      break;
+    case 'month':
+      categories = Array.from({ length: lastDayOfMonth }, (_, i) => i + 1);
+      break;
+    case 'year':
+      categories = Array.from({ length: 12 }, (_, i) => i + 1);
+      break;
+    default:
+      break;
+  }
+
+  return categories;
+};
+
+
+const useChartOptions = (xAxisCategories) => {
   const theme = useTheme();
+  
 
   return {
     chart: {
@@ -73,7 +109,7 @@ const useChartOptions = () => {
         color: theme.palette.divider,
         show: true
       },
-      categories: getCategories(),
+      categories: xAxisCategories,
       labels: {
         offsetY: 5,
         style: {
@@ -96,20 +132,7 @@ const useChartOptions = () => {
   };
 };
 
-const getCategories = () => {
-  const today = new Date();
-  const year = today.getFullYear();
-  const month = today.getMonth() + 1;
-  const lastDayOfMonth = new Date(year, month, 0).getDate();
 
-  const categories = [];
-
-  for (let i = 1; i <= lastDayOfMonth; i++) {
-    categories.push(i);
-  }
-
-  return categories;
-};
 const now = new Date();
 const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
 const percentageValues = [0, 25, 50, 75, 100];
@@ -123,18 +146,20 @@ const seriesData = Array.from({ length: percentageValues.length }, (_, i) => {
 
 export const OverviewSales = (props) => {
   const { chartSeries, sx } = props;
-  const [data, setData] = useState([]);
   const chartOptions = useChartOptions();
+  const [filter, setFilter] = useState('month'); // Default filter is 'month'
+  const [xAxisCategories, setXAxisCategories] = useState(getCategories(filter));
+
+  const handleFilterChange = (event) => {
+    const newFilter = event.target.value;
+    setFilter(newFilter);
+  };
 
   useEffect(() => {
-    axios.get('https://localhost:7094/GetUserInstanceCpuUsageDataOverTime')
-    .then(response => {
-     setData(respone.json())
-     console.log("Response test", response.json());
-    })
-    .catch(error => {
-      console.log(error);
-    }); },[])
+    setXAxisCategories(getCategories(filter));
+  }, [filter]);
+
+
   return (
     <Card sx={sx}>
       <CardHeader
@@ -154,9 +179,23 @@ export const OverviewSales = (props) => {
         title="CPU Maximum Usage Last month"
       />
       <CardContent>
+      <FormControl component="fieldset">
+      <RadioGroup
+            row
+            aria-label="filter"
+            name="filter"
+            value={filter}
+            onChange={handleFilterChange}
+          >
+            <FormControlLabel value="day" control={<Radio />} label="Day" />
+            <FormControlLabel value="week" control={<Radio />} label="Week" />
+            <FormControlLabel value="month" control={<Radio />} label="Month" />
+            <FormControlLabel value="year" control={<Radio />} label="Year" />
+          </RadioGroup>
+        </FormControl>
         <Chart
           height={350}
-          options={chartOptions}
+          options={useChartOptions(xAxisCategories)}
           series={chartSeries}
           type="bar"
           width="100%"

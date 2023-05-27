@@ -16,11 +16,7 @@ using System.Net;
 using Amazon.Pricing.Model;
 using Amazon.CostExplorer.Model;
 using Amazon.EC2.Model;
-
-
 using System.Net.Sockets;
-
-using CloudApiClient.DTO;
 using CloudApiClient.DTO;
 using CloudApiClient.Utils;
 using Microsoft.VisualBasic;
@@ -28,6 +24,7 @@ using System.Linq.Expressions;
 using Amazon.CostExplorer;
 using DateInterval = Amazon.CostExplorer.Model.DateInterval;
 using CloudApiClient.AwsServices;
+
 
 namespace CloudApiClient
 {
@@ -39,6 +36,8 @@ namespace CloudApiClient
         private readonly PricingService _pricingService;
         private readonly EC2Service _ec2Service;
         private readonly CloudWatchService _cloudWatchService;
+        private readonly CostExplorerService _costExplorerService;
+        private readonly AWSScraper _awsScraper;
 
         public CloudApiClient()
         {
@@ -49,6 +48,9 @@ namespace CloudApiClient
             _pricingService = new PricingService(_credentials);
             _ec2Service = new EC2Service(_credentials, _region);
             _cloudWatchService = new CloudWatchService(_credentials, _region);
+            _costExplorerService = new CostExplorerService(_credentials, RegionEndpoint.USEast2);
+            _awsScraper = new AWSScraper();
+
         }
 
         //Please NOTE to change the hard-coded instanceID
@@ -75,11 +77,10 @@ namespace CloudApiClient
                         {
                             Id = instance.InstanceId,
                             OperatingSystem = instance.PlatformDetails,
-                            // CHEN please export the GetInstancePrice to CostExplorerService class.
-                            Price = await GetInstancePrice(instance.InstanceId),
+                            Price = await _costExplorerService.GetInstancePrice(instance.InstanceId),
                             CpuSpecifications = $"{instance.CpuOptions.CoreCount} Core/s, {instance.CpuOptions.ThreadsPerCore} threads per Core",
-                            // TO Check: onverting storage to be a string and not List<string> doesn't harm Erez UI retieve
-                            //Storage = string.Join(", ", instance.BlockDeviceMappings.Select<InstanceBlockDeviceMapping, string>(bdm => $"{bdm.DeviceName}")).Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).ToList(),
+                            TotalStorageSize = await GetInstanceTotalVolumesSize(instance.InstanceId),
+                            //string.Join(", ", instance.BlockDeviceMappings.Select<InstanceBlockDeviceMapping, string>(bdm => $"{bdm.DeviceName}")).Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).ToList(),
                         };
 
                         vms.Add(vm);
@@ -88,63 +89,6 @@ namespace CloudApiClient
             }
 
             return vms;
-        }
-
-        // Move it to CostExplorerService - CHEN Responsibility
-        private async Task<decimal> GetInstancePrice(string instanceId)
-        {
-            instanceId = "i-0e7b7b70d1327c5a6";
-            try
-            {
-                var costExplorerClient = new AmazonCostExplorerClient(_credentials, _region);
-                {
-                    var request = new GetCostAndUsageRequest
-                    {
-                        /*TimePeriod = new DateInterval
-                        {
-                            Start = "2023-05-15",
-                            End = "2023-05-25"
-                        },*/
-                        TimePeriod = new DateInterval
-                        {
-                           /* Start = DateTime.UtcNow.AddYears(-1),
-                            End = DateTime.UtcNow*/
-                        },
-                        Filter = new Amazon.CostExplorer.Model.Expression
-                        {
-                            //Dimensions = new DimensionValues
-                            //{
-                            //    Key = "SERVICE",
-                            //    Values = new List<string> { "Amazon Elastic Compute Cloud - Compute" }
-                            //},
-                            Tags = new TagValues
-                            {
-                                Key = "InstanceId",
-                                Values = new List<string> { instanceId }
-                            }
-                        },
-                        //Granularity = "DAILY",
-                        Granularity = "YEARLY",
-                        Metrics = new List<string> { "AmortizedCost" }
-                    };
-
-                    var response = await costExplorerClient.GetCostAndUsageAsync(request);
-
-                    if (response.ResultsByTime.Count > 0)
-                    {
-                        var costResult = response.ResultsByTime[0].Total;
-                        decimal.TryParse(costResult["AmortizedCost"].Amount, out decimal totalCost);
-                        return totalCost;
-                    }
-                }
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e.Message);
-                return 0;
-            }                
-            
-            return 0;
         }
 
         // What is That?
@@ -159,7 +103,8 @@ namespace CloudApiClient
         //    }
         //}
 
-        public async Task<List<double>> GetInstanceCpuUsageOverTime(string instanceId)
+
+        public async Task<List<double>> GetInstanceCpuUsageOverTime(string instanceId, string filterTime)
         {
             return await _cloudWatchService.GetInstanceCpuUsageOverTime(instanceId); 
         }
@@ -168,13 +113,9 @@ namespace CloudApiClient
         {
             return await _ec2Service.GetInstances();
         }
-        
+
         public async Task<List<DTO.InstanceDetails>> GetMoreFittedInstances(string instanceId)
         {
-            //var accessKey = _credentials.GetCredentials().AccessKey;
-            //var secretKey = _credentials.GetCredentials().SecretKey;
-            //var region = _cloudWatchClient.Config.RegionEndpoint;
-            
             // Get the current VM CPU usage metrics
             var currentInstanceDetails = GetInstanceBasicDetails(instanceId);
 
@@ -230,17 +171,17 @@ namespace CloudApiClient
             return await _ec2Service.GetInstanceOperatingSystem(instanceId);
         }
 
-        public async Task<List<Volume>> GetInstanceVolumes()
+        public async Task<List<Volume>> GetInstanceVolumes(string instanceId)
         {
             return await _ec2Service.GetInstanceVolumes();
         }
 
-        public async Task<int> GetInstanceTotalVolumesSize()
+        public async Task<int> GetInstanceTotalVolumesSize(string instanceId)
         {
-            List<Volume> volumes = await GetInstanceVolumes();
+            List<Volume> volumes = await GetInstanceVolumes(instanceId);
             int totalVolumeSize = 0;
 
-            foreach(Volume vol in volumes)
+            foreach (Volume vol in volumes)
             {
                 totalVolumeSize += vol.Size;
             }
@@ -295,7 +236,7 @@ namespace CloudApiClient
             var cpuUtilization = new List<double>();
             foreach (var result in getMetricDataResponse.Result.MetricDataResults)
             {
-                if(result.Values.Count > 0)
+                if (result.Values.Count > 0)
                 {
                     cpuUtilization.Add(result.Values[0]);
                 }
@@ -343,12 +284,48 @@ namespace CloudApiClient
             //instanceDetails.TotalVolumesSize = GetInstanceTotalVolumesSize(instanceId);
 
             // Price
-            instanceDetails.Price = await GetInstancePrice(instanceId);
+            instanceDetails.Price = await _costExplorerService.GetInstancePrice(instanceId);
 
             return instanceDetails;
 
         }
+        //notice that this method does not return the total volume size, still has work to do//
+        public async Task<double> GetCurrentInstanceVolumesUsage(string instanceId)
+        {
+            var getMetricStatisticsRequest = new GetMetricStatisticsRequest
+            {
+                Namespace = "AWS/EC2",
+                MetricName = "CPUUtilization",
+                Dimensions = new List<Amazon.CloudWatch.Model.Dimension>
+                {
+                    new Amazon.CloudWatch.Model.Dimension
+                    {
+                        Name = "InstanceId",
+                        Value = instanceId
+                    }
+                },
+                Statistics = new List<string> { "Average" },
+                Period = 300, // 5 minutes
+                StartTime = DateTime.UtcNow.AddMinutes(-5),
+                EndTime = DateTime.UtcNow
+            };
 
+            var getMetricStatisticsResponse = await _cloudWatchClient.GetMetricStatisticsAsync(getMetricStatisticsRequest);
+
+            var dataPoints = getMetricStatisticsResponse.Datapoints;
+
+            if (dataPoints.Any())
+            {
+                var latestDataPoint = dataPoints.OrderByDescending(dp => dp.Timestamp).FirstOrDefault();
+
+                if (latestDataPoint != null)
+                {
+                    return latestDataPoint.Average;
+                }
+            }
+            return 0;   
+        }
+        
         //public async Task<Datapoint> GetRecommendedVirtualMachines()
         //{
         //    // Your AWS credentials and regionEndPoint
@@ -415,96 +392,96 @@ namespace CloudApiClient
 
 }
 
-        /*
-        static void ShowPricesOfVms()
-        {
-            var ec2Client = new AmazonEC2Client(RegionEndpoint.USEast1);
+/*
+static void ShowPricesOfVms()
+{
+    var ec2Client = new AmazonEC2Client(RegionEndpoint.USEast1);
 
-            var response = ec2Client.DescribeInstances();
+    var response = ec2Client.DescribeInstances();
 
-            var currentInstanceType = response.Reservations[0].Instances[0].InstanceType;
-            var currentInstanceId = response.Reservations[0].Instances[0].InstanceId;
+    var currentInstanceType = response.Reservations[0].Instances[0].InstanceType;
+    var currentInstanceId = response.Reservations[0].Instances[0].InstanceId;
 
-            Console.WriteLine($"Current Instance: {currentInstanceId} - Type: {currentInstanceType}");
+    Console.WriteLine($"Current Instance: {currentInstanceId} - Type: {currentInstanceType}");
 
-            var AmazonPricingClient = new AmazonPricingClient(RegionEndpoint.USEast1);
+    var AmazonPricingClient = new AmazonPricingClient(RegionEndpoint.USEast1);
 
-            var response = AmazonPricingClient.GetProducts(new GetProductsRequest
-            {
-                ServiceCode = "AmazonEC2",
-                Filters = new List<Filter> {
-                new Filter {
-                    Type = "TERM_MATCH",
-                    Field = "operatingSystem",
-                    Value = "Linux"
-                },
-                new Filter {
-                    Type = "TERM_MATCH",
-                    Field = "preInstalledSw",
-                    Value = "NA"
-                },
-                new Filter {
-                    Type = "TERM_MATCH",
-                    Field = "capacitystatus",
-                    Value = "Used"
-                },
-                new Filter {
-                    Type = "TERM_MATCH",
-                    Field = "tenancy",
-                    Value = "Shared"
-                },
-                new Filter {
-                    Type = "TERM_MATCH",
-                    Field = "location",
-                    Value = "US East (N. Virginia)"
-                }
-            },
-                MaxResults = 100
-            });
-
-            var instanceData = new Dictionary<string, Dictionary<string, Dictionary<string, object>>>();
-
-            foreach (var product in response["PriceList"])
-            {
-                string sku = product["product"]["sku"];
-                string instance_type = product["product"]["attributes"]["instanceType"];
-                string instance_family = product["product"]["attributes"]["instanceFamily"];
-                string usage_type = product["terms"]["OnDemand"].Keys.ToList()[0];
-                float price = float.Parse(product["terms"]["OnDemand"][usage_type]["priceDimensions"]["USD"]["pricePerUnit"]["USD"]);
-
-                if (!instance_data.ContainsKey(instance_family))
-                {
-                    instance_data[instance_family] = new Dictionary<string, Dictionary<string, object>>();
-                }
-
-                instance_data[instance_family][instance_type] = new Dictionary<string, object>
+    var response = AmazonPricingClient.GetProducts(new GetProductsRequest
     {
-        { "SKU", sku },
-        { "UsageType", usage_type },
-        { "Price", price }
-    };
-            }
-
-            string current_instance_family = current_instance_type.Split('.')[0];
-            float current_instance_price = (float)instance_data[current_instance_family][current_instance_type]["Price"];
-
-            Console.WriteLine("Possible Instances:");
-            foreach (var instance_type in instance_data[current_instance_family].Keys)
-            {
-                float price = (float)instance_data[current_instance_family][instance_type]["Price"];
-
-                if (price < current_instance_price)
-                {
-                    Console.WriteLine($" - {instance_type}: $ {price:.2f} (Cheaper than current instance)");
-                }
-                else if (price > current_instance_price)
-                {
-                    Console.WriteLine($" - {instance_type}: $ {price:.2f} (More expensive than current instance)");
-                }
-                else
-                {
-                    Console.WriteLine($" - {instance_type}: $ {price:.2f} (Same price as current instance)");
-                }
-            }
+        ServiceCode = "AmazonEC2",
+        Filters = new List<Filter> {
+        new Filter {
+            Type = "TERM_MATCH",
+            Field = "operatingSystem",
+            Value = "Linux"
+        },
+        new Filter {
+            Type = "TERM_MATCH",
+            Field = "preInstalledSw",
+            Value = "NA"
+        },
+        new Filter {
+            Type = "TERM_MATCH",
+            Field = "capacitystatus",
+            Value = "Used"
+        },
+        new Filter {
+            Type = "TERM_MATCH",
+            Field = "tenancy",
+            Value = "Shared"
+        },
+        new Filter {
+            Type = "TERM_MATCH",
+            Field = "location",
+            Value = "US East (N. Virginia)"
         }
-    }*/
+    },
+        MaxResults = 100
+    });
+
+    var instanceData = new Dictionary<string, Dictionary<string, Dictionary<string, object>>>();
+
+    foreach (var product in response["PriceList"])
+    {
+        string sku = product["product"]["sku"];
+        string instance_type = product["product"]["attributes"]["instanceType"];
+        string instance_family = product["product"]["attributes"]["instanceFamily"];
+        string usage_type = product["terms"]["OnDemand"].Keys.ToList()[0];
+        float price = float.Parse(product["terms"]["OnDemand"][usage_type]["priceDimensions"]["USD"]["pricePerUnit"]["USD"]);
+
+        if (!instance_data.ContainsKey(instance_family))
+        {
+            instance_data[instance_family] = new Dictionary<string, Dictionary<string, object>>();
+        }
+
+        instance_data[instance_family][instance_type] = new Dictionary<string, object>
+{
+{ "SKU", sku },
+{ "UsageType", usage_type },
+{ "Price", price }
+};
+    }
+
+    string current_instance_family = current_instance_type.Split('.')[0];
+    float current_instance_price = (float)instance_data[current_instance_family][current_instance_type]["Price"];
+
+    Console.WriteLine("Possible Instances:");
+    foreach (var instance_type in instance_data[current_instance_family].Keys)
+    {
+        float price = (float)instance_data[current_instance_family][instance_type]["Price"];
+
+        if (price < current_instance_price)
+        {
+            Console.WriteLine($" - {instance_type}: $ {price:.2f} (Cheaper than current instance)");
+        }
+        else if (price > current_instance_price)
+        {
+            Console.WriteLine($" - {instance_type}: $ {price:.2f} (More expensive than current instance)");
+        }
+        else
+        {
+            Console.WriteLine($" - {instance_type}: $ {price:.2f} (Same price as current instance)");
+        }
+    }
+}
+}*/

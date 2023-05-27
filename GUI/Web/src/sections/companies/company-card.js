@@ -7,7 +7,11 @@ import { Avatar, Box, Card, CardContent, Divider, Stack, SvgIcon, Typography } f
 
 
 export const CompanyCard = (props) => {
-  const { company } = props;
+  const { machine } = props;
+
+  const handleBuyNowClick = () => {
+    window.location.href = 'https://aws.amazon.com/ec2/pricing/on-demand/';
+  };
 
   return (
     <Card
@@ -35,18 +39,19 @@ export const CompanyCard = (props) => {
           align="center"
           gutterBottom
           variant="h5"
-        >
-          {company.title}
+         >
+          
+          ID: {machine.id}
         </Typography>
         <Typography
   align="center"
   variant="body1"
 >
-  Operating System: 
+  Operating System: {machine.operatingSystem}
   <br />
-  Cpu Specifications: 
+  Cpu Specifications: {machine.cpuSpecifications}
   <br />
-  Storage: 
+  Storage: {machine.storage}
 </Typography>
       </CardContent>
       <Box sx={{ flexGrow: 1 }} />
@@ -74,7 +79,7 @@ export const CompanyCard = (props) => {
             display="inline"
             variant="body2"
           >
-            Price:
+            Price: {machine.price}$ per {machine.unit}
           </Typography>
         </Stack>
         <Stack
@@ -88,10 +93,7 @@ export const CompanyCard = (props) => {
           >
             <ShoppingBagIcon />
           </SvgIcon>
-          <Button
-        variant="outlined"
-        size="small"
-      >
+          <Button variant="outlined" size="small" onClick={handleBuyNowClick}>      
         Buy Now
       </Button>
         </Stack>
@@ -101,5 +103,5 @@ export const CompanyCard = (props) => {
 };
 
 CompanyCard.propTypes = {
-  company: PropTypes.object.isRequired
+  machine: PropTypes.object.isRequired
 };
