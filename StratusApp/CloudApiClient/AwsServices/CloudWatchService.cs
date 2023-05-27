@@ -146,5 +146,44 @@ namespace CloudApiClient.AwsServices
 
             //Console.WriteLine($"Avg cpu usage: {avgCpuUsage}, Max cpu usage: {maxCpuUsage}, Min cpu usage: {minCpuUsage}, Sum cpu usage: {sumCpuUsage}");
         }
+
+
+        // CHEN implementation
+        //notice that this method does not return the total volume size, still has work to do//
+        public async Task<double> GetCurrentInstanceVolumesUsage(string instanceId)
+        {
+            var getMetricStatisticsRequest = new GetMetricStatisticsRequest
+            {
+                Namespace = "AWS/EC2",
+                MetricName = "CPUUtilization",
+                Dimensions = new List<Amazon.CloudWatch.Model.Dimension>
+                {
+                    new Amazon.CloudWatch.Model.Dimension
+                    {
+                        Name = "InstanceId",
+                        Value = instanceId
+                    }
+                },
+                Statistics = new List<string> { "Average" },
+                Period = 300, // 5 minutes
+                StartTime = DateTime.UtcNow.AddMinutes(-5),
+                EndTime = DateTime.UtcNow
+            };
+
+            var getMetricStatisticsResponse = await _cloudWatchClient.GetMetricStatisticsAsync(getMetricStatisticsRequest);
+
+            var dataPoints = getMetricStatisticsResponse.Datapoints;
+
+            if (dataPoints.Any())
+            {
+                var latestDataPoint = dataPoints.OrderByDescending(dp => dp.Timestamp).FirstOrDefault();
+
+                if (latestDataPoint != null)
+                {
+                    return latestDataPoint.Average;
+                }
+            }
+            return 0;
+        }
     }
 }
