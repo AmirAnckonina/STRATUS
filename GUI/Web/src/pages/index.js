@@ -12,6 +12,7 @@ import { OverviewTotalProfit } from 'src/sections/overview/overview-total-profit
 import { OverviewTraffic } from 'src/sections/overview/overview-traffic';
 import React, { useState, useEffect  } from 'react';
 import axios from 'axios';
+
 import {
   Typography,
   Select,
@@ -157,7 +158,7 @@ const Page = () => {
             <OverviewSales
               chartSeries={[
                 {
-                  name: 'This year',
+                  name: 'Day',
                   data: cpuUsageArray
                 }
               ]}

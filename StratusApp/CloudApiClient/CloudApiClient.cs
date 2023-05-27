@@ -17,10 +17,7 @@ using Amazon.Pricing.Model;
 using Amazon.CostExplorer.Model;
 using Amazon.EC2.Model;
 using EC2Model = Amazon.EC2.Model;
-
 using System.Net.Sockets;
-
-using CloudApiClient.DTO;
 using CloudApiClient.DTO;
 using CloudApiClient.Utils;
 using Microsoft.VisualBasic;
@@ -28,6 +25,7 @@ using System.Linq.Expressions;
 using Amazon.CostExplorer;
 using DateInterval = Amazon.CostExplorer.Model.DateInterval;
 using CloudApiClient.AwsServices;
+
 
 namespace CloudApiClient
 {
@@ -221,8 +219,8 @@ namespace CloudApiClient
             {
                 Console.WriteLine(e.Message);
                 return 0;
-            }                
-            
+            }
+
             return 0;
         }
 
@@ -238,13 +236,14 @@ namespace CloudApiClient
         //    }
         //}
 
-        public async Task<List<double>> GetInstanceCpuUsageOverTime(string instanceId)
+
+        public async Task<List<double>> GetInstanceCpuUsageOverTime(string instanceId, string filterTime)
         {
             //instanceId = "i-0e7b7b70d1327c5a6";
 
             var cpuUsageDataByDays = new List<CpuUsageData>();
 
-            if(instanceId == null)
+            if (instanceId == null)
             {
                 return new List<double>();
             }
@@ -258,10 +257,37 @@ namespace CloudApiClient
             //calculate the total days past in the month
             DateTime currentDate = DateTime.Today;
             int daysPassed = currentDate.Day;
+            int monthPassed = currentDate.Month;
+            int hourPassed = currentDate.Hour;
 
             // Set the start and end time for the metric data
             var startTime = DateTime.UtcNow.AddDays(daysPassed * -1);
             var endTime = DateTime.UtcNow;
+            int peroid = 60 * 60 * 24;
+
+            switch(filterTime)
+            {
+                case "Day":
+                    startTime = new DateTime(currentDate.Year, currentDate.Month, currentDate.Day, 0, 0, 0, 0);            
+                    endTime = new DateTime(currentDate.Year, currentDate.Month, currentDate.Day, 23, 59, 59, 999);
+                    peroid = 60 * 60;
+                    break;
+                case "Week":
+                    startTime = new DateTime(currentDate.Year, currentDate.Month, 1, 0, 0, 0, 0);
+                    endTime = new DateTime(currentDate.Year, currentDate.Month, 7, 23, 59, 59, 999);
+                    peroid = 60 * 60 * 24;
+                    break;
+                case "Month":
+                    startTime = new DateTime(currentDate.Year, currentDate.Month, 1, 0, 0, 0, 0);
+                    endTime = new DateTime(currentDate.Year, currentDate.Month, daysPassed, 23, 59, 59, 999);
+                    peroid = 60 * 60 * 24;
+                    break;
+                case "Year":
+                    startTime = new DateTime(currentDate.Year, 1, 1, 0, 0, 0, 0);
+                    endTime = new DateTime(currentDate.Year, 12, daysPassed, 23, 59, 59, 999);
+                    peroid = 60 * 60 * 24 * 30;
+                    break;           
+            }
 
             // Create a request to get the CPUUtilization metric data
             var request = new GetMetricDataRequest()
@@ -279,7 +305,7 @@ namespace CloudApiClient
                                 MetricName = "CPUUtilization",
                                 Dimensions = dimensions
                             },
-                            Period = 3600 * 24,
+                            Period = peroid,
                             Stat = "Maximum"
                         },
                         ReturnData = true
@@ -294,7 +320,25 @@ namespace CloudApiClient
             try
             {
                 var response = await _cloudWatchClient.GetMetricDataAsync(request);
-                
+
+                //padding zero's because the machine wasnt exsists all the days in the month
+                if (filterTime == "Day" && response.MetricDataResults[0].Values.Count < hourPassed)
+                {
+                    array = Enumerable.Repeat(0.0, hourPassed - response.MetricDataResults[0].Values.Count).ToList();
+                }
+
+                //padding zero's because the machine wasnt exsists all the days in the month
+                if (filterTime == "Month" && response.MetricDataResults[0].Values.Count < daysPassed)
+                {
+                    array = Enumerable.Repeat(0.0, daysPassed - response.MetricDataResults[0].Values.Count).ToList();
+                }
+
+                //padding zero's because the machine wasnt exsists all the days in the month
+                if (filterTime == "Year" && response.MetricDataResults[0].Values.Count < monthPassed)
+                {
+                    array = Enumerable.Repeat(0.0, monthPassed - response.MetricDataResults[0].Values.Count).ToList();
+                }
+
                 foreach (var result in response.MetricDataResults[0].Values)
                 {
                     var usageData = new CpuUsageData()
@@ -308,7 +352,7 @@ namespace CloudApiClient
                     array.Add(result);
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Console.WriteLine(ex.ToString());
             }
@@ -348,13 +392,13 @@ namespace CloudApiClient
 
             return instances;
         }
-        
+
         public async Task<List<DTO.InstanceDetails>> GetMoreFittedInstances(string instanceId)
         {
             var accessKey = _credentials.GetCredentials().AccessKey;
             var secretKey = _credentials.GetCredentials().SecretKey;
             var region = _cloudWatchClient.Config.RegionEndpoint;
-            
+
             // Get the current VM CPU usage metrics
             var currentInstanceDetails = GetInstanceBasicDetails(instanceId);
 
@@ -409,7 +453,6 @@ namespace CloudApiClient
                 var ec2Client = new AmazonEC2Client(_credentials, _region);
                 //var pricingClient = new AmazonPricingClient(_credentials, _region);
                 var pricingClient = new AmazonPricingClient(_credentials, RegionEndpoint.USEast1);
-
 
                 var getProductsRequest = new GetProductsRequest
                 {
@@ -528,7 +571,7 @@ namespace CloudApiClient
             List<Volume> volumes = await GetInstanceVolumes();
             int totalVolumeSize = 0;
 
-            foreach(Volume vol in volumes)
+            foreach (Volume vol in volumes)
             {
                 totalVolumeSize += vol.Size;
             }
@@ -582,7 +625,7 @@ namespace CloudApiClient
             var cpuUtilization = new List<double>();
             foreach (var result in getMetricDataResponse.Result.MetricDataResults)
             {
-                if(result.Values.Count > 0)
+                if (result.Values.Count > 0)
                 {
                     cpuUtilization.Add(result.Values[0]);
                 }
@@ -699,96 +742,96 @@ namespace CloudApiClient
 
 }
 
-        /*
-        static void ShowPricesOfVms()
-        {
-            var ec2Client = new AmazonEC2Client(RegionEndpoint.USEast1);
+/*
+static void ShowPricesOfVms()
+{
+    var ec2Client = new AmazonEC2Client(RegionEndpoint.USEast1);
 
-            var response = ec2Client.DescribeInstances();
+    var response = ec2Client.DescribeInstances();
 
-            var currentInstanceType = response.Reservations[0].Instances[0].InstanceType;
-            var currentInstanceId = response.Reservations[0].Instances[0].InstanceId;
+    var currentInstanceType = response.Reservations[0].Instances[0].InstanceType;
+    var currentInstanceId = response.Reservations[0].Instances[0].InstanceId;
 
-            Console.WriteLine($"Current Instance: {currentInstanceId} - Type: {currentInstanceType}");
+    Console.WriteLine($"Current Instance: {currentInstanceId} - Type: {currentInstanceType}");
 
-            var AmazonPricingClient = new AmazonPricingClient(RegionEndpoint.USEast1);
+    var AmazonPricingClient = new AmazonPricingClient(RegionEndpoint.USEast1);
 
-            var response = AmazonPricingClient.GetProducts(new GetProductsRequest
-            {
-                ServiceCode = "AmazonEC2",
-                Filters = new List<Filter> {
-                new Filter {
-                    Type = "TERM_MATCH",
-                    Field = "operatingSystem",
-                    Value = "Linux"
-                },
-                new Filter {
-                    Type = "TERM_MATCH",
-                    Field = "preInstalledSw",
-                    Value = "NA"
-                },
-                new Filter {
-                    Type = "TERM_MATCH",
-                    Field = "capacitystatus",
-                    Value = "Used"
-                },
-                new Filter {
-                    Type = "TERM_MATCH",
-                    Field = "tenancy",
-                    Value = "Shared"
-                },
-                new Filter {
-                    Type = "TERM_MATCH",
-                    Field = "location",
-                    Value = "US East (N. Virginia)"
-                }
-            },
-                MaxResults = 100
-            });
-
-            var instanceData = new Dictionary<string, Dictionary<string, Dictionary<string, object>>>();
-
-            foreach (var product in response["PriceList"])
-            {
-                string sku = product["product"]["sku"];
-                string instance_type = product["product"]["attributes"]["instanceType"];
-                string instance_family = product["product"]["attributes"]["instanceFamily"];
-                string usage_type = product["terms"]["OnDemand"].Keys.ToList()[0];
-                float price = float.Parse(product["terms"]["OnDemand"][usage_type]["priceDimensions"]["USD"]["pricePerUnit"]["USD"]);
-
-                if (!instance_data.ContainsKey(instance_family))
-                {
-                    instance_data[instance_family] = new Dictionary<string, Dictionary<string, object>>();
-                }
-
-                instance_data[instance_family][instance_type] = new Dictionary<string, object>
+    var response = AmazonPricingClient.GetProducts(new GetProductsRequest
     {
-        { "SKU", sku },
-        { "UsageType", usage_type },
-        { "Price", price }
-    };
-            }
-
-            string current_instance_family = current_instance_type.Split('.')[0];
-            float current_instance_price = (float)instance_data[current_instance_family][current_instance_type]["Price"];
-
-            Console.WriteLine("Possible Instances:");
-            foreach (var instance_type in instance_data[current_instance_family].Keys)
-            {
-                float price = (float)instance_data[current_instance_family][instance_type]["Price"];
-
-                if (price < current_instance_price)
-                {
-                    Console.WriteLine($" - {instance_type}: $ {price:.2f} (Cheaper than current instance)");
-                }
-                else if (price > current_instance_price)
-                {
-                    Console.WriteLine($" - {instance_type}: $ {price:.2f} (More expensive than current instance)");
-                }
-                else
-                {
-                    Console.WriteLine($" - {instance_type}: $ {price:.2f} (Same price as current instance)");
-                }
-            }
+        ServiceCode = "AmazonEC2",
+        Filters = new List<Filter> {
+        new Filter {
+            Type = "TERM_MATCH",
+            Field = "operatingSystem",
+            Value = "Linux"
+        },
+        new Filter {
+            Type = "TERM_MATCH",
+            Field = "preInstalledSw",
+            Value = "NA"
+        },
+        new Filter {
+            Type = "TERM_MATCH",
+            Field = "capacitystatus",
+            Value = "Used"
+        },
+        new Filter {
+            Type = "TERM_MATCH",
+            Field = "tenancy",
+            Value = "Shared"
+        },
+        new Filter {
+            Type = "TERM_MATCH",
+            Field = "location",
+            Value = "US East (N. Virginia)"
         }
-    }*/
+    },
+        MaxResults = 100
+    });
+
+    var instanceData = new Dictionary<string, Dictionary<string, Dictionary<string, object>>>();
+
+    foreach (var product in response["PriceList"])
+    {
+        string sku = product["product"]["sku"];
+        string instance_type = product["product"]["attributes"]["instanceType"];
+        string instance_family = product["product"]["attributes"]["instanceFamily"];
+        string usage_type = product["terms"]["OnDemand"].Keys.ToList()[0];
+        float price = float.Parse(product["terms"]["OnDemand"][usage_type]["priceDimensions"]["USD"]["pricePerUnit"]["USD"]);
+
+        if (!instance_data.ContainsKey(instance_family))
+        {
+            instance_data[instance_family] = new Dictionary<string, Dictionary<string, object>>();
+        }
+
+        instance_data[instance_family][instance_type] = new Dictionary<string, object>
+{
+{ "SKU", sku },
+{ "UsageType", usage_type },
+{ "Price", price }
+};
+    }
+
+    string current_instance_family = current_instance_type.Split('.')[0];
+    float current_instance_price = (float)instance_data[current_instance_family][current_instance_type]["Price"];
+
+    Console.WriteLine("Possible Instances:");
+    foreach (var instance_type in instance_data[current_instance_family].Keys)
+    {
+        float price = (float)instance_data[current_instance_family][instance_type]["Price"];
+
+        if (price < current_instance_price)
+        {
+            Console.WriteLine($" - {instance_type}: $ {price:.2f} (Cheaper than current instance)");
+        }
+        else if (price > current_instance_price)
+        {
+            Console.WriteLine($" - {instance_type}: $ {price:.2f} (More expensive than current instance)");
+        }
+        else
+        {
+            Console.WriteLine($" - {instance_type}: $ {price:.2f} (Same price as current instance)");
+        }
+    }
+}
+}*/
