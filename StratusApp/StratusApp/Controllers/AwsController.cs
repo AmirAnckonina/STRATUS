@@ -6,6 +6,7 @@ using Amazon.CloudWatch.Model;
 using Amazon.EC2.Model;
 using Microsoft.AspNetCore.Cors;
 using CloudApiClient.DTO;
+using CloudApiClient.Utils;
 
 namespace StratusApp.Controllers
 {
@@ -42,11 +43,11 @@ namespace StratusApp.Controllers
         }
 
         [HttpGet("GetUserInstanceCpuUsageDataOverTime")]
-        public async Task<ActionResult<StratusResponse<List<CpuUsageData>>>> GetUserAwsInstanceCpuUsageDataOverTime(string instanceId)
+        public async Task<ActionResult<StratusResponse<List<CpuUsageData>>>> GetUserAwsInstanceCpuUsageDataOverTime(string instanceId, string filterTime = "Month")
         {
             var userInstanceCpuUsageDataOverTimeStartusResp = new StratusResponse<List<double>>();
 
-            userInstanceCpuUsageDataOverTimeStartusResp.Data = await _awsClient.GetInstanceCpuUsageOverTime(instanceId);
+            userInstanceCpuUsageDataOverTimeStartusResp.Data = await _awsClient.GetInstanceCpuUsageOverTime(instanceId, filterTime);
 
             return Ok(userInstanceCpuUsageDataOverTimeStartusResp);
         }
