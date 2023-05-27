@@ -49,7 +49,7 @@ namespace CloudApiClient.AwsServices
                     // Parse the price list item JSON using JObject
                     var jObject = JObject.Parse(priceListItemJson);
 
-                    var vmData = new DTO.InstanceDetails
+                    var vmData = new InstanceDetails
                     {
                         Id = (string)jObject["product"]["sku"],
                         OperatingSystem = (string)jObject["product"]["attributes"]["operatingSystem"],
@@ -68,6 +68,7 @@ namespace CloudApiClient.AwsServices
                             var pricePerUnit = (string)priceDimension.Value["pricePerUnit"]["USD"];
                             vmData.Price = decimal.Parse(pricePerUnit);
                             vmData.Unit = (string)priceDimension.Value["unit"];
+
                             break; // Consider only the first price dimension
                         }
                     }
@@ -101,5 +102,6 @@ namespace CloudApiClient.AwsServices
         }
 
 
-    }
+
+    }    
 }
