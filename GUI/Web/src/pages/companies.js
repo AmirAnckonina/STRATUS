@@ -2,6 +2,8 @@ import Head from 'next/head';
 import ArrowUpOnSquareIcon from '@heroicons/react/24/solid/ArrowUpOnSquareIcon';
 import ArrowDownOnSquareIcon from '@heroicons/react/24/solid/ArrowDownOnSquareIcon';
 import PlusIcon from '@heroicons/react/24/solid/PlusIcon';
+import React, { useState, useEffect  } from 'react';
+import axios from 'axios';
 import {
   Box,
   Button,
@@ -67,8 +69,32 @@ const companies = [
   }
 ];
 
-const Page = () => (
-  <>
+
+
+const Page = () => {
+  const [machines, setMachines] = useState([]);
+
+  useEffect(() => {
+    axios.get('https://localhost:7094/GetMoreFittedInstancesFromAWS?instanceId=i-0e7b7b70d1327c5a6')
+    .then(response => {
+      const data = response.data.data;
+      setMachines(data);
+
+    })
+    .catch(error => console.error(error));
+    },[]);
+
+    const [currentPage, setCurrentPage] = useState(1);
+
+    const handlePageChange = (event, page) => {
+  setCurrentPage(page);
+};
+
+const startIndex = (currentPage - 1) * 6;
+const endIndex = startIndex + 6;
+    return (
+      <>
+  
     <Head>
       <title>
         Custom Machines | STRATUS
@@ -133,37 +159,31 @@ const Page = () => (
             </div>
           </Stack>
           <CompaniesSearch />
-          <Grid
-            container
-            spacing={3}
-          >
-            {companies.map((company) => (
-              <Grid
-                xs={12}
-                md={6}
-                lg={4}
-                key={company.id}
-              >
-                <CompanyCard company={company} />
-              </Grid>
-            ))}
-          </Grid>
-          <Box
-            sx={{
-              display: 'flex',
-              justifyContent: 'center'
-            }}
-          >
-            <Pagination
-              count={companies.count}
-              size="small"
-            />
-          </Box>
+          <Grid container spacing={3}>
+              {machines.slice(startIndex, endIndex).map((machine) => (
+                <Grid xs={12} md={6} lg={4} key={machine?.id}>
+                  {machine ? (
+                    <CompanyCard machine={machine} />
+                  ) : (
+                    <div>Loading...</div>
+                  )}
+                </Grid>
+              ))}
+            </Grid>
+            <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+              <Pagination
+                count={Math.ceil(machines.length / 6)}
+                page={currentPage}
+                onChange={handlePageChange}
+                size="small"
+              />
+            </Box>
         </Stack>
       </Container>
     </Box>
   </>
 );
+          }
 
 Page.getLayout = (page) => (
   <DashboardLayout>

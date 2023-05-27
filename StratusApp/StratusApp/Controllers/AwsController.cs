@@ -33,11 +33,11 @@ namespace StratusApp.Controllers
         }
 
         [HttpGet("GetInstanceCPUStatistics")]
-        public async Task<ActionResult<StratusResponse<List<Datapoint>>>> GetInstanceCPUStatistics()
+        public async Task<ActionResult<StratusResponse<List<Datapoint>>>> GetInstanceCPUStatistics(string instanceId)
         {
             var userInstanceDataStartusResp = new StratusResponse<List<Datapoint>>();
 
-            userInstanceDataStartusResp.Data = await _awsClient.GetInstanceCPUStatistics("");
+            userInstanceDataStartusResp.Data = await _awsClient.GetInstanceCPUStatistics(instanceId);
 
             return Ok(userInstanceDataStartusResp);
         }

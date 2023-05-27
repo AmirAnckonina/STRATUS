@@ -55,7 +55,7 @@ namespace CloudApiClient.AwsServices
                         OperatingSystem = (string)jObject["product"]["attributes"]["operatingSystem"],
                         Storage = new List<string>(),
                         // EREZ please note: CpuSpecs currently returns a List od Datapoint instead of string !!!
-                        //CpuSpecifications = (string)jObject["product"]["attributes"]["vcpu"],
+                        CpuSpecifications = (string)jObject["product"]["attributes"]["vcpu"],
                     };
 
                     // Get the price dimensions
@@ -100,8 +100,5 @@ namespace CloudApiClient.AwsServices
 
             return potentialInstances;
         }
-
-
-
     }    
 }

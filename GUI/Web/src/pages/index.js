@@ -65,7 +65,7 @@ const Page = () => {
     })
     .catch(error => console.error(error));
 
-    axios.get('https://localhost:7094/GetInstanceCPUStatistics')
+    axios.get('https://localhost:7094/GetInstanceCPUStatistics?instanceId=' + selectedMachine)
     .then(response => {
     const statistics = response.data.data.filter(machine => machine.id === selectedMachine);
     console.log("current1",  statistics)
