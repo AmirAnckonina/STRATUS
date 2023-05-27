@@ -147,7 +147,7 @@ const seriesData = Array.from({ length: percentageValues.length }, (_, i) => {
 export const OverviewSales = (props) => {
   const { chartSeries, sx } = props;
   const chartOptions = useChartOptions();
-  const [filter, setFilter] = useState('day'); // Default filter is 'day'
+  const [filter, setFilter] = useState('month'); // Default filter is 'month'
   const [xAxisCategories, setXAxisCategories] = useState(getCategories(filter));
 
   const handleFilterChange = (event) => {

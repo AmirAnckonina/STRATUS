@@ -54,7 +54,7 @@ namespace CloudApiClient
         //Please NOTE to change the hard-coded instanceID
         public async Task<List<Datapoint>> GetInstanceCPUStatistics(string instanceId)
         {
-            instanceId = "i-0e7b7b70d1327c5a6";
+            //instanceId = "i-0e7b7b70d1327c5a6";
             // Get the EC2 instance usage data
 
             var response = await _cloudWatchClient.GetMetricStatisticsAsync(new GetMetricStatisticsRequest
