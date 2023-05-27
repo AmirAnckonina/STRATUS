@@ -36,6 +36,8 @@ namespace CloudApiClient
         private RegionEndpoint _region;
         private AmazonEC2Client _ec2Client;
         private readonly PricingService _pricingService;
+        private readonly CostExplorerService _costExplorerService;
+        private readonly AWSScraper _awsScraper;
 
         public CloudApiClient()
         {
@@ -44,6 +46,8 @@ namespace CloudApiClient
             _cloudWatchClient = new AmazonCloudWatchClient(_credentials, RegionEndpoint.USEast2);
             _ec2Client = new AmazonEC2Client(_credentials, _region);
             _pricingService = new PricingService(_credentials);
+            _costExplorerService = new CostExplorerService(_credentials, RegionEndpoint.USEast2);
+            _awsScraper = new AWSScraper();
         }
 
        /* public async Task<List<Datapoint>> GetInstanceMemory (string instanceId)
@@ -161,7 +165,7 @@ namespace CloudApiClient
                         {
                             Id = instance.InstanceId,
                             OperatingSystem = instance.PlatformDetails,
-                            Price = await GetInstancePrice(instance.InstanceId),
+                            Price = await _costExplorerService.GetInstancePrice(instance.InstanceId),
                             CpuSpecifications = $"{instance.CpuOptions.CoreCount} Core/s, {instance.CpuOptions.ThreadsPerCore} threads per Core",
                             TotalStorageSize = await GetInstanceTotalVolumesSize(instance.InstanceId),
                             //string.Join(", ", instance.BlockDeviceMappings.Select<InstanceBlockDeviceMapping, string>(bdm => $"{bdm.DeviceName}")).Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).ToList(),
@@ -173,56 +177,6 @@ namespace CloudApiClient
             }
 
             return vms;
-        }
-
-        private async Task<decimal> GetInstancePrice(string instanceId)
-        {
-            instanceId = "i-0e7b7b70d1327c5a6";
-            try
-            {
-                var costExplorerClient = new AmazonCostExplorerClient(_credentials, _region);
-                {
-                    var request = new GetCostAndUsageRequest
-                    {
-                        TimePeriod = new DateInterval
-                        {
-                            Start = "2023-05-15",
-                            End = "2023-05-25"
-                        },
-                        Filter = new Amazon.CostExplorer.Model.Expression
-                        {
-                            //Dimensions = new DimensionValues
-                            //{
-                            //    Key = "SERVICE",
-                            //    Values = new List<string> { "Amazon Elastic Compute Cloud - Compute" }
-                            //},
-                            Tags = new TagValues
-                            {
-                                Key = "InstanceId",
-                                Values = new List<string> { instanceId }
-                            }
-                        },
-                        Granularity = "DAILY",
-                        Metrics = new List<string> { "AmortizedCost" }
-                    };
-
-                    var response = await costExplorerClient.GetCostAndUsageAsync(request);
-
-                    if (response.ResultsByTime.Count > 0)
-                    {
-                        var costResult = response.ResultsByTime[0].Total;
-                        decimal.TryParse(costResult["AmortizedCost"].Amount, out decimal totalCost);
-                        return totalCost;
-                    }
-                }
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e.Message);
-                return 0;
-            }
-
-            return 0;
         }
 
 
@@ -671,12 +625,48 @@ namespace CloudApiClient
             //instanceDetails.TotalVolumesSize = GetInstanceTotalVolumesSize(instanceId);
 
             // Price
-            instanceDetails.Price = await GetInstancePrice(instanceId);
+            instanceDetails.Price = await _costExplorerService.GetInstancePrice(instanceId);
 
             return instanceDetails;
 
         }
+        //notice that this method does not return the total volume size, still has work to do//
+        public async Task<double> GetCurrentInstanceVolumesUsage(string instanceId)
+        {
+            var getMetricStatisticsRequest = new GetMetricStatisticsRequest
+            {
+                Namespace = "AWS/EC2",
+                MetricName = "CPUUtilization",
+                Dimensions = new List<Amazon.CloudWatch.Model.Dimension>
+                {
+                    new Amazon.CloudWatch.Model.Dimension
+                    {
+                        Name = "InstanceId",
+                        Value = instanceId
+                    }
+                },
+                Statistics = new List<string> { "Average" },
+                Period = 300, // 5 minutes
+                StartTime = DateTime.UtcNow.AddMinutes(-5),
+                EndTime = DateTime.UtcNow
+            };
 
+            var getMetricStatisticsResponse = await _cloudWatchClient.GetMetricStatisticsAsync(getMetricStatisticsRequest);
+
+            var dataPoints = getMetricStatisticsResponse.Datapoints;
+
+            if (dataPoints.Any())
+            {
+                var latestDataPoint = dataPoints.OrderByDescending(dp => dp.Timestamp).FirstOrDefault();
+
+                if (latestDataPoint != null)
+                {
+                    return latestDataPoint.Average;
+                }
+            }
+            return 0;   
+        }
+        
         //public async Task<Datapoint> GetRecommendedVirtualMachines()
         //{
         //    // Your AWS credentials and regionEndPoint

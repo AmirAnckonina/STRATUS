@@ -12,6 +12,7 @@
     <PackageReference Include="AWSSDK.CostExplorer" Version="3.7.103.99" />
     <PackageReference Include="AWSSDK.EC2" Version="3.7.126.3" />
     <PackageReference Include="AWSSDK.Pricing" Version="3.7.101.48" />
+    <PackageReference Include="HtmlAgilityPack" Version="1.11.46" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
   </ItemGroup>
 
