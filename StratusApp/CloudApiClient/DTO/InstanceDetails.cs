@@ -13,16 +13,18 @@ namespace CloudApiClient.DTO
 
         public string OperatingSystem { get; set; }
 
-        public decimal Price { get; set; }
+        public decimal? Price { get; set; }
 
         public string CpuSpecifications { get; set; }
 
         public List<Datapoint> CpuStatistics { get; set; }
 
-        public List<string> Storage { get; set; }
+        public string Storage { get; set; }
 
         public int TotalVolumesSize;
 
-        public string Unit { get; set; }
+        public string? Unit { get; set; }
+
+        public string? PriceDescription {get;set;}
     }
 }

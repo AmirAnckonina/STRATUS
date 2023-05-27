@@ -14,6 +14,8 @@ using Amazon.EC2;
 using Newtonsoft.Json.Linq;
 using Amazon.Runtime;
 using CloudApiClient.DTO;
+using CloudApiClient.AwsServices.Models;
+using Newtonsoft.Json;
 
 namespace CloudApiClient.AwsServices
 {
@@ -21,11 +23,13 @@ namespace CloudApiClient.AwsServices
     public class PricingService
     {
         private AmazonPricingClient _pricingClient;
+        private readonly PricingUtils _pricingUtils;
 
         public PricingService(AWSCredentials credentials)
         {
             // NOTE that pricing Api working ONLY with USEast1 and APSouth1.
-           _pricingClient = new AmazonPricingClient(credentials, RegionEndpoint.USEast1);
+            _pricingClient = new AmazonPricingClient(credentials, RegionEndpoint.USEast1);
+            _pricingUtils = new PricingUtils();
         }
 
         public async Task<List<InstanceDetails>> GetOptionalVms(InstanceFilterHelper instanceFilters, int maxResults)
@@ -42,62 +46,34 @@ namespace CloudApiClient.AwsServices
 
                 var getProductsResponse = await _pricingClient.GetProductsAsync(getProductsRequest);
 
-                foreach (var priceListItem in getProductsResponse.PriceList)
+                foreach (string priceListItem in getProductsResponse.PriceList)
                 {
-                    var priceListItemJson = priceListItem;
+                    var rawPriceListItem = priceListItem;
 
-                    // Parse the price list item JSON using JObject
-                    var jObject = JObject.Parse(priceListItemJson);
-
-                    var vmData = new DTO.InstanceDetails
+                    Product product = _pricingUtils.BuildProductFromPriceListString(rawPriceListItem);
+                    PricePlan pricePlan = _pricingUtils.BuildPricePlanFromPriceListString(rawPriceListItem, product.Sku);
+                    var singlePotentialInstance = new DTO.InstanceDetails()
                     {
-                        Id = (string)jObject["product"]["sku"],
-                        OperatingSystem = (string)jObject["product"]["attributes"]["operatingSystem"],
-                        Storage = new List<string>(),
-                        // EREZ please note: CpuSpecs currently returns a List od Datapoint instead of string !!!
-                        //CpuSpecifications = (string)jObject["product"]["attributes"]["vcpu"],
+                        Id = product.Sku,
+                        Storage = product.Attributes.storage,
+                        OperatingSystem = product.Attributes.operatingSystem,
+                        CpuSpecifications = product.Attributes.vcpu,
+                        Price = pricePlan.priceInUSD,
+                        Unit = pricePlan.unit,
+                        PriceDescription = pricePlan.description
                     };
 
-                    // Get the price dimensions
-                    var priceDimensions = jObject["terms"]["OnDemand"].Values<JProperty>().FirstOrDefault()?.Value["priceDimensions"];
-
-                    if (priceDimensions != null)
-                    {
-                        foreach (var priceDimension in priceDimensions.Values<JProperty>())
-                        {
-                            var pricePerUnit = (string)priceDimension.Value["pricePerUnit"]["USD"];
-                            vmData.Price = decimal.Parse(pricePerUnit);
-                            vmData.Unit = (string)priceDimension.Value["unit"];
-                            break; // Consider only the first price dimension
-                        }
-                    }
-
-                    // Process storage attributes
-                    var storageAttributes = jObject["product"]?["attributes"]?["storage"];
-                    if (storageAttributes != null)
-                    {
-                        if (storageAttributes is JObject storageObject)
-                        {
-                            foreach (var storageValue in storageObject.Values<string>())
-                            {
-                                vmData.Storage.Add(storageValue);
-                            }
-                        }
-                        else if (storageAttributes is JValue storageValue)
-                        {
-                            vmData.Storage.Add(storageValue.Value.ToString());
-                        }
-                    }
-
-                    potentialInstances.Add(vmData);
+                    potentialInstances.Add(singlePotentialInstance);
                 }
+
+                return potentialInstances;
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex);
+                /// Change exception architecture to try-catch on controller.
+                /// 
+                return new List<InstanceDetails>();
             }
-
-            return potentialInstances;
         }
 
 
