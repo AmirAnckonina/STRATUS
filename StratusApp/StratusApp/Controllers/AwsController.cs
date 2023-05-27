@@ -71,21 +71,21 @@ namespace StratusApp.Controllers
         }
 
         [HttpGet("GetInstanceVolumes")]
-        public async Task<ActionResult<StratusResponse<List<Volume>>>> GetInstanceVolumes()
+        public async Task<ActionResult<StratusResponse<List<Volume>>>> GetInstanceVolumes(string instanceId)
         {
             var instanceVolumeResponse = new StratusResponse<List<Volume>>();
 
-            instanceVolumeResponse.Data = await _awsClient.GetInstanceVolumes();
+            instanceVolumeResponse.Data = await _awsClient.GetInstanceVolumes(instanceId);
 
             return Ok(instanceVolumeResponse);
         }
 
         [HttpGet("GetInstanceTotalVolumesSize")]
-        public async Task<ActionResult<StratusResponse<int>>> GetInstanceTotalVolumesSize()
+        public async Task<ActionResult<StratusResponse<int>>> GetInstanceTotalVolumesSize(string instanceId)
         {
             var instanceVolumeResponse = new StratusResponse<int>();
 
-            instanceVolumeResponse.Data = await _awsClient.GetInstanceTotalVolumesSize();
+            instanceVolumeResponse.Data = await _awsClient.GetInstanceTotalVolumesSize(instanceId);
 
             return Ok(instanceVolumeResponse);
         }

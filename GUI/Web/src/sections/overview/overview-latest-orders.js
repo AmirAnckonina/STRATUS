@@ -61,7 +61,7 @@ export const OverviewLatestOrders = (props) => {
                   CPU
                 </TableCell>
                 <TableCell>
-                  Storage
+                Total Storage Size
                 </TableCell>
               </TableRow>
             </TableHead>
@@ -86,7 +86,7 @@ export const OverviewLatestOrders = (props) => {
                       {data.cpuSpecifications}
                     </TableCell>
                     <TableCell>
-                      {data.storage}
+                      {data.totalStorageSize} GB
                     </TableCell>
                   </TableRow>
                 );

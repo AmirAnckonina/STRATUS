@@ -163,7 +163,8 @@ namespace CloudApiClient
                             OperatingSystem = instance.PlatformDetails,
                             Price = await GetInstancePrice(instance.InstanceId),
                             CpuSpecifications = $"{instance.CpuOptions.CoreCount} Core/s, {instance.CpuOptions.ThreadsPerCore} threads per Core",
-                            Storage = string.Join(", ", instance.BlockDeviceMappings.Select<InstanceBlockDeviceMapping, string>(bdm => $"{bdm.DeviceName}")).Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).ToList(),
+                            TotalStorageSize = await GetInstanceTotalVolumesSize(instance.InstanceId),
+                            //string.Join(", ", instance.BlockDeviceMappings.Select<InstanceBlockDeviceMapping, string>(bdm => $"{bdm.DeviceName}")).Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).ToList(),
                         };
 
                         vms.Add(vm);
@@ -555,20 +556,20 @@ namespace CloudApiClient
             return string.Empty;
         }
 
-        public async Task<List<Volume>> GetInstanceVolumes()
+        public async Task<List<Volume>> GetInstanceVolumes(string instanceId)
         {
             DescribeVolumesRequest descVolumeRequest = new DescribeVolumesRequest()
             {
-                Filters = { new EC2Model.Filter { Name = "attachment.instance-id", Values = { "i-0e7b7b70d1327c5a6" } } }
+                Filters = { new EC2Model.Filter { Name = "attachment.instance-id", Values = { instanceId } } }
             };
             DescribeVolumesResponse descVolumeResponse = await _ec2Client.DescribeVolumesAsync(descVolumeRequest);
 
             return descVolumeResponse.Volumes;
         }
 
-        public async Task<int> GetInstanceTotalVolumesSize()
+        public async Task<int> GetInstanceTotalVolumesSize(string instanceId)
         {
-            List<Volume> volumes = await GetInstanceVolumes();
+            List<Volume> volumes = await GetInstanceVolumes(instanceId);
             int totalVolumeSize = 0;
 
             foreach (Volume vol in volumes)
