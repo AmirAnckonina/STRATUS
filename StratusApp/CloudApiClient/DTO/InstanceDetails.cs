@@ -20,6 +20,7 @@ namespace CloudApiClient.DTO
         public List<Datapoint> CpuStatistics { get; set; }
 
         public List<string> Storage { get; set; }
+        public int TotalStorageSize { get; set; }
 
         public int TotalVolumesSize;
 

@@ -79,7 +79,7 @@ export const CompanyCard = (props) => {
             display="inline"
             variant="body2"
           >
-            Price: {machine.price} per {machine.unit}
+            Price: {machine.price}$ per {machine.unit}
           </Typography>
         </Stack>
         <Stack
