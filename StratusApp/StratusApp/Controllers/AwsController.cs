@@ -51,6 +51,7 @@ namespace StratusApp.Controllers
 
             return Ok(userInstanceCpuUsageDataOverTimeStartusResp);
         }
+
         [HttpGet("GetInstanceFromAWS")]
         public async Task<ActionResult<StratusResponse<StratusUser>>> GetInstanceFromAWS()
         {
@@ -60,7 +61,7 @@ namespace StratusApp.Controllers
 
             return Ok(userInstanceStartusResp);
         }
-
+        
         [HttpGet("GetMoreFittedInstancesFromAWS")]
         public async Task<ActionResult<List<Instance>>> GetMoreFittedInstancesFromAWS(string instanceId)
         {
@@ -99,11 +100,11 @@ namespace StratusApp.Controllers
             return Ok(instanceVolumeResponse);
         }
         [HttpGet("GetInstanceOperatingSystem")]
-        public async Task<ActionResult<StratusResponse<string>>> GetInstanceOperatingSystem()
+        public async Task<ActionResult<StratusResponse<string>>> GetInstanceOperatingSystem(string instanceId)
         {
             var instanceVolumeResponse = new StratusResponse<string>();
 
-            instanceVolumeResponse.Data = await _awsClient.GetInstanceOperatingSystem("");
+            instanceVolumeResponse.Data = await _awsClient.GetInstanceOperatingSystem(instanceId);
 
             return Ok(instanceVolumeResponse);
         }

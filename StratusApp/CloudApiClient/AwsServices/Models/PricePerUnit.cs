@@ -4,10 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CloudApiClient
+namespace CloudApiClient.AwsServices.Models
 {
-    internal class CloudWatchService
+    [Serializable]
+    public class PricePerUnit
     {
-
+        public string? USD { get; set; } 
     }
 }
