@@ -1,30 +1,62 @@
 ﻿//using Prometheus;
 using System.Net.Http;
-using Prometheus;
 using static System.Net.WebRequestMethods;
 
 namespace MonitoringClient
 {
     public class PrometheusClient
     {
-        private HttpClient _promHttpClient;
+        private const string PROM_QUERY_PATH =      "/api/v1/query";
+        private const string PROM_BASE_URL =        "http://localhost:9090/";
 
-        private MetricServer _metricServer;
+
+        private string _basePromUrl;
+        private HttpClient _promHttpClient;
+        private PrometheusClientUtils _utils;
+
 
         public PrometheusClient()
         {
-            string node_exporter_url = $"http://172.31.40.237:9100/";
-            /*_metricServer = new MetricServer(url: node_exporter_url, port: 9100); 
-            _metricServer.Start();*/
-            _promHttpClient= new HttpClient();
-            _promHttpClient.BaseAddress = new Uri(node_exporter_url);
+            _utils = new PrometheusClientUtils();
+            _promHttpClient = new HttpClient();
         }
 
         public async Task<string> GetCpuUsage()
         {
-            var response = await _promHttpClient.GetAsync("/metrics");
-            return await response.Content.ReadAsStringAsync();
-        }   
+            string query = "query=node_cpu_seconds_total{instance=\"18.117.113.181:9100\"}";
+            Uri endPointWithQuery =
+                _utils.CreateEndPointRequestUri(PROM_BASE_URL, PROM_QUERY_PATH, query);
+
+            HttpResponseMessage getCpuUsageResponse = await _promHttpClient.GetAsync(endPointWithQuery); 
+
+
+            // Should decide the return type.
+            return await getCpuUsageResponse.Content.ReadAsStringAsync();
+        }
+
+        /*public async Task<string> GetTotalDiskSize()
+        {
+
+        }
+
+        public async Task<string> GetAvgFreeDiskSize()
+        {
+
+        }
+
+        public async Task<string> GetAvgFreeMemorySize()
+        {
+
+        }
+
+        public async Task<string> GetAvgFreeDiskSize()
+        {
+
+        }*/
+
+
+
+
 
 
     }

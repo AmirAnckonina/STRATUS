@@ -14,8 +14,8 @@ namespace StratusApp.Controllers
             _prometheusClient = new MonitoringClient.PrometheusClient(); 
         }
 
-        [HttpGet("GetCPUUsage")]
-        public async Task<ActionResult<StratusResponse<List<Datapoint>>>> GetUserAwsInstanceData()
+        [HttpGet("GetCpuUsage")]
+        public async Task<ActionResult<StratusResponse<List<Datapoint>>>> GetServerCpuUsage()
         {
             var userInstanceDataStartusResp = new StratusResponse<string>();
 
