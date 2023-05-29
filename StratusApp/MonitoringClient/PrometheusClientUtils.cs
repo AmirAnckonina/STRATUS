@@ -20,8 +20,8 @@ namespace MonitoringClient
 
         private static void SetQueryMapper()
         {
-            _queryTypeMapper.Add("CpuUsageData", "query=node_cpu_seconds_total{instance=\"{instance}\"}");
-            _queryTypeMapper.Add("CpuUsageData", "node_cpu_seconds_total{}");
+            /*_queryTypeMapper.Add("CpuUsageData", "query=node_cpu_seconds_total{instance=\"{instance}\"}");
+            _queryTypeMapper.Add("CpuUsageData", "node_cpu_seconds_total{}");*/
         }
 
         public Uri CreateEndPointRequestUri(string baseurl, string apipath, string query)
