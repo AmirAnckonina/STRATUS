@@ -26,23 +26,37 @@ namespace CloudApiClient.Utils
             var htmlDocument = new HtmlDocument();
             htmlDocument.LoadHtml(html);
 
-            var instanceTypeNodes = htmlDocument.DocumentNode.SelectNodes("//div[contains(@class, 'awstable')]/table/tbody/tr/td[1]");
-            var priceNodes = htmlDocument.DocumentNode.SelectNodes("//div[contains(@class, 'awstable')]/table/tbody/tr/td[3]");
-
-            var instancePrices = new List<InstancePrice>();
-
-            if (instanceTypeNodes != null && priceNodes != null && instanceTypeNodes.Count == priceNodes.Count)
+            var iframeElement = htmlDocument.DocumentNode.SelectSingleNode("//div[@id='ec2-on-demand-plan']/iframe");
+            if (iframeElement != null)
             {
-                for (int i = 0; i < instanceTypeNodes.Count; i++)
-                {
-                    var instanceType = instanceTypeNodes[i].InnerText.Trim();
-                    var price = priceNodes[i].InnerText.Trim();
+                var iframeUrl = iframeElement.GetAttributeValue("data-src", "");
 
-                    instancePrices.Add(new InstancePrice { InstanceType = instanceType, Price = price });
+                if (!string.IsNullOrEmpty(iframeUrl))
+                {
+                    var iframeHtml = await _httpClient.GetStringAsync(iframeUrl);
+                    var iframeDocument = new HtmlDocument();
+                    iframeDocument.LoadHtml(iframeHtml);
+
+                    var instanceTypeNodes = iframeDocument.DocumentNode.SelectNodes("//tr[@class='awsui-table-row']/td[1]/span/span");
+                    var priceNodes = iframeDocument.DocumentNode.SelectNodes("//tr[@class='awsui-table-row']/td[2]/span/span");
+
+                    var instancePrices = new List<InstancePrice>();
+
+                    if (instanceTypeNodes != null && priceNodes != null && instanceTypeNodes.Count == priceNodes.Count)
+                    {
+                        for (int i = 0; i < instanceTypeNodes.Count; i++)
+                        {
+                            var instanceType = instanceTypeNodes[i].InnerText.Trim();
+                            var price = priceNodes[i].InnerText.Trim();
+
+                            instancePrices.Add(new InstancePrice { InstanceType = instanceType, Price = price });
+                        }
+                    }
+
+                    return instancePrices;
                 }
             }
-
-            return instancePrices;
+            return null;
         }
     }
     public class InstancePrice

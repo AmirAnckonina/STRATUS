@@ -1,5 +1,6 @@
 import PropTypes from 'prop-types';
 import ListBulletIcon from '@heroicons/react/24/solid/ListBulletIcon';
+import ArrowRightIcon from '@heroicons/react/24/solid/ArrowRightIcon';
 import {
   Avatar,
   Box,
@@ -43,7 +44,7 @@ export const OverviewTasksProgress = (props) => {
             }}
           >
             <SvgIcon>
-              <ListBulletIcon />
+              <ArrowRightIcon />
             </SvgIcon>
           </Avatar>
         </Stack>

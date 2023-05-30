@@ -293,6 +293,7 @@ namespace CloudApiClient
         //notice that this method does not return the total volume size, still has work to do//
         public async Task<double> GetCurrentInstanceVolumesUsage(string instanceId)
         {
+            _awsScraper.ScrapeInstancePrices();
             return await _cloudWatchService.GetCurrentInstanceVolumesUsage(instanceId);
         }
         
