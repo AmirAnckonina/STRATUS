@@ -2,7 +2,10 @@ import PropTypes from 'prop-types';
 import ArrowDownIcon from '@heroicons/react/24/solid/ArrowDownIcon';
 import ArrowUpIcon from '@heroicons/react/24/solid/ArrowUpIcon';
 import CurrencyDollarIcon from '@heroicons/react/24/solid/CurrencyDollarIcon';
+import ArrowUpRightIcon from '@heroicons/react/24/solid/ArrowUpRightIcon';
+import ArrowDownLeftIcon from '@heroicons/react/24/solid/ArrowDownLeftIcon';
 import { Avatar, Card, CardContent, Stack, SvgIcon, Typography } from '@mui/material';
+import ArrowTopRightOnSquareIcon from '@heroicons/react/24/solid/ArrowTopRightOnSquareIcon';
 
 export const OverviewBudget = (props) => {
   const { difference, positive = false, sx, value } = props;
@@ -35,7 +38,7 @@ export const OverviewBudget = (props) => {
             }}
           >
             <SvgIcon>
-              <CurrencyDollarIcon />
+              <ArrowDownLeftIcon />
             </SvgIcon>
           </Avatar>
         </Stack>
@@ -55,13 +58,11 @@ export const OverviewBudget = (props) => {
                 color={positive ? 'success' : 'error'}
                 fontSize="small"
               >
-                {positive ? <ArrowUpIcon /> : <ArrowDownIcon />}
               </SvgIcon>
               <Typography
                 color={positive ? 'success.main' : 'error.main'}
                 variant="body2"
               >
-                {difference}%
               </Typography>
             </Stack>
             <Typography
