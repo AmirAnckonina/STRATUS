@@ -15,6 +15,8 @@ const Page = () => {
       email: '',
       name: '',
       password: '',
+      accessKey: '',
+      secretKey: '',
       submit: null
     },
     validationSchema: Yup.object({
@@ -34,7 +36,11 @@ const Page = () => {
       accessKey: Yup
         .string()
         .max(255)
-        .required('Access Key is required')  
+        .required('Access Key is required'),
+      secretKey: Yup
+        .string()
+        .max(255)
+        .required('Secret Key is required')
     }),
     onSubmit: async (values, helpers) => {
       try {
@@ -138,6 +144,16 @@ const Page = () => {
                   helperText={formik.touched.name && formik.errors.accessKey}
                   label="Accsess Key"
                   name="Accsess Key"
+                  onBlur={formik.handleBlur}
+                  onChange={formik.handleChange}
+                  value={formik.values.name}
+                />
+                <TextField
+                  error={!!(formik.touched.name && formik.errors.secretKey)}
+                  fullWidth
+                  helperText={formik.touched.name && formik.errors.secretKey}
+                  label="Secret Key"
+                  name="Secret Key"
                   onBlur={formik.handleBlur}
                   onChange={formik.handleChange}
                   value={formik.values.name}
