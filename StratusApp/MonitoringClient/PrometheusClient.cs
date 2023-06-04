@@ -1,5 +1,5 @@
-﻿//using Prometheus;
-using System.Net.Http;
+﻿using System.Net.Http;
+using System.Security.AccessControl;
 using static System.Net.WebRequestMethods;
 
 namespace MonitoringClient
@@ -10,14 +10,14 @@ namespace MonitoringClient
         private const string PROM_BASE_URL =        "http://localhost:9090/";
 
 
-        private string _basePromUrl;
         private HttpClient _promHttpClient;
-        private PrometheusClientUtils _utils;
-
-
+        private PrometheusRequestUtils _requestsUtils;
+        private PrometheusResponseUtils _responseUtils;
+        
         public PrometheusClient()
         {
-            _utils = new PrometheusClientUtils();
+            _requestsUtils = new PrometheusRequestUtils();
+            _responseUtils = new PrometheusResponseUtils();
             _promHttpClient = new HttpClient();
         }
 
@@ -25,9 +25,11 @@ namespace MonitoringClient
         {
             string query = "query=node_cpu_seconds_total{instance=\"18.117.113.181:9100\"}";
             Uri endPointWithQuery =
-                _utils.CreateEndPointRequestUri(PROM_BASE_URL, PROM_QUERY_PATH, query);
+                _requestsUtils.CreateEndPointRequestUri(PROM_BASE_URL, PROM_QUERY_PATH, query);
 
+            //HttpResponseMessage getCpuUsageResponse = await _promHttpClient.GetAsync(endPointWithQuery); 
             HttpResponseMessage getCpuUsageResponse = await _promHttpClient.GetAsync(endPointWithQuery); 
+
 
 
             // Should decide the return type.

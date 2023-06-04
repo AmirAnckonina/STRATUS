@@ -7,12 +7,12 @@ using System.Threading.Tasks;
 
 namespace MonitoringClient
 {
-    public class PrometheusClientUtils
+    public class PrometheusRequestUtils
     {
 
         private static Dictionary<string, string> _queryTypeMapper;
        
-        public PrometheusClientUtils()
+        public PrometheusRequestUtils()
         {
             _queryTypeMapper = new Dictionary<string, string>();
             SetQueryMapper();
