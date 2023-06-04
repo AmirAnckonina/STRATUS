@@ -102,6 +102,7 @@ namespace CloudApiClient.AwsServices
         public async Task<List<Datapoint>> GetInstanceCPUStatistics(string instanceId)
         {
             // Get the EC2 instance usage data
+            if (instanceId == null) return new List<Datapoint>();
 
             var response = await _cloudWatchClient.GetMetricStatisticsAsync(new GetMetricStatisticsRequest
             {
