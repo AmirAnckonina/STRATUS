@@ -37,13 +37,6 @@ namespace StratusApp.Controllers
 
             return Ok(getllStratusUsersResp);
            
-        }
-
-      
-
-
-
-
-
+        } 
     }
 }
