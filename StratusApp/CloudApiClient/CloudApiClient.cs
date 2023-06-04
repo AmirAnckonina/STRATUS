@@ -41,8 +41,8 @@ namespace CloudApiClient
 
         public CloudApiClient()
         {
-            _credentials = new BasicAWSCredentials("AKIA5HZY22LQTC2MGB5K", "yf0dbGCgKCeMaZelIWsExJCmuJx3bdgoPkR7lQl0");
-            _region = RegionEndpoint.USEast2;
+            _credentials = new BasicAWSCredentials("AKIA4VQ4COXENKIXQYE6", "elZJ5FbQtpbmqHHLyJcVbyQWQDtV6Rw+liAK/tIS");
+            _region = RegionEndpoint.USEast1;
             //_cloudWatchClient = new AmazonCloudWatchClient(_credentials, RegionEndpoint.USEast2);
             //_ec2Client = new AmazonEC2Client(_credentials, _region);
             _pricingService = new PricingService(_credentials);
@@ -173,7 +173,7 @@ namespace CloudApiClient
 
         public async Task<List<Volume>> GetInstanceVolumes(string instanceId)
         {
-            return await _ec2Service.GetInstanceVolumes();
+            return await _ec2Service.GetInstanceVolumes(instanceId);
         }
 
         public async Task<int> GetInstanceTotalVolumesSize(string instanceId)
@@ -192,7 +192,6 @@ namespace CloudApiClient
         //What is That?
         /*static List<double> GetCurrentVMCPUUsage(string accessKey, string secretKey, RegionEndpoint region, string instanceId)
         {
-            //instanceId =  "i-0e7b7b70d1327c5a6";
             // Instantiate an AmazonCloudWatchClient object with the specified credentials and regionEndPoint
             var cloudWatchClient = new AmazonCloudWatchClient(accessKey, secretKey, region);
 
@@ -268,8 +267,6 @@ namespace CloudApiClient
 
         public async Task<DTO.InstanceDetails> GetInstanceBasicDetails(string instanceId)
         {
-            //instanceId = "i-0e7b7b70d1327c5a6";
-
             DTO.InstanceDetails instanceDetails = new DTO.InstanceDetails();
 
             // Operating System

@@ -75,7 +75,7 @@ const Page = () => {
   const [machines, setMachines] = useState([]);
 
   useEffect(() => {
-    axios.get('https://localhost:7094/GetMoreFittedInstancesFromAWS?instanceId=i-0e7b7b70d1327c5a6')
+    axios.get('https://localhost:7094/GetMoreFittedInstancesFromAWS?instanceId=i-07a29708cb8386aab')
     .then(response => {
       const data = response.data.data;
       setMachines(data);

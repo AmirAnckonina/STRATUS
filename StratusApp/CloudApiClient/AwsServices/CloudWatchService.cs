@@ -22,8 +22,6 @@ namespace CloudApiClient.AwsServices
 
         public async Task<List<double>> GetInstanceCpuUsageOverTime(string instanceId)
         {
-            //instanceId = "i-0e7b7b70d1327c5a6";
-
             var cpuUsageDataByDays = new List<CpuUsageData>();
 
             if (instanceId == null)
@@ -34,7 +32,7 @@ namespace CloudApiClient.AwsServices
             // Set the dimensions for the CPUUtilization metric
             var dimensions = new List<Amazon.CloudWatch.Model.Dimension>()
             {
-                new Amazon.CloudWatch.Model.Dimension() { Name = "InstanceId", Value = instanceId/*"i-00329d0c2a2aac67b"*/ }
+                new Amazon.CloudWatch.Model.Dimension() { Name = "InstanceId", Value = instanceId }
             };
 
             //calculate the total days past in the month
@@ -103,7 +101,6 @@ namespace CloudApiClient.AwsServices
         //Please NOTE to change the hard-coded instanceID
         public async Task<List<Datapoint>> GetInstanceCPUStatistics(string instanceId)
         {
-            instanceId = "i-0e7b7b70d1327c5a6";
             // Get the EC2 instance usage data
 
             var response = await _cloudWatchClient.GetMetricStatisticsAsync(new GetMetricStatisticsRequest

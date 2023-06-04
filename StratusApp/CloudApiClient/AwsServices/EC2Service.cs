@@ -22,8 +22,6 @@ namespace CloudApiClient.AwsServices
 
         public async Task<string> GetInstanceOperatingSystem(string instanceId)
         {
-            //instanceId = "i-0e7b7b70d1327c5a6";
-
             var request = new DescribeInstancesRequest
             {
                 InstanceIds = new List<string> { instanceId }
@@ -43,11 +41,11 @@ namespace CloudApiClient.AwsServices
             return string.Empty;
         }
 
-        public async Task<List<Volume>> GetInstanceVolumes()
+        public async Task<List<Volume>> GetInstanceVolumes(string instanceId)
         {
             DescribeVolumesRequest descVolumeRequest = new DescribeVolumesRequest()
             {
-                Filters = { new EC2Model.Filter { Name = "attachment.instance-id", Values = { "i-0e7b7b70d1327c5a6" } } }
+                Filters = { new EC2Model.Filter { Name = "attachment.instance-id", Values = { instanceId } } }
             };
             DescribeVolumesResponse descVolumeResponse = await _ec2Client.DescribeVolumesAsync(descVolumeRequest);
 

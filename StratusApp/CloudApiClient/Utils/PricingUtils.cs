@@ -67,8 +67,6 @@ namespace CloudApiClient.Utils
             }
 
             return product;
-        }
-
-        
+        }        
     }
 }
