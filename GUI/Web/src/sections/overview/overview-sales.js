@@ -4,6 +4,8 @@ import ArrowRightIcon from '@heroicons/react/24/solid/ArrowRightIcon';
 import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 import { FormControl, FormControlLabel, Radio, RadioGroup } from '@mui/material';
+import {LineChart, CartesianGrid, XAxis, YAxis, Legend, Tooltip, Line, AreaChart, linearGradient, Area} from 'recharts';
+
 
 import {
   Button,
@@ -16,9 +18,6 @@ import {
 } from '@mui/material';
 import { alpha, useTheme } from '@mui/material/styles';
 import { Chart } from 'src/components/chart';
-
-
-
 
 
 const getCategories = (filter) => {
@@ -136,11 +135,22 @@ const useChartOptions = (xAxisCategories) => {
 const now = new Date();
 const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
 const percentageValues = [0, 25, 50, 75, 100];
+const today = new Date();
+const last30Days = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 30);
+
+const dummyData = Array.from({ length: 30 }, (_, index) => {
+  const date = new Date(last30Days.getFullYear(), last30Days.getMonth(), last30Days.getDate() + index);
+  const formattedDate = `${date.getDate()}.${date.getMonth() + 1}`;
+  return {
+    x: formattedDate,
+    Percentages: Math.floor(Math.random() * 101) // Generates a random number between 0 and 100
+  };
+});
 const seriesData = Array.from({ length: percentageValues.length }, (_, i) => {
   const value = percentageValues[i];
   return Array.from({ length: daysInMonth }, (_, j) => ({
-    x: `${j + 1}`,
-    y: value
+    x: `${now.getMonth() + 1}.${j + 1}`,
+    Percentages: value
   }));
 });
 
@@ -176,7 +186,7 @@ export const OverviewSales = (props) => {
             Sync
           </Button>
         )}
-        title="CPU Maximum Usage Last month"
+        title="CPU Maximum Usage Over Time"
       />
       <CardContent>
       <FormControl component="fieldset">
@@ -193,13 +203,24 @@ export const OverviewSales = (props) => {
             <FormControlLabel value="year" control={<Radio />} label="Year" />
           </RadioGroup>
         </FormControl>
-        <Chart
-          height={350}
-          options={useChartOptions(xAxisCategories)}
-          series={chartSeries}
-          type="bar"
-          width="100%"
-        />
+        <AreaChart width={730} height={350} data={dummyData}
+          margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+          <defs>
+            <linearGradient id="colorUv" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor="#8884d8" stopOpacity={0.8}/>
+              <stop offset="95%" stopColor="#8884d8" stopOpacity={0}/>
+            </linearGradient>
+            <linearGradient id="colorPv" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor="#82ca9d" stopOpacity={0.8}/>
+              <stop offset="95%" stopColor="#82ca9d" stopOpacity={0}/>
+            </linearGradient>
+          </defs>
+          <XAxis dataKey="x" />
+          <YAxis />
+          <CartesianGrid strokeDasharray="3 3" />
+          <Tooltip />
+          <Area type="monotone" dataKey="Percentages" stroke="#8884d8" fillOpacity={1} fill="url(#colorUv)" />
+        </AreaChart>
       </CardContent>
       <Divider />
       <CardActions sx={{ justifyContent: 'flex-end' }}>
