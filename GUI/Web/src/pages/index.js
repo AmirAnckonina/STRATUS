@@ -122,7 +122,7 @@ const Page = () => {
               difference={12}
               positive
               sx={{ height: '100%' }}
-              value={statistics.minimum ? statistics.minimum.toFixed(2) : 0}
+              value={statistics ? statistics.minimum ? statistics.minimum.toFixed(2) : 0 : "N/A"}
             />
           </Grid>
           <Grid
@@ -134,7 +134,7 @@ const Page = () => {
               difference={16}
               positive={false}
               sx={{ height: '100%' }}
-              value={statistics.maximum ? statistics.maximum.toFixed(2) : "N/A"}
+              value={statistics ? statistics.maximum ? statistics.maximum.toFixed(2) : "N/A" : "N/A"}
             />
           </Grid>
           <Grid
@@ -144,7 +144,7 @@ const Page = () => {
           >
             <OverviewTasksProgress
               sx={{ height: '100%' }}
-              value={statistics.average ? statistics.average.toFixed(2) : "N/A"}
+              value={statistics ?statistics.average ? statistics.average.toFixed(2) : "N/A": "N/A"}
             />
           </Grid>
           <Grid
@@ -154,7 +154,7 @@ const Page = () => {
           >
             <OverviewTotalProfit
               sx={{ height: '100%' }}
-              value={statistics.sum ? statistics.sum.toFixed(2) : "N/A"}
+              value={statistics ?statistics.sum ? statistics.sum.toFixed(2) : "N/A": "N/A"}
             />
           </Grid>
           <Grid
