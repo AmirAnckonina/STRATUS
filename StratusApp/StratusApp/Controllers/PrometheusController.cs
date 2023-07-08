@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using MonitoringClient;
 using StratusApp.Models.Responses;
+using System.Reflection;
 
 namespace StratusApp.Controllers
 {
@@ -14,14 +15,44 @@ namespace StratusApp.Controllers
             _prometheusClient = new MonitoringClient.PrometheusClient(); 
         }
 
-        [HttpGet("GetCpuUsage")]
-        public async Task<ActionResult<StratusResponse<List<Datapoint>>>> GetServerCpuUsage()
+        [HttpGet("GetInstanceCpuUsage")]
+        public async Task<ActionResult<StratusResponse<List<Datapoint>>>> GetInstanceCpuUsage(string instance)
         {
-            var userInstanceDataStartusResp = new StratusResponse<string>();
+            var cpuUsageResponse = new StratusResponse<string>();
 
-            userInstanceDataStartusResp.Data = await _prometheusClient.GetCpuUsage();
+            cpuUsageResponse.Data = await _prometheusClient.GetCpuUsage(instance);
 
-            return Ok(userInstanceDataStartusResp);
+            return Ok(cpuUsageResponse);
+        }
+
+        [HttpGet("GetTotalDiskSizeInGB")]
+        public async Task<ActionResult<StratusResponse<string>>> GetTotalDiskSizeInGB(string instance)
+        {
+            var diskSizeResponse = new StratusResponse<string>();
+
+            diskSizeResponse.Data = await _prometheusClient.GetTotalDiskSizeInGB(instance);
+
+            return Ok(diskSizeResponse);
+        }
+
+        [HttpGet("GetAvgAvailableDiskSpaceInGB")]
+        public async Task<ActionResult<StratusResponse<string>>> GetAvgAvailableDiskSpaceInGB(string instance, string timeFilter = "1m")
+        {
+            var avgAvailableDiskSpaceResponse = new StratusResponse<string>();
+
+            avgAvailableDiskSpaceResponse.Data = await _prometheusClient.GetAvgAvailableDiskSpaceInGB(instance, timeFilter);
+
+            return Ok(avgAvailableDiskSpaceResponse);
+        }
+
+        [HttpGet("GetTotalMemorySizeInGB")]
+        public async Task<ActionResult<StratusResponse<string>>> GetTotalMemorySizeInGB(string instance)
+        {
+            var totalMemorySizeResponse = new StratusResponse<string>();
+
+            //totalMemorySizeResponse.Data = await _prometheusClient.GetTotalMemorySizeInGB(instance);
+
+            return Ok(totalMemorySizeResponse);
         }
     }
 }

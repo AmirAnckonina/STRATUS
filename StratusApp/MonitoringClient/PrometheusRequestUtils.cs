@@ -34,6 +34,11 @@ namespace MonitoringClient
             return uriBuilder.Uri;
         }
 
+        public string ConcateInstanceAddrWithPort(string instanceAddr)
+        {
+            return $"{instanceAddr}:9100";
+        }
+
 
     }
 

@@ -21,45 +21,51 @@ namespace MonitoringClient
             _promHttpClient = new HttpClient();
         }
 
-        public async Task<string> GetCpuUsage()
+        public async Task<string> GetCpuUsage(string instanceAddr)
         {
-            string query = "query=node_cpu_seconds_total{instance=\"18.117.113.181:9100\"}";
-            Uri endPointWithQuery =
-                _requestsUtils.CreateEndPointRequestUri(PROM_BASE_URL, PROM_QUERY_PATH, query);
-
-            //HttpResponseMessage getCpuUsageResponse = await _promHttpClient.GetAsync(endPointWithQuery); 
+            string instanceAddrWithPort = _requestsUtils.ConcateInstanceAddrWithPort(instanceAddr);
+            string query = "query=node_cpu_seconds_total{instance='" + $"{instanceAddrWithPort}" + "'}";
+            Uri endPointWithQuery = _requestsUtils.CreateEndPointRequestUri(PROM_BASE_URL, PROM_QUERY_PATH, query);
             HttpResponseMessage getCpuUsageResponse = await _promHttpClient.GetAsync(endPointWithQuery); 
-
-
 
             // Should decide the return type.
             return await getCpuUsageResponse.Content.ReadAsStringAsync();
         }
 
-        /*public async Task<string> GetTotalDiskSize()
+        public async Task<string> GetTotalDiskSizeInGB(string instanceAddr)
         {
+            string instanceAddrWithPort = _requestsUtils.ConcateInstanceAddrWithPort(instanceAddr);
+            string query = "query=sum(node_filesystem_size_bytes{instance='" + $"{instanceAddrWithPort}" + "'})/(1024^3)";
+            Uri endPointWithQuery = _requestsUtils.CreateEndPointRequestUri(PROM_BASE_URL, PROM_QUERY_PATH, query);
+            HttpResponseMessage getDiskSizeResponse = await _promHttpClient.GetAsync(endPointWithQuery);
 
+            // Should decide the return type.
+            return await getDiskSizeResponse.Content.ReadAsStringAsync();
         }
 
-        public async Task<string> GetAvgFreeDiskSize()
+        public async Task<string> GetAvgAvailableDiskSpaceInGB(string instanceAddr, string timeFilter)
         {
+            string instanceAddrWithPort = _requestsUtils.ConcateInstanceAddrWithPort(instanceAddr);
+            string query = 
+                "query=avg_over_time(node_filesystem_free_bytes{instance='" +
+                $"{instanceAddrWithPort}" + "',mountpoint='/'}" + $"[{timeFilter}])/(1024^3)";
 
+            Uri endPointWithQuery = _requestsUtils.CreateEndPointRequestUri(PROM_BASE_URL, PROM_QUERY_PATH, query);
+            HttpResponseMessage getDiskSizeResponse = await _promHttpClient.GetAsync(endPointWithQuery);
+
+            // Should decide the return type.
+            return await getDiskSizeResponse.Content.ReadAsStringAsync();
         }
 
-        public async Task<string> GetAvgFreeMemorySize()
+        
+        /*public async Task<string> GetTotalMemorySizeInGB(string instanceAddr)
         {
+            string instanceAddrWithPort = _requestsUtils.ConcateInstanceAddrWithPort(instanceAddr);
+            *//*string query = "" +
+                ""*//*
 
-        }
 
-        public async Task<string> GetAvgFreeDiskSize()
-        {
-
+            return await  
         }*/
-
-
-
-
-
-
     }
 }

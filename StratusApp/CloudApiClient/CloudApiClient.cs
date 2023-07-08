@@ -41,7 +41,7 @@ namespace CloudApiClient
 
         public CloudApiClient()
         {
-            //_credentials = new BasicAWSCredentials();
+            _credentials = new BasicAWSCredentials("AKIA4VQ4COXEPKYEHMDQ", "Z6O7Pqp57ffC32e3aCTMh4elXYZBQpNW5eIOV9tX");
             _region = RegionEndpoint.USEast1;
             //_cloudWatchClient = new AmazonCloudWatchClient(_credentials, RegionEndpoint.USEast2);
             //_ec2Client = new AmazonEC2Client(_credentials, _region);
