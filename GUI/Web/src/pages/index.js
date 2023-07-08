@@ -26,18 +26,7 @@ const Page = () => {
   const [statistics, setStatistics] = useState([])
   const [machines, setMachine] = useState([])
   const [selectedMachine, setSelectedMachine] = useState('')
-  const [cpuUsageArray, setcpuUsageArray] = useState([]);
-
-  useEffect(() => {
-    axios.get('https://localhost:7094/GetUserInstanceCpuUsageDataOverTime?instanceId=' + selectedMachine)
-    .then(response => {
-      const data = response.data.data;
-      setcpuUsageArray(data);
  
-    })
-    .catch(error => console.error(error));
-    },[]);
-
   useEffect(() => {
   axios.get('https://localhost:7094/GetUserInstanceData')
   .then(response => {
@@ -54,28 +43,19 @@ const Page = () => {
   axios.get('https://localhost:7094/GetInstanceCPUStatistics?instanceId=' + selectedMachine)
     .then(response => {
     const statistics = response.data.data.filter(machine => machine.id === selectedMachine);
-    console.log("current1",  statistics)
-    console.log("current2",  response.data.data)
+    //console.log("current1",  statistics)
+    //console.log("current2",  response.data.data)
     setStatistics(response.data.data[0]); //todo : need to use filter machine insteaf of data[0]
     })
 
   const handleMachineChange = (event) => {
     setSelectedMachine(event.target.value);
-    
-    axios.get('https://localhost:7094/GetUserInstanceCpuUsageDataOverTime?instanceId=' + selectedMachine)
-    .then(response => {
-      const data = response.data.data;
-      console.log("usage cpu", data)
-      setcpuUsageArray(data);
- 
-    })
-    .catch(error => console.error(error));
 
     axios.get('https://localhost:7094/GetInstanceCPUStatistics?instanceId=' + selectedMachine)
     .then(response => {
     const statistics = response.data.data.filter(machine => machine.id === selectedMachine);
-    console.log("current1",  statistics)
-    console.log("current2",  response.data.data)
+    //console.log("current1",  statistics)
+    //console.log("current2",  response.data.data)
     setStatistics(response.data.data[0]); //todo : need to use filter machine insteaf of data[0]
 
   })
@@ -157,19 +137,12 @@ const Page = () => {
               value={statistics ?statistics.sum ? statistics.sum.toFixed(2) : "N/A": "N/A"}
             />
           </Grid>
-          <Grid
-            xs={12}
-            lg={8}
-          >
-            <OverviewSales
-              chartSeries={[
-                {
-                  name: 'Day',
-                  data: cpuUsageArray
-                }
-              ]}
-              sx={{ height: '100%' }}
-            />
+          <Grid xs={12} lg={8}>
+        {selectedMachine ? (
+          <OverviewSales selectedMachine={selectedMachine} />
+        ) : (
+          <div>Loading...</div>
+        )}
           </Grid>
           <Grid
             xs={12}

@@ -3,11 +3,6 @@ using Amazon.CloudWatch;
 using Amazon.CloudWatch.Model;
 using Amazon.Runtime;
 using CloudApiClient.DTO;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace CloudApiClient.AwsServices
 {
@@ -20,82 +15,182 @@ namespace CloudApiClient.AwsServices
             _cloudWatchClient = new AmazonCloudWatchClient(credentials, region);
         }
 
-        public async Task<List<double>> GetInstanceCpuUsageOverTime(string instanceId)
+        public async Task<List<CpuUsageData>> GetInstanceCpuUsageOverTime(string instanceId, string filterTime)
         {
-            var cpuUsageDataByDays = new List<CpuUsageData>();
-
-            if (instanceId == null)
+            if (instanceId == null || instanceId.Equals("undifined"))
             {
-                return new List<double>();
+                return new List<CpuUsageData>();   
             }
 
             // Set the dimensions for the CPUUtilization metric
-            var dimensions = new List<Amazon.CloudWatch.Model.Dimension>()
+            //var dimensions = new List<Dimension>()
+            //{
+            //    new Dimension() { Name = "InstanceId", Value = instanceId }
+            //};
+
+            var periodDuration = GetSecondsPassed(filterTime);
+
+            DateTime currentStartTime = periodDuration.startTime;
+            DateTime endTime = DateTime.UtcNow;
+            DateTime currentEndTime = filterTime == "Day" ? currentStartTime.AddHours(1) : filterTime == "Year" ? currentStartTime.AddMonths(1) : currentStartTime.AddDays(1);
+            List<CpuUsageData> array = new List<CpuUsageData>();
+
+            while (currentStartTime <= endTime)
             {
-                new Amazon.CloudWatch.Model.Dimension() { Name = "InstanceId", Value = instanceId }
-            };
-
-            //calculate the total days past in the month
-            DateTime currentDate = DateTime.Today;
-            int daysPassed = currentDate.Day;
-
-            // Set the start and end time for the metric data
-            var startTime = DateTime.UtcNow.AddDays(daysPassed * -1);
-            var endTime = DateTime.UtcNow;
-
-            // Create a request to get the CPUUtilization metric data
-            var request = new GetMetricDataRequest()
-            {
-                MetricDataQueries = new List<MetricDataQuery>()
+                // Create a request to get the CPUUtilization metric data
+                var request = new GetMetricStatisticsRequest()
                 {
-                    new MetricDataQuery()
+                    StartTimeUtc = currentStartTime,
+                    EndTimeUtc = currentEndTime,
+                    Period = periodDuration.secondsPassed,
+                    Namespace = "AWS/EC2",
+                    MetricName = "CPUUtilization",
+                    Dimensions = new List<Dimension>
+                {
+                    new Dimension
                     {
-                        Id = "cpu",
-                        MetricStat = new MetricStat()
-                        {
-                            Metric = new Amazon.CloudWatch.Model.Metric()
-                            {
-                                Namespace = "AWS/EC2",
-                                MetricName = "CPUUtilization",
-                                Dimensions = dimensions
-                            },
-                            Period = 3600 * 24,
-                            Stat = "Maximum"
-                        },
-                        ReturnData = true
+                        Name = "InstanceId",
+                        Value = instanceId
                     }
                 },
-                StartTimeUtc = startTime,
-                EndTimeUtc = endTime
-            };
-
-            // Retrieve the metric data and create a list of CPU usage data objects
-            List<double> array = new List<double>();
-            try
-            {
-                var response = await _cloudWatchClient.GetMetricDataAsync(request);
-
-                foreach (var result in response.MetricDataResults[0].Values)
+                    Statistics = new List<string> { "Average" },
+                };                               
+                
+                try
                 {
-                    var usageData = new CpuUsageData()
+                    var response = await _cloudWatchClient.GetMetricStatisticsAsync(request);
+                    CpuUsageData usageData = null;
+
+                    if (response.Datapoints.Count == 0)
                     {
-                        Date = startTime.ToShortDateString(),
-                        Usage = result
-                    };
-                    cpuUsageDataByDays.Add(usageData);
-                    startTime = startTime.AddDays(1);
+                        if (filterTime == "Month" || filterTime == "Week")
+                        {
+                            usageData = new CpuUsageData()
+                            {
+                                Date = $"{currentStartTime.Day}.{currentStartTime.Month}",
+                                Usage = 0,
+                            };
+                        }
+                        else if(filterTime == "Year")
+                        {
+                            usageData = new CpuUsageData()
+                            {
+                                Date = $"{currentStartTime.Month}",
+                                Usage = 0,
+                            };
+                        }
+                        else
+                        {
+                            usageData = new CpuUsageData()
+                            {
+                                Date = $"{currentStartTime.Hour}:{currentStartTime.Minute}",
+                                Usage = 0,
+                            };
+                        }
+                    }
+                    else
+                    {
+                        foreach (var result in response.Datapoints)
+                        {
+                            if (filterTime != "Day" && (result.Timestamp < endTime || currentStartTime == endTime))
+                            {
+                                if (filterTime == "Year")
+                                {
+                                    usageData = new CpuUsageData()
+                                    {
+                                        Date = $"{result.Timestamp.Month}",
+                                        Usage = result.Average * 100,
+                                    };
+                                }
+                                else
+                                {
+                                    usageData = new CpuUsageData()
+                                    {
+                                        Date = $"{result.Timestamp.Day}.{result.Timestamp.Month}",
+                                        Usage = result.Average * 100,
+                                    };
+                                }
+                            }
+                            else if(filterTime == "Day")
+                            {
+                                usageData = new CpuUsageData()
+                                {
+                                    Date = $"{result.Timestamp.Hour}:{result.Timestamp.Minute}",
+                                    Usage = result.Average * 100,
+                                };
+                            }                               
+                        }
+                    }
 
-                    array.Add(result);
+                    array.Add(usageData);
                 }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.ToString());
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.ToString());
+                }
+
+                currentStartTime = filterTime == "Day" ? currentStartTime.AddHours(1) : filterTime == "Year" ? currentStartTime.AddMonths(1): currentStartTime.AddDays(1);
+                currentEndTime = filterTime == "Day" ? currentEndTime.AddHours(1) : filterTime == "Year" ? currentEndTime.AddMonths(1): currentEndTime.AddDays(1);
             }
 
-            // Serialize the CPU usage data to a JSON string and return it as a response
-            //var json = JsonConvert.SerializeObject(cpuUsageData);
             return array;
+        }
+
+        public (int secondsPassed, DateTime startTime) GetSecondsPassed(string timePeriod)
+        {
+            DateTime now = DateTime.UtcNow; // Get the current UTC time
+
+            DateTime startTime;
+            int secondsPassed;
+
+            switch (timePeriod)
+            {
+                case "Day":
+                    startTime = now.Date; // Get the start of the current day
+                    secondsPassed = 60 * 60;
+                    break;
+                case "Week":
+                    startTime = now.Date.AddDays(-(int)now.DayOfWeek); // Get the start of the current week
+                    secondsPassed = 60 * 24 * 60;
+                    break;
+                case "Month":
+                    startTime = now.Date.AddDays(-30); // Get the start of the current month
+                    secondsPassed = 60 * 24 * 60;
+                    break;
+                case "Year":
+                    startTime = now.Date.AddDays(-(int)now.DayOfYear).AddDays(1); ; // Get the start of the current year
+                    secondsPassed = 60 * 24 * 30;
+                    break;
+                default:
+                    startTime = DateTime.MinValue; // Invalid time period, set startTime to DateTime.MinValue
+                    secondsPassed = 0; // Invalid time period, set secondsPassed to 0
+                    break;
+            }
+
+            return (secondsPassed, startTime);
+        }
+
+
+
+        private int getPeriodicTime(string filterTime)
+        {
+            int periodicTTime = 0;
+
+            switch(filterTime)
+            {
+                case "DAY":
+                    periodicTTime = 24 * 3600;
+                    break;
+                case "WEEK":
+                    periodicTTime = 24 * 3600;
+                    break;
+                case "Month":
+                    periodicTTime = 24 * 3600;
+                    break;
+
+            }
+
+            return periodicTTime;
         }
 
         //Please NOTE to change the hard-coded instanceID
