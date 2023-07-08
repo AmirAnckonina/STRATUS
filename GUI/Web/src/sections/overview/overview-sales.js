@@ -146,28 +146,56 @@ const dummyData = Array.from({ length: 30 }, (_, index) => {
     Percentages: Math.floor(Math.random() * 101) // Generates a random number between 0 and 100
   };
 });
-const seriesData = Array.from({ length: percentageValues.length }, (_, i) => {
-  const value = percentageValues[i];
-  return Array.from({ length: daysInMonth }, (_, j) => ({
-    x: `${now.getMonth() + 1}.${j + 1}`,
-    Percentages: value
-  }));
-});
+
 
 export const OverviewSales = (props) => {
-  const { chartSeries, sx } = props;
+  const { selectedMachine, sx } = props;
   const chartOptions = useChartOptions();
-  const [filter, setFilter] = useState('month'); // Default filter is 'month'
+  const [filter, setFilter] = useState('Month'); // Default filter is 'month'
   const [xAxisCategories, setXAxisCategories] = useState(getCategories(filter));
+  const [cpuUsageArray, setcpuUsageArray] = useState([]);
+  const [formattedData, setformattedData] = useState([]);
+
+
+  useEffect(() => {
+    axios.get('https://localhost:7094/GetUserInstanceCpuUsageDataOverTime?instanceId=' + selectedMachine + '&filterTime=' + filter)
+    .then(response => {
+      const data = response.data.data;
+      console.log('over time', data);
+      setcpuUsageArray(data); 
+      const newData = data.map(item => ({
+        x: item.date,
+        Percentages: item.usage,}));
+      setformattedData(newData); 
+       
+    })
+    .catch(error => console.error(error));
+    },[]);
 
   const handleFilterChange = (event) => {
     const newFilter = event.target.value;
+    console.log('filterL', newFilter);
+    console.log('machine: ', selectedMachine);
     setFilter(newFilter);
+
+    axios.get('https://localhost:7094/GetUserInstanceCpuUsageDataOverTime?instanceId=' + selectedMachine + '&filterTime=' + newFilter)
+    .then(response => {
+      const data = response.data.data;
+      console.log('over time', data);
+      setcpuUsageArray(data); 
+      const newData = data.map(item => ({
+        x: item.date,
+        Percentages: item.usage,}));
+      setformattedData(newData); 
+       
+    })
+    .catch(error => console.error(error));
   };
 
   useEffect(() => {
     setXAxisCategories(getCategories(filter));
   }, [filter]);
+
 
 
   return (
@@ -197,13 +225,13 @@ export const OverviewSales = (props) => {
             value={filter}
             onChange={handleFilterChange}
           >
-            <FormControlLabel value="day" control={<Radio />} label="Day" />
-            <FormControlLabel value="week" control={<Radio />} label="Week" />
-            <FormControlLabel value="month" control={<Radio />} label="Month" />
-            <FormControlLabel value="year" control={<Radio />} label="Year" />
+            <FormControlLabel value="Day" control={<Radio />} label="Day" />
+            <FormControlLabel value="Week" control={<Radio />} label="Week" />
+            <FormControlLabel value="Month" control={<Radio />} label="Month" />
+            <FormControlLabel value="Year" control={<Radio />} label="Year" />
           </RadioGroup>
         </FormControl>
-        <AreaChart width={730} height={350} data={dummyData}
+        <AreaChart width={730} height={350} data={formattedData}
           margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
           <defs>
             <linearGradient id="colorUv" x1="0" y1="0" x2="0" y2="1">
@@ -241,6 +269,6 @@ export const OverviewSales = (props) => {
 };
 
 OverviewSales.protoTypes = {
-  chartSeries: PropTypes.array.isRequired,
+  selectedMachine: PropTypes.string,
   sx: PropTypes.object
 };
