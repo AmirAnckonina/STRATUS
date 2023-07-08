@@ -50,9 +50,21 @@ namespace StratusApp.Controllers
         {
             var totalMemorySizeResponse = new StratusResponse<string>();
 
-            //totalMemorySizeResponse.Data = await _prometheusClient.GetTotalMemorySizeInGB(instance);
+            totalMemorySizeResponse.Data = await _prometheusClient.GetTotalMemorySizeInGB(instance);
 
             return Ok(totalMemorySizeResponse);
         }
+
+        [HttpGet("GetAvgFreeMemorySizeInGB")]
+        public async Task<ActionResult<StratusResponse<string>>> GetAvgFreeMemorySizeInGB(string instance, string timeFilter ="1m")
+        {
+            var freeMemorySizeResponse = new StratusResponse<string>();
+
+            freeMemorySizeResponse.Data = await _prometheusClient.GetAvgFreeMemorySizeInGB(instance, timeFilter);
+
+            return Ok(freeMemorySizeResponse);
+        }
+
+
     }
 }

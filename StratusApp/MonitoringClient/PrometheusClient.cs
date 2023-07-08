@@ -1,4 +1,5 @@
 ﻿using System.Net.Http;
+using System.Reflection;
 using System.Security.AccessControl;
 using static System.Net.WebRequestMethods;
 
@@ -51,21 +52,37 @@ namespace MonitoringClient
                 $"{instanceAddrWithPort}" + "',mountpoint='/'}" + $"[{timeFilter}])/(1024^3)";
 
             Uri endPointWithQuery = _requestsUtils.CreateEndPointRequestUri(PROM_BASE_URL, PROM_QUERY_PATH, query);
-            HttpResponseMessage getDiskSizeResponse = await _promHttpClient.GetAsync(endPointWithQuery);
+            HttpResponseMessage getAvgAvailableDiskSpaceResponse = await _promHttpClient.GetAsync(endPointWithQuery);
 
             // Should decide the return type.
-            return await getDiskSizeResponse.Content.ReadAsStringAsync();
+            return await getAvgAvailableDiskSpaceResponse.Content.ReadAsStringAsync();
         }
 
         
-        /*public async Task<string> GetTotalMemorySizeInGB(string instanceAddr)
+        public async Task<string> GetTotalMemorySizeInGB(string instanceAddr)
         {
             string instanceAddrWithPort = _requestsUtils.ConcateInstanceAddrWithPort(instanceAddr);
-            *//*string query = "" +
-                ""*//*
+            string query = "query=node_memory_MemTotal_bytes{instance='" +
+                $"{instanceAddrWithPort}" + "'})/(1024^3)";
 
+            Uri endPointWithQuery = _requestsUtils.CreateEndPointRequestUri(PROM_BASE_URL, PROM_QUERY_PATH, query);
+            HttpResponseMessage getTotalMemorySizeResponse = await _promHttpClient.GetAsync(endPointWithQuery);
 
-            return await  
-        }*/
+            // Should decide the return type.
+            return await getTotalMemorySizeResponse.Content.ReadAsStringAsync();
+        }
+
+        public async Task<string> GetAvgFreeMemorySizeInGB(string instanceAddr, string timeFilter)
+        {
+            string instanceAddrWithPort = _requestsUtils.ConcateInstanceAddrWithPort(instanceAddr);
+            string query = "query=avg_over_time(node_memory_MemFree_bytes{instance='" +
+                $"{instanceAddrWithPort}" + "'}" + $"[{timeFilter}])/(1024^3)";
+
+            Uri endPointWithQuery = _requestsUtils.CreateEndPointRequestUri(PROM_BASE_URL, PROM_QUERY_PATH, query);
+            HttpResponseMessage getAvgFreeMemorySizeResponse = await _promHttpClient.GetAsync(endPointWithQuery);
+
+            // Should decide the return type.
+            return await getAvgFreeMemorySizeResponse.Content.ReadAsStringAsync();
+        }
     }
 }
