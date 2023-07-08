@@ -1,30 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using Amazon;
-using Amazon.CloudWatch;
+﻿using Amazon;
 using Amazon.CloudWatch.Model;
 using Amazon.Runtime;
 using Amazon.EC2;
-using Amazon.Runtime.SharedInterfaces;
 using Amazon.Pricing;
-using System.Text.Json;
-using System.Xml.Linq;
-using Newtonsoft.Json.Linq;
-using System.Text.RegularExpressions;
-using System.Net;
-using Amazon.Pricing.Model;
-using Amazon.CostExplorer.Model;
 using Amazon.EC2.Model;
-using System.Net.Sockets;
-using CloudApiClient.DTO;
 using CloudApiClient.Utils;
-using Microsoft.VisualBasic;
-using System.Linq.Expressions;
-using Amazon.CostExplorer;
-using DateInterval = Amazon.CostExplorer.Model.DateInterval;
 using CloudApiClient.AwsServices;
-
+using CloudApiClient.DTO;
 
 namespace CloudApiClient
 {
@@ -104,9 +86,9 @@ namespace CloudApiClient
         //}
 
 
-        public async Task<List<double>> GetInstanceCpuUsageOverTime(string instanceId, string filterTime)
+        public async Task<List<CpuUsageData>> GetInstanceCpuUsageOverTime(string instanceId, string filterTime)
         {
-            return await _cloudWatchService.GetInstanceCpuUsageOverTime(instanceId); 
+            return await _cloudWatchService.GetInstanceCpuUsageOverTime(instanceId, filterTime); 
         }
 
         public async Task<List<Instance>> GetInstances()
