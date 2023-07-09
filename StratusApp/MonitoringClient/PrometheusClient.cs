@@ -9,7 +9,7 @@ namespace MonitoringClient
     {
         private const string PROM_QUERY_PATH =      "/api/v1/query";
         private const string PROM_BASE_URL =        "http://localhost:9090/";
-
+        //Test
 
         private HttpClient _promHttpClient;
         private PrometheusRequestUtils _requestsUtils;
