@@ -3,6 +3,7 @@ using System.Reflection;
 using System.Security.AccessControl;
 using static System.Net.WebRequestMethods;
 
+
 namespace MonitoringClient
 {
     public class PrometheusClient
@@ -22,12 +23,13 @@ namespace MonitoringClient
             _promHttpClient = new HttpClient();
         }
 
-        public async Task<string> GetCpuUsage(string instanceAddr)
+        public async Task<string> GetCpuUsage(string instanceAddr, string timeFilter)
         {
             string instanceAddrWithPort = _requestsUtils.ConcateInstanceAddrWithPort(instanceAddr);
-            string query = "query=node_cpu_seconds_total{instance='" + $"{instanceAddrWithPort}" + "'}";
+            //string query = "query=node_cpu_seconds_total{instance='" + $"{instanceAddrWithPort}" + "'}";
+            string query = "query=(avg by(instance) (rate(node_cpu_seconds_total{instance='" + $"{instanceAddrWithPort}" + "'}" + $"[{timeFilter}]) * (100)))";
             Uri endPointWithQuery = _requestsUtils.CreateEndPointRequestUri(PROM_BASE_URL, PROM_QUERY_PATH, query);
-            HttpResponseMessage getCpuUsageResponse = await _promHttpClient.GetAsync(endPointWithQuery); 
+            HttpResponseMessage getCpuUsageResponse = await _promHttpClient.GetAsync(endPointWithQuery);
 
             // Should decide the return type.
             return await getCpuUsageResponse.Content.ReadAsStringAsync();
