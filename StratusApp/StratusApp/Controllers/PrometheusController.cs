@@ -15,6 +15,17 @@ namespace StratusApp.Controllers
             _prometheusClient = new MonitoringClient.PrometheusClient(); 
         }
 
+        [HttpGet("GetNumberOfvCPU")]
+        public async Task<ActionResult<StratusResponse<List<Datapoint>>>> GetNumberOfvCPU(string instance)
+        {
+            var cpuUsageResponse = new StratusResponse<string>();
+
+            cpuUsageResponse.Data = await _prometheusClient.GetNumberOfvCPU(instance);
+
+            return Ok(cpuUsageResponse);
+        }
+
+
         [HttpGet("GetInstanceCpuUsage")]
         public async Task<ActionResult<StratusResponse<List<Datapoint>>>> GetInstanceCpuUsage(string instance, string timeFilter = "4w")
         {
@@ -26,7 +37,7 @@ namespace StratusApp.Controllers
         }
 
         [HttpGet("GetTotalDiskSizeInGB")]
-        public async Task<ActionResult<StratusResponse<string>>> GetTotalDiskSizeInGB(string instance)
+        public async Task<ActionResult<StratusResponse<string>>> GetTotalDiskSizeInGB(string instance = "34.125.220.240")
         {
             var diskSizeResponse = new StratusResponse<string>();
 
@@ -35,8 +46,8 @@ namespace StratusApp.Controllers
             return Ok(diskSizeResponse);
         }
 
-        [HttpGet("GetAvgAvailableDiskSpaceInGB")]
-        public async Task<ActionResult<StratusResponse<string>>> GetAvgAvailableDiskSpaceInGB(string instance, string timeFilter = "4w")
+        [HttpGet("GetAvgFreeDiskSpaceInGB")]
+        public async Task<ActionResult<StratusResponse<string>>> GetAvgFreeDiskSpaceInGB(string instance, string timeFilter = "4w")
         {
             var avgAvailableDiskSpaceResponse = new StratusResponse<string>();
 

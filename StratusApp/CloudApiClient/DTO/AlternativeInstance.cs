@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -8,6 +9,7 @@ namespace CloudApiClient.DTO
 {
     public class AlternativeInstance
     {
+        [Key]
         public string InstanceName { get; set; }
         public string HourlyRate { get; set; }
         public string vCPU { get; set; }
