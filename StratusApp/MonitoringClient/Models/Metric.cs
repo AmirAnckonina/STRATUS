@@ -3,18 +3,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace MonitoringClient.Models
 {
-    public class PrometheusResponse
+    public class Metric
     {
-        [JsonProperty("status")]
-        public string Status { get; set; }
-
-        [JsonProperty("data")]
-        public PrometheusData? Data { get; set; }
+        //public object? MetricObj { get; set; } 
     }
 }
