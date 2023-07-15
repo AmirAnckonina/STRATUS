@@ -26,6 +26,7 @@ const Page = () => {
   const [statistics, setStatistics] = useState([])
   const [machines, setMachine] = useState([])
   const [selectedMachine, setSelectedMachine] = useState('')
+  const [cpuUtilizations, setcpuUtilizations] = useState([])
  
   useEffect(() => {
   axios.get('https://localhost:7094/GetUserInstanceData')
@@ -39,6 +40,15 @@ const Page = () => {
   })
   .catch(error => console.error(error));
   },[]);
+
+  useEffect(() => {
+    axios.get('https://localhost:7094/setcpuUtilizations?instanceId=' + selectedMachine)
+    .then(response => {
+      const data = response.data.data;
+      setcpuUtilizations(data);
+    })
+    .catch(error => console.error(error));
+    },[]);
   
   axios.get('https://localhost:7094/GetInstanceCPUStatistics?instanceId=' + selectedMachine)
     .then(response => {
@@ -60,6 +70,14 @@ const Page = () => {
 
   })
   .catch(error => console.error(error));
+
+  axios.get('https://localhost:7094/setcpuUtilizations?instanceId=' + selectedMachine)
+    .then(response => {
+      const data = response.data.data;
+      setcpuUtilizations(data);
+    })
+    .catch(error => console.error(error));
+  
   };
   return (
   <>
@@ -150,8 +168,8 @@ const Page = () => {
             lg={4}
           >
             <OverviewCpuUtilization
-              chartSeries={[63, 15, 22]}
-              labels={['CPU 1', 'CPU 2', 'CPU 3']}
+              chartSeries={cpuUtilizations.map((element) => element.utilizationsPercentages)}
+              labels={cpuUtilizations.map((element) => 'CPU ' + element.cpuIndex)}
               sx={{ height: '100%' }}
             />
           </Grid>
