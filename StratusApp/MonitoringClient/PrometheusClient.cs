@@ -21,7 +21,7 @@ namespace MonitoringClient
         private HttpClient _promHttpClient;
         private PrometheusRequestUtils _requestsUtils;
         private PrometheusResponseUtils _responseUtils;
-        private AlertManager _alertManager;
+        private readonly AlertManager _alertManager;
         
         public PrometheusClient()
         {

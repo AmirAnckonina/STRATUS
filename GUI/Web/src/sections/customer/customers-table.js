@@ -39,7 +39,8 @@ export const CustomersTable = (props) => {
     // Fetch data using Axios when the component mounts
     axios.get('https://localhost:7094/GetAlerts')
       .then((response) => {
-        setItems(response.data);
+        console.log('data:', response.data);
+        setItems(response.data.data);
       })
       .catch((error) => {
         console.error('Error fetching data:', error);
@@ -79,10 +80,10 @@ export const CustomersTable = (props) => {
                   Type
                 </TableCell>
                 <TableCell>
-                  Date & Time
+                  Creation alert time
                 </TableCell>
                 <TableCell>
-                  Under usage date & time
+                  Under usage detected time
                 </TableCell>
                 <TableCell>
                   Average usage percentage
@@ -91,12 +92,12 @@ export const CustomersTable = (props) => {
             </TableHead>
             <TableBody>
               {items.map((alert) => {
-                const isSelected = selected.includes(alert.id);
+                const isSelected = selected.includes(alert.machineId);
                 const AlertType = alert.type
-                const alertMachineIP = alert.machineIP
-                const alertUnderUsageDateTime = alert.underUsageDateTime
-                const alertCreatedAt = format(new Date(alert.createdAt), 'dd/MM/yyyy HH:mm:ss');
-                const averageUsage = parseFloat(alert.averageUsage);
+                const alertMachineIP = alert.machineId
+                const alertUnderUsageDateTime = format(new Date(alert.underUsageDetectedTime), 'dd/MM/yyyy HH:mm:ss');
+                const alertCreatedAt = format(new Date(alert.creationTime), 'dd/MM/yyyy HH:mm:ss');
+                const averageUsage = parseFloat(alert.percetageUsage);
 
                 return (
                   <TableRow

@@ -25,6 +25,15 @@ namespace MonitoringClient
 
         private void InitTimer(double interval = 1000 * 60)
         {
+            // update table with new data and delete records that machine id that was terminated
+            _alerts.Add(new AlertData()
+            {
+                MachineId = "1",
+                Type = eAlertType.CPU,
+                CreationTime = DateTime.Now,
+                UnderUsageDetectedTime = DateTime.Now.AddMinutes(-10)
+            });
+
             _timer = new System.Timers.Timer();
             _timer.Interval = interval; // should be confiugre by the user
             _timer.Elapsed += timer_Elapsed;
