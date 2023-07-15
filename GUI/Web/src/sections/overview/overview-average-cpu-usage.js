@@ -12,7 +12,7 @@ import {
   Typography
 } from '@mui/material';
 
-export const OverviewTasksProgress = (props) => {
+export const OverviewAverageCpuUsage = (props) => {
   const { value, sx } = props;
 
   return (
@@ -68,7 +68,7 @@ export const OverviewTasksProgress = (props) => {
   );
 };
 
-OverviewTasksProgress.propTypes = {
+OverviewAverageCpuUsage.propTypes = {
   value: PropTypes.number.isRequired,
   sx: PropTypes.object
 };

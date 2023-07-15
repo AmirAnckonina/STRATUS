@@ -7,13 +7,13 @@ import PlusIcon from '@heroicons/react/24/solid/PlusIcon';
 import { Box, Button, Container, Stack, SvgIcon, Typography } from '@mui/material';
 import { useSelection } from 'src/hooks/use-selection';
 import { Layout as DashboardLayout } from 'src/layouts/dashboard/layout';
-import { CustomersTable } from 'src/sections/customer/customers-table';
-import { CustomersSearch } from 'src/sections/customer/customers-search';
+import { AlertsTable } from 'src/sections/alert/alert-table';
+import { AlertsSearch } from 'src/sections/alert/alert-search';
 import { applyPagination } from 'src/utils/apply-pagination';
 
 const now = new Date();
 
-const useCustomers = (page, rowsPerPage) => {
+const useAlerts = (page, rowsPerPage) => {
   return useMemo(
     () => {
       return applyPagination([], page, rowsPerPage);
@@ -22,21 +22,21 @@ const useCustomers = (page, rowsPerPage) => {
   );
 };
 
-const useCustomerIds = (customers) => {
+const useAlertIds = (Alerts) => {
   return useMemo(
     () => {
-      return customers.map((customer) => customer.id);
+      return Alerts.map((Alert) => Alert.id);
     },
-    [customers]
+    [Alerts]
   );
 };
 
 const Page = () => {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
-  const customers = useCustomers(page, rowsPerPage);
-  const customersIds = useCustomerIds(customers);
-  const customersSelection = useSelection(customersIds);
+  const Alerts = useAlerts(page, rowsPerPage);
+  const AlertsIds = useAlertIds(Alerts);
+  const AlertsSelection = useSelection(AlertsIds);
 
   const handlePageChange = useCallback(
     (event, value) => {
@@ -76,7 +76,33 @@ const Page = () => {
               <Stack spacing={1}>
                 <Typography variant="h4">
                 Alerts
-                </Typography>                
+                </Typography>   
+                <Stack
+                alignItems="center"
+                direction="row"
+                spacing={1}
+              >
+                <Button
+                  color="inherit"
+                  startIcon={(
+                    <SvgIcon fontSize="small">
+                      <ArrowUpOnSquareIcon />
+                    </SvgIcon>
+                  )}
+                >
+                  Import
+                </Button>
+                <Button
+                  color="inherit"
+                  startIcon={(
+                    <SvgIcon fontSize="small">
+                      <ArrowDownOnSquareIcon />
+                    </SvgIcon>
+                  )}
+                >
+                  Export
+                </Button>
+              </Stack>             
               </Stack>
               <div>
                 <Button
@@ -91,19 +117,19 @@ const Page = () => {
                 </Button>
               </div>
             </Stack>
-            <CustomersSearch />
-            <CustomersTable
+            <AlertsSearch />
+            <AlertsTable
               count={0}
-              items={customers}
-              onDeselectAll={customersSelection.handleDeselectAll}
-              onDeselectOne={customersSelection.handleDeselectOne}
+              items={Alerts}
+              onDeselectAll={AlertsSelection.handleDeselectAll}
+              onDeselectOne={AlertsSelection.handleDeselectOne}
               onPageChange={handlePageChange}
               onRowsPerPageChange={handleRowsPerPageChange}
-              onSelectAll={customersSelection.handleSelectAll}
-              onSelectOne={customersSelection.handleSelectOne}
+              onSelectAll={AlertsSelection.handleSelectAll}
+              onSelectOne={AlertsSelection.handleSelectOne}
               page={page}
               rowsPerPage={rowsPerPage}
-              selected={customersSelection.selected}
+              selected={AlertsSelection.selected}
             />
           </Stack>
         </Container>

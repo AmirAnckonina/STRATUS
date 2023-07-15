@@ -19,7 +19,7 @@ import { Scrollbar } from 'src/components/scrollbar';
 import { getInitials } from 'src/utils/get-initials';
 import axios from 'axios';
 
-export const CustomersTable = (props) => {
+export const AlertsTable = (props) => {
   const {
     count = 0,
     onDeselectAll,
@@ -148,7 +148,7 @@ export const CustomersTable = (props) => {
   );
 };
 
-CustomersTable.propTypes = {
+AlertsTable.propTypes = {
   count: PropTypes.number,
   onDeselectAll: PropTypes.func,
   onDeselectOne: PropTypes.func,

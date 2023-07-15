@@ -3,7 +3,7 @@ import CurrencyDollarIcon from '@heroicons/react/24/solid/CurrencyDollarIcon';
 import PlusIcon from '@heroicons/react/24/solid/PlusIcon';
 import { Avatar, Card, CardContent, Stack, SvgIcon, Typography } from '@mui/material';
 
-export const OverviewTotalProfit = (props) => {
+export const OverviewSumCpuUsage = (props) => {
   const { value, sx } = props;
 
   return (
@@ -43,7 +43,7 @@ export const OverviewTotalProfit = (props) => {
   );
 };
 
-OverviewTotalProfit.propTypes = {
+OverviewSumCpuUsage.propTypes = {
   value: PropTypes.string,
   sx: PropTypes.object
 };
