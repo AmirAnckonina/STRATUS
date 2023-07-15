@@ -114,9 +114,9 @@ namespace MonitoringClient
             return await getAvgFreeMemorySizeResponse.Content.ReadAsStringAsync();
         }
 
-        public async Task<List<AlertData>> GetAlerts(string instance)
+        public List<AlertData> GetAlerts()
         {
-            return _alertManager.GetAlertTable();            
+            return _alertManager.GetAlertTable();
         }
     }
 }
