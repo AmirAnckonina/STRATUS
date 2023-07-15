@@ -2,9 +2,11 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
+using MongoDB.Driver;
 using StratusApp.Data;
 using StratusApp.Models.MongoDB;
 using StratusApp.Services;
+using StratusApp.Services.MongoDBServices;
 using System.Text.Json.Serialization;
 
 namespace StratusApp
@@ -20,15 +22,19 @@ namespace StratusApp
 
         public void ConfigureServices(IServiceCollection services)
         {
+            services.Configure<MyDatabaseSettings>(ConfigRoot.GetSection(nameof(MyDatabaseSettings)));
+
+            services.AddSingleton<MyDatabaseSettings>(sp =>
+              sp.GetRequiredService<IOptions<MyDatabaseSettings>>().Value);
             services.AddControllers().AddJsonOptions(options =>
             {
                 options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
             });
 
-            services.Configure<MyDatabaseSettings>(ConfigRoot.GetSection(nameof(MyDatabaseSettings)));
-
-            services.AddSingleton<MyDatabaseSettings>(sp =>
-              sp.GetRequiredService<IOptions<MyDatabaseSettings>>().Value);
+           // services.Configure<MyDatabaseSettings>(ConfigRoot.GetSection(nameof(MyDatabaseSettings)));
+           //
+           // services.AddSingleton<MyDatabaseSettings>(sp =>
+           //   sp.GetRequiredService<IOptions<MyDatabaseSettings>>().Value);
 
             // Add services to the container.
             services.AddDbContext<DataContext>(options =>
@@ -50,6 +56,8 @@ namespace StratusApp
             services.AddSwaggerGen();
             services.AddTransient<IStratusService, StratusService>();
 
+            // Add MongoDB connection
+            services.AddSingleton<MongoDBService>();
             //services.AddRazorPages();
         }
 

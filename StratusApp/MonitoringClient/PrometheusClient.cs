@@ -155,5 +155,6 @@ namespace MonitoringClient
             // TODO: Impl calling to all methods under PromClient (Disk, Memrory, Cpu..)
             throw new NotImplementedException();
         }
+
     }
 }
