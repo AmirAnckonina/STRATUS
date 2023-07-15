@@ -5,6 +5,7 @@ namespace Utils.DTO
     public class InstanceDetails
     {
         public string Id { get; set; }
+
         public string Type { get; set; }
 
         public string OperatingSystem { get; set; }

@@ -134,9 +134,32 @@ namespace StratusApp.Controllers
             }
         }
 
-      
+        [HttpGet("GetAllUserResourcesDetails")]
+        public async Task<ActionResult<StratusResponse<List<InstanceDetailsDTO>>>> GetAllUserResourcesDetails(string userEmail)
+        {
+            try
+            {
+                var getAllUserResourcesDetailsResponse = new StratusResponse<List<InstanceDetailsDTO>>();
+                List<InstanceDetailsDTO> userInstancesDetails = new List<InstanceDetailsDTO>();
+
+                List<string> userInstacesAddresses = new List<string>();
+                //List<string> userInstaces = _dbClient.GetAllUserResourcesDetails(userEmail);
+
+                foreach(string instanceAddr in userInstacesAddresses) 
+                {
+                    // For InstanceId = "x.x.x.x" we need to build single UserInstanceDetailsDTO and add it to the resultList.
+                    InstanceDetailsDTO singleInstanceDetails = await _prometheusClient.GetInstanceSpecifications(instanceAddr);
+                    userInstancesDetails.Add(singleInstanceDetails);
+                }
 
 
+                return Ok(getAllUserResourcesDetailsResponse);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
 
 
     }

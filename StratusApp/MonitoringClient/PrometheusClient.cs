@@ -150,6 +150,11 @@ namespace MonitoringClient
             return _alertManager.GetAlertTable();
         }
 
-        
+        public Task<InstanceDetailsDTO> GetInstanceSpecifications(string instanceAddr)
+        {
+            // TODO: Impl calling to all methods under PromClient (Disk, Memrory, Cpu..)
+            throw new NotImplementedException();
+        }
+
     }
 }
