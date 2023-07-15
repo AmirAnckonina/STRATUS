@@ -15,8 +15,8 @@ import {
   Unstable_Grid2 as Grid
 } from '@mui/material';
 import { Layout as DashboardLayout } from 'src/layouts/dashboard/layout';
-import { CompanyCard } from 'src/sections/companies/company-card';
-import { CompaniesSearch } from 'src/sections/companies/companies-search';
+import { CustomMachineCard } from 'src/sections/CustomMachines/custom-machine-card';
+import { CustomMachinesSearch } from 'src/sections/CustomMachines/custom-machines-search';
 
 const Page = () => {
   const [machines, setMachines] = useState([]);
@@ -105,12 +105,12 @@ const endIndex = startIndex + 6;
               </Button>
             </div>
           </Stack>
-          <CompaniesSearch />
+          <CustomMachinesSearch />
           <Grid container spacing={3}>
               {machines.slice(startIndex, endIndex).map((machine) => (
                 <Grid xs={12} md={6} lg={4} key={machine?.id}>
                   {machine ? (
-                    <CompanyCard machine={machine} />
+                    <CustomMachineCard machine={machine} />
                   ) : (
                     <div>Loading...</div>
                   )}

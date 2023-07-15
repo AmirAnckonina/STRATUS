@@ -27,7 +27,7 @@ const statusMap = {
   refunded: 'error'
 };
 
-export const OverviewLatestOrders = (props) => {
+export const OverviewLatestMachines = (props) => {
   const { orders = [], sx } = props;
   const [machines, setData] = useState([])
   useEffect(() => {
@@ -114,7 +114,7 @@ export const OverviewLatestOrders = (props) => {
   );
 };
 
-OverviewLatestOrders.prototype = {
+OverviewLatestMachines.prototype = {
   orders: PropTypes.array,
   sx: PropTypes.object
 };

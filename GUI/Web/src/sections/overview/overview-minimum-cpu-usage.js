@@ -1,11 +1,13 @@
 import PropTypes from 'prop-types';
 import ArrowDownIcon from '@heroicons/react/24/solid/ArrowDownIcon';
 import ArrowUpIcon from '@heroicons/react/24/solid/ArrowUpIcon';
+import CurrencyDollarIcon from '@heroicons/react/24/solid/CurrencyDollarIcon';
 import ArrowUpRightIcon from '@heroicons/react/24/solid/ArrowUpRightIcon';
-import UsersIcon from '@heroicons/react/24/solid/UsersIcon';
+import ArrowDownLeftIcon from '@heroicons/react/24/solid/ArrowDownLeftIcon';
 import { Avatar, Card, CardContent, Stack, SvgIcon, Typography } from '@mui/material';
+import ArrowTopRightOnSquareIcon from '@heroicons/react/24/solid/ArrowTopRightOnSquareIcon';
 
-export const OverviewTotalCustomers = (props) => {
+export const OverviewMinimumCpuUsage = (props) => {
   const { difference, positive = false, sx, value } = props;
 
   return (
@@ -22,7 +24,7 @@ export const OverviewTotalCustomers = (props) => {
               color="text.secondary"
               variant="overline"
             >
-              Maximum Usage
+              Minimum Usage
             </Typography>
             <Typography variant="h4">
               {value}
@@ -30,13 +32,13 @@ export const OverviewTotalCustomers = (props) => {
           </Stack>
           <Avatar
             sx={{
-              backgroundColor: 'success.main',
+              backgroundColor: 'error.main',
               height: 56,
               width: 56
             }}
           >
             <SvgIcon>
-              <ArrowUpRightIcon />
+              <ArrowDownLeftIcon />
             </SvgIcon>
           </Avatar>
         </Stack>
@@ -75,10 +77,9 @@ export const OverviewTotalCustomers = (props) => {
   );
 };
 
-OverviewTotalCustomers.propTypes = {
+OverviewMinimumCpuUsage.prototypes = {
   difference: PropTypes.number,
   positive: PropTypes.bool,
-  value: PropTypes.string.isRequired,
-  sx: PropTypes.object
+  sx: PropTypes.object,
+  value: PropTypes.string.isRequired
 };
-
