@@ -47,7 +47,8 @@ const Page = () => {
 
   const handleRowsPerPageChange = useCallback(
     (event) => {
-      setRowsPerPage(event.target.value);
+      console.log('rows value:', event);
+      setRowsPerPage(event);
     },
     []
   );
