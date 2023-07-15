@@ -7,6 +7,7 @@ using Amazon.EC2.Model;
 using Microsoft.AspNetCore.Cors;
 using CloudApiClient.DTO;
 using CloudApiClient.Utils;
+using StratusApp.Data;
 
 namespace StratusApp.Controllers
 {

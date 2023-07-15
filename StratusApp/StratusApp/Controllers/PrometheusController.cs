@@ -26,15 +26,25 @@ namespace StratusApp.Controllers
         }
 
 
-        [HttpGet("GetInstanceCpuUsage")]
-        public async Task<ActionResult<StratusResponse<List<Datapoint>>>> GetInstanceCpuUsage(string instance, string timeFilter = "4w")
+        [HttpGet("GetCpuUsageUtilization")]
+        public async Task<ActionResult<StratusResponse<List<Datapoint>>>> GetCpuUsageUtilization(string instance, string timeFilter = "4w")
         {
             var cpuUsageResponse = new StratusResponse<string>();
 
-            cpuUsageResponse.Data = await _prometheusClient.GetCpuUsage(instance, timeFilter);
+            cpuUsageResponse.Data = await _prometheusClient.GetAvgCpuUsageUtilization(instance, timeFilter);
 
             return Ok(cpuUsageResponse);
         }
+
+       /* [HttpGet("GetCpuUsageUtilization")]
+        public async Task<ActionResult<StratusResponse<List<Datapoint>>>> GetAvgCpuUsageUtilization(string instance, string timeFilter = "4w")
+        {
+            var cpuUsageResponse = new StratusResponse<string>();
+
+            cpuUsageResponse.Data = await _prometheusClient.GetAvgCpuUsageUtilization(instance, timeFilter);
+
+            return Ok(cpuUsageResponse);
+        }*/
 
         [HttpGet("GetTotalDiskSizeInGB")]
         public async Task<ActionResult<StratusResponse<string>>> GetTotalDiskSizeInGB(string instance = "34.125.220.240")

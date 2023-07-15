@@ -1,6 +1,9 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 using StratusApp.Data;
+using StratusApp.Models.MongoDB;
 using StratusApp.Services;
 using System.Text.Json.Serialization;
 
@@ -21,6 +24,11 @@ namespace StratusApp
             {
                 options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
             });
+
+            services.Configure<MyDatabaseSettings>(ConfigRoot.GetSection(nameof(MyDatabaseSettings)));
+
+            services.AddSingleton<MyDatabaseSettings>(sp =>
+              sp.GetRequiredService<IOptions<MyDatabaseSettings>>().Value);
 
             // Add services to the container.
             services.AddDbContext<DataContext>(options =>
