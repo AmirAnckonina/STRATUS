@@ -148,7 +148,7 @@ const dummyData = Array.from({ length: 30 }, (_, index) => {
 });
 
 
-export const OverviewSales = (props) => {
+export const OverviewCpuGraph = (props) => {
   const { selectedMachine, sx } = props;
   const chartOptions = useChartOptions();
   const [filter, setFilter] = useState('Month'); // Default filter is 'month'
@@ -268,7 +268,7 @@ export const OverviewSales = (props) => {
   );
 };
 
-OverviewSales.protoTypes = {
+OverviewCpuGraph.protoTypes = {
   selectedMachine: PropTypes.string,
   sx: PropTypes.object
 };

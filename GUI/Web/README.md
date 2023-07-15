@@ -12,8 +12,8 @@
 ## Demo
 
 - [Dashboard Page](https://material-kit-react.devias.io)
-- [Companies Page](https://material-kit-react.devias.io/companies)
-- [Customers Page](https://material-kit-react.devias.io/customers)
+- [CustomMachines Page](https://material-kit-react.devias.io/CustomMachines)
+- [Alerts Page](https://material-kit-react.devias.io/Alerts)
 - [Account Page](https://material-kit-react.devias.io/account)
 - [Settings Page](https://material-kit-react.devias.io/settings)
 - [Login Page](https://material-kit-react.devias.io/auth/login)
@@ -57,7 +57,7 @@ to save more time and design efforts :)
 Within the download you'll find the following directories and files:
 
 ```
-material-kit-react
+startus
 
 ┌── .eslintrc.json
 ├── .gitignore
@@ -82,8 +82,8 @@ material-kit-react
 		├── _app.js
 		├── _document.js
 		├── account.js
-		├── companies.js
-		├── customers.js
+		├── CustomMachines.js
+		├── Alerts.js
 		├── index.js
 		├── products.js
 		└── settings.js

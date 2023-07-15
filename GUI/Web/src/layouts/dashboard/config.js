@@ -21,7 +21,7 @@ export const items = [
   },
   {
     title: 'Alerts',
-    path: '/customers',
+    path: '/alerts',
     icon: (
       <SvgIcon fontSize="small">
         <AlertIconIcon />
@@ -30,7 +30,7 @@ export const items = [
   },
   {
     title: 'Custom Machines',
-    path: '/companies',
+    path: '/CustomMachines',
     icon: (
       <SvgIcon fontSize="small">
         <ShoppingBagIcon />

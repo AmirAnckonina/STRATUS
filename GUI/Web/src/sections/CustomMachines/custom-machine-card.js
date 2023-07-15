@@ -6,7 +6,7 @@ import ShoppingBagIcon from '@heroicons/react/24/solid/ShoppingBagIcon';
 import { Avatar, Box, Card, CardContent, Divider, Stack, SvgIcon, Typography } from '@mui/material';
 
 
-export const CompanyCard = (props) => {
+export const CustomMachineCard = (props) => {
   const { machine } = props;
 
   const handleBuyNowClick = () => {
@@ -102,6 +102,6 @@ export const CompanyCard = (props) => {
   );
 };
 
-CompanyCard.propTypes = {
+CustomMachineCard.propTypes = {
   machine: PropTypes.object.isRequired
 };
