@@ -41,7 +41,7 @@ namespace MonitoringClient
             return await getNoOfvCPU.Content.ReadAsStringAsync();
         }
 
-        public async Task<string> GetCpuUsage(string instanceAddr, string timeFilter)
+        public async Task<string> GetAvgCpuUsageUtilization(string instanceAddr, string timeFilter)
         {
             string instanceAddrWithPort = _requestsUtils.ConcateInstanceAddrWithPort(instanceAddr);
             string query = "query=(avg by(instance) (rate(node_cpu_seconds_total{instance='" + $"{instanceAddrWithPort}" + "'}" + $"[{timeFilter}]) * (100)))";
