@@ -1,4 +1,5 @@
 ﻿using Amazon.CloudWatch.Model;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using MonitoringClient;
 using StratusApp.Models.Responses;
@@ -7,6 +8,7 @@ using Utils.DTO;
 
 namespace StratusApp.Controllers
 {
+    [EnableCors("AllowAnyOrigin")]
     public class PrometheusController : Controller
     {
         private readonly MonitoringClient.PrometheusClient _prometheusClient;
