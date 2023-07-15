@@ -63,7 +63,7 @@ namespace MonitoringClient
 
             if (promRespObj != null)
             {
-                return promRespObj.Data.Result.FirstOrDefault().TimestampAndValue[1]; // TSValue[1];// MetricAndValue.TimestampAndValue.Value;
+                return promRespObj.Data.Result.FirstOrDefault().TimestampAndValue[1];
             }
             else return string.Empty;
             // Should decide the return type.s
