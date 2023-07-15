@@ -6,7 +6,7 @@ using Amazon.Pricing;
 using Amazon.EC2.Model;
 using CloudApiClient.Utils;
 using CloudApiClient.AwsServices;
-using CloudApiClient.DTO;
+using Utils.DTO;
 
 namespace CloudApiClient
 {
@@ -24,7 +24,7 @@ namespace CloudApiClient
         public CloudApiClient()
         {
 
-            //_credentials = new BasicAWSCredentials("");
+            //_credentials = new BasicAWSCredentials();
             _region = RegionEndpoint.USEast1;
             //_cloudWatchClient = new AmazonCloudWatchClient(_credentials, RegionEndpoint.USEast2);
             //_ec2Client = new AmazonEC2Client(_credentials, _region);
@@ -43,9 +43,9 @@ namespace CloudApiClient
         }
 
         // Split it according to the services!!! 
-        public async Task<List<DTO.InstanceDetails>> GetInstanceFormalData()
+        public async Task<List<InstanceDetails>> GetInstanceFormalData()
         {
-            var vms = new List<DTO.InstanceDetails>();
+            var vms = new List<InstanceDetails>();
 
             DescribeInstancesResponse descInstancesResponse = await _ec2Service.DescribeInstancesAsync();
 
@@ -56,7 +56,7 @@ namespace CloudApiClient
                     if (instance != null && instance.State.Name == "running") // filter out non-running instances if desired
                     {
 
-                        var vm = new DTO.InstanceDetails
+                        var vm = new InstanceDetails
                         {
                             Id = instance.InstanceId,
                             OperatingSystem = instance.PlatformDetails,
@@ -97,14 +97,14 @@ namespace CloudApiClient
             return await _ec2Service.GetInstances();
         }
 
-        public async Task<List<DTO.InstanceDetails>> GetMoreFittedInstances(string instanceId)
+        public async Task<List<InstanceDetails>> GetMoreFittedInstances(string instanceId)
         {
             // Get the current VM CPU usage metrics
             var currentInstanceDetails = GetInstanceBasicDetails(instanceId);
 
             InstanceFilterHelper currentVMUsageFilters = CreateVMInstanceFilters(currentInstanceDetails.Result);
 
-            List<DTO.InstanceDetails> fittedInstances = await GetOptionalVms(currentVMUsageFilters, 100);
+            List<InstanceDetails> fittedInstances = await GetOptionalVms(currentVMUsageFilters, 100);
 
             // What is That?
             // availableInstances = await GetAvailableInstances(accessKey, secretKey, region);
@@ -125,7 +125,7 @@ namespace CloudApiClient
         }
 
         // What is that? should be arranged.
-        private InstanceFilterHelper CreateVMInstanceFilters(DTO.InstanceDetails instance)
+        private InstanceFilterHelper CreateVMInstanceFilters(InstanceDetails instance)
         {
             InstanceFilterHelper instanceFilterHelper = new();
 
@@ -144,7 +144,7 @@ namespace CloudApiClient
             return instanceFilterHelper;
         }
 
-        public async Task<List<DTO.InstanceDetails>> GetOptionalVms(InstanceFilterHelper instanceFilters, int maxResults)
+        public async Task<List<InstanceDetails>> GetOptionalVms(InstanceFilterHelper instanceFilters, int maxResults)
         {
             return await _pricingService.GetOptionalVms(instanceFilters, maxResults);
         }
@@ -248,9 +248,9 @@ namespace CloudApiClient
             return instances;
         }
 
-        public async Task<DTO.InstanceDetails> GetInstanceBasicDetails(string instanceId)
+        public async Task<InstanceDetails> GetInstanceBasicDetails(string instanceId)
         {
-            DTO.InstanceDetails instanceDetails = new DTO.InstanceDetails();
+            InstanceDetails instanceDetails = new InstanceDetails();
 
             // Operating System
             instanceDetails.OperatingSystem = await GetInstanceOperatingSystem(instanceId);

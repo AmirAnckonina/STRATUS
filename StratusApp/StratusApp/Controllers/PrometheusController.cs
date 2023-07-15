@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using MonitoringClient;
 using StratusApp.Models.Responses;
 using System.Reflection;
+using Utils.DTO;
 
 namespace StratusApp.Controllers
 {
@@ -25,6 +26,15 @@ namespace StratusApp.Controllers
             return Ok(cpuUsageResponse);
         }
 
+        [HttpGet("GetAlerts")]
+        public async Task<ActionResult<StratusResponse<List<AlertData>>>> GetInstanceCpuUsage(string instance)
+        {
+            var alertResponse = new StratusResponse<List<AlertData>>();
+
+            alertResponse.Data = await _prometheusClient.GetAlerts(instance);
+
+            return Ok(alertResponse);
+        }
 
         [HttpGet("GetCpuUsageUtilization")]
         public async Task<ActionResult<StratusResponse<List<Datapoint>>>> GetCpuUsageUtilization(string instance, string timeFilter = "4w")

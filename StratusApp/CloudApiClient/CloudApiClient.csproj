@@ -7,15 +7,19 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="AWSSDK.CloudWatch" Version="3.7.103.33" />
-    <PackageReference Include="AWSSDK.Core" Version="3.7.106.42" />
-    <PackageReference Include="AWSSDK.CostExplorer" Version="3.7.103.99" />
-    <PackageReference Include="AWSSDK.EC2" Version="3.7.126.3" />
-    <PackageReference Include="AWSSDK.Pricing" Version="3.7.101.48" />
-    <PackageReference Include="HtmlAgilityPack" Version="1.11.46" />
+    <PackageReference Include="AWSSDK.CloudWatch" Version="3.7.104.28" />
+    <PackageReference Include="AWSSDK.Core" Version="3.7.108.2" />
+    <PackageReference Include="AWSSDK.CostExplorer" Version="3.7.103.117" />
+    <PackageReference Include="AWSSDK.EC2" Version="3.7.141" />
+    <PackageReference Include="AWSSDK.Pricing" Version="3.7.102.7" />
+    <PackageReference Include="HtmlAgilityPack" Version="1.11.49" />
     <PackageReference Include="Microsoft.Playwright" Version="1.35.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="System.Text.RegularExpressions" Version="4.3.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Utils\Utils.csproj" />
   </ItemGroup>
 
 </Project>

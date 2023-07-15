@@ -2,7 +2,7 @@
 using Amazon.CloudWatch;
 using Amazon.CloudWatch.Model;
 using Amazon.Runtime;
-using CloudApiClient.DTO;
+using Utils.DTO;
 
 namespace CloudApiClient.AwsServices
 {

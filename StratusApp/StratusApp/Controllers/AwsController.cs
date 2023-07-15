@@ -5,9 +5,10 @@ using StratusApp.Models.Responses;
 using Amazon.CloudWatch.Model;
 using Amazon.EC2.Model;
 using Microsoft.AspNetCore.Cors;
-using CloudApiClient.DTO;
 using CloudApiClient.Utils;
 using StratusApp.Data;
+using Utils.DTO;
+
 
 namespace StratusApp.Controllers
 {
