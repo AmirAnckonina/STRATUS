@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using StratusApp.Models;
-using CloudApiClient.DTO;
+using Utils.DTO;
 
 namespace StratusApp.Data
 {

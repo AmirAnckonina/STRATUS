@@ -9,8 +9,7 @@ namespace MonitoringClient
         private const int CPU_PERCENTAGE_THRESHOLD = 70;
         private const int MEMORY_PERCENTAGE_THRESHOLD = 70;
         private const int STORAGE_PERCENTAGE_THRESHOLD = 70;
-
-        public event 
+        private readonly List<AlertData> _alerts = new List<AlertData>();
 
         public AlertManager()
         {
@@ -20,7 +19,7 @@ namespace MonitoringClient
         internal List<AlertData> GetAlertTable()
         {
             //TBD: return alert table
-            return new List<AlertData> {};
+            return _alerts;
         }
 
         private void InitTimer(double interval = 1000 * 60)
@@ -37,6 +36,13 @@ namespace MonitoringClient
             // send request to promethius
             // processing the response
             // update table with new data and delete records that machine id that was terminated
+            _alerts.Add(new AlertData()
+            {
+                MachineId = "1",
+                Type = eAlertType.CPU,
+                CreationTime = DateTime.Now,
+                UnderUsageDetectedTime = DateTime.Now.AddMinutes(-10)
+            });
         }
 
         ~AlertManager() { _timer.Stop(); }
