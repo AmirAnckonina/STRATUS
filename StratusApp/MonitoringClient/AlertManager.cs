@@ -10,7 +10,7 @@ namespace MonitoringClient
         private const int MEMORY_PERCENTAGE_THRESHOLD = 70;
         private const int STORAGE_PERCENTAGE_THRESHOLD = 70;
 
-        public event 
+        //public event 
 
         public AlertManager()
         {

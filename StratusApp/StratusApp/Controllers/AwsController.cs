@@ -120,5 +120,14 @@ namespace StratusApp.Controllers
 
             return Ok(instanceBasicDetailsResponse);
         }
+        [HttpGet("getAlternativeMachinesWithScraper")]
+        public async Task<ActionResult<StratusResponse<List<AlternativeInstance>>>> getAlternativeMachinesWithScraper()
+        {
+            var instanceBasicDetailsResponse = new StratusResponse<List<AlternativeInstance>>();
+
+            instanceBasicDetailsResponse.Data = await _awsClient.ScrapeInstancesDetails();
+
+            return Ok(instanceBasicDetailsResponse);
+        }
     }
 }
