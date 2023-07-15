@@ -38,65 +38,105 @@ namespace StratusApp.Controllers
             return Ok(alertResponse);
         }
 
-        [HttpGet("GetCpuUsageUtilization")]
-        public async Task<ActionResult<StratusResponse<List<Datapoint>>>> GetCpuUsageUtilization(string instance, string timeFilter = "4w")
+        [HttpGet("GetAvgCpuUsageUtilization")]
+        public async Task<ActionResult<StratusResponse<double>>> GetCpuUsageUtilization(string instance = "34.125.220.240", string timeFilter = "4w")
         {
-            var cpuUsageResponse = new StratusResponse<string>();
+            var cpuUsageResponse = new StratusResponse<double>();
 
             cpuUsageResponse.Data = await _prometheusClient.GetAvgCpuUsageUtilization(instance, timeFilter);
 
             return Ok(cpuUsageResponse);
         }
 
-       /* [HttpGet("GetCpuUsageUtilization")]
-        public async Task<ActionResult<StratusResponse<List<Datapoint>>>> GetAvgCpuUsageUtilization(string instance, string timeFilter = "4w")
+        [HttpGet("GetAvgCpuUtilizationByCpu")]
+        public async Task<ActionResult<StratusResponse<List<SingleCpuUtilizationDTO>>>> GetAvgCpuUtilizationByCpu(string instance, string timeFilter = "4w")
         {
-            var cpuUsageResponse = new StratusResponse<string>();
+            try
+            {
+                var freeMemorySizeResponse = new StratusResponse<List<SingleCpuUtilizationDTO>>();
 
-            cpuUsageResponse.Data = await _prometheusClient.GetAvgCpuUsageUtilization(instance, timeFilter);
+                freeMemorySizeResponse.Data = await _prometheusClient.GetAvgCpuUtilizationByCpu(instance, timeFilter);
 
-            return Ok(cpuUsageResponse);
-        }*/
+                return Ok(freeMemorySizeResponse);
+            }
+            catch (Exception ex) 
+            {
+                return BadRequest(ex.Message);
+            }
+        }
 
         [HttpGet("GetTotalDiskSizeInGB")]
-        public async Task<ActionResult<StratusResponse<string>>> GetTotalDiskSizeInGB(string instance = "34.125.220.240")
+        public async Task<ActionResult<StratusResponse<double>>> GetTotalDiskSizeInGB(string instance = "34.125.220.240")
         {
-            var diskSizeResponse = new StratusResponse<string>();
+            try
+            {
+                var diskSizeResponse = new StratusResponse<double>();
 
-            diskSizeResponse.Data = await _prometheusClient.GetTotalDiskSizeInGB(instance);
+                diskSizeResponse.Data = await _prometheusClient.GetTotalDiskSizeInGB(instance);
 
-            return Ok(diskSizeResponse);
+                return Ok(diskSizeResponse);
+            }
+            catch (Exception ex) 
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         [HttpGet("GetAvgFreeDiskSpaceInGB")]
-        public async Task<ActionResult<StratusResponse<string>>> GetAvgFreeDiskSpaceInGB(string instance, string timeFilter = "4w")
+        public async Task<ActionResult<StratusResponse<double>>> GetAvgFreeDiskSpaceInGB(string instance, string timeFilter = "4w")
         {
-            var avgAvailableDiskSpaceResponse = new StratusResponse<string>();
+            try
+            {
+                var avgAvailableDiskSpaceResponse = new StratusResponse<double>();
 
-            avgAvailableDiskSpaceResponse.Data = await _prometheusClient.GetAvgAvailableDiskSpaceInGB(instance, timeFilter);
+                avgAvailableDiskSpaceResponse.Data = await _prometheusClient.GetAvgFreeDiskSpaceInGB(instance, timeFilter);
 
-            return Ok(avgAvailableDiskSpaceResponse);
+                return Ok(avgAvailableDiskSpaceResponse);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         [HttpGet("GetTotalMemorySizeInGB")]
-        public async Task<ActionResult<StratusResponse<string>>> GetTotalMemorySizeInGB(string instance)
+        public async Task<ActionResult<StratusResponse<double>>> GetTotalMemorySizeInGB(string instance)
         {
-            var totalMemorySizeResponse = new StratusResponse<string>();
+            try
+            {
 
-            totalMemorySizeResponse.Data = await _prometheusClient.GetTotalMemorySizeInGB(instance);
+                var totalMemorySizeResponse = new StratusResponse<double>();
 
-            return Ok(totalMemorySizeResponse);
+                totalMemorySizeResponse.Data = await _prometheusClient.GetTotalMemorySizeInGB(instance);
+
+                return Ok(totalMemorySizeResponse);
+            }
+            catch (Exception ex) 
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         [HttpGet("GetAvgFreeMemorySizeInGB")]
-        public async Task<ActionResult<StratusResponse<string>>> GetAvgFreeMemorySizeInGB(string instance, string timeFilter ="4w")
+        public async Task<ActionResult<StratusResponse<double>>> GetAvgFreeMemorySizeInGB(string instance, string timeFilter ="4w")
         {
-            var freeMemorySizeResponse = new StratusResponse<string>();
+            try
+            {
+                var freeMemorySizeResponse = new StratusResponse<double>();
 
-            freeMemorySizeResponse.Data = await _prometheusClient.GetAvgFreeMemorySizeInGB(instance, timeFilter);
+                freeMemorySizeResponse.Data = await _prometheusClient.GetAvgFreeMemorySizeInGB(instance, timeFilter);
 
-            return Ok(freeMemorySizeResponse);
+                return Ok(freeMemorySizeResponse);
+            }
+            catch (Exception ex) 
+            {
+                return BadRequest(ex.Message);
+            }
         }
+
+      
+
+
 
 
     }
