@@ -13,9 +13,9 @@ using Amazon.EC2.Model;
 using Amazon.EC2;
 using Newtonsoft.Json.Linq;
 using Amazon.Runtime;
-using CloudApiClient.DTO;
 using CloudApiClient.AwsServices.Models;
 using Newtonsoft.Json;
+using Utils.DTO;
 
 namespace CloudApiClient.AwsServices
 {
@@ -52,9 +52,10 @@ namespace CloudApiClient.AwsServices
 
                     Product product = _pricingUtils.BuildProductFromPriceListString(rawPriceListItem);
                     PricePlan pricePlan = _pricingUtils.BuildPricePlanFromPriceListString(rawPriceListItem, product.Sku);
-                    var singlePotentialInstance = new DTO.InstanceDetails()
+                    var singlePotentialInstance = new InstanceDetails()
                     {
                         Id = product.Sku,
+                        Type = product.Attributes.instanceType,
                         Storage = product.Attributes.storage,
                         OperatingSystem = product.Attributes.operatingSystem,
                         CpuSpecifications = product.Attributes.vcpu,

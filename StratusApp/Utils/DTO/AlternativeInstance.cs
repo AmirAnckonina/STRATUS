@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CloudApiClient.DTO
+namespace Utils.DTO
 {
     public class AlternativeInstance
     {

@@ -41,7 +41,7 @@ export const CompanyCard = (props) => {
           variant="h5"
          >
           
-          ID: {machine.id}
+          Type: {machine.type}
         </Typography>
         <Typography
   align="center"
