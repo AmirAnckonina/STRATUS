@@ -27,11 +27,11 @@ namespace StratusApp.Controllers
         }
 
         [HttpGet("GetAlerts")]
-        public async Task<ActionResult<StratusResponse<List<AlertData>>>> GetInstanceCpuUsage(string instance)
+        public async Task<ActionResult<StratusResponse<List<AlertData>>>> GetInstanceCpuUsage()
         {
             var alertResponse = new StratusResponse<List<AlertData>>();
 
-            alertResponse.Data = await _prometheusClient.GetAlerts(instance);
+            alertResponse.Data = _prometheusClient.GetAlerts();
 
             return Ok(alertResponse);
         }
