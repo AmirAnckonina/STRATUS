@@ -1,3 +1,4 @@
+import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { format } from 'date-fns';
 import {
@@ -16,11 +17,11 @@ import {
 } from '@mui/material';
 import { Scrollbar } from 'src/components/scrollbar';
 import { getInitials } from 'src/utils/get-initials';
+import axios from 'axios';
 
 export const CustomersTable = (props) => {
   const {
     count = 0,
-    items = [],
     onDeselectAll,
     onDeselectOne,
     onPageChange = () => {},
@@ -32,8 +33,37 @@ export const CustomersTable = (props) => {
     selected = []
   } = props;
 
-  const selectedSome = (selected.length > 0) && (selected.length < items.length);
-  const selectedAll = (items.length > 0) && (selected.length === items.length);
+  const [items, setItems] = useState([]);
+
+  useEffect(() => {
+    // Fetch data using Axios when the component mounts
+    axios.get('https://localhost:7094/GetAlerts')
+      .then((response) => {
+        setItems(response.data);
+      })
+      .catch((error) => {
+        console.error('Error fetching data:', error);
+      });
+  }, []);
+
+  const selectedSome = selected.length > 0 && selected.length < items.length;
+  const selectedAll = items.length > 0 && selected.length === items.length;
+
+  const handlePageChange = (event, newPage) => {
+    onPageChange(newPage);
+  };
+
+  const handleRowsPerPageChange = (event) => {
+    onRowsPerPageChange(parseInt(event.target.value, 10));
+  };
+
+  const handleSelectAll = (event) => {
+    onSelectAll(event.target.checked);
+  };
+
+  const handleSelectOne = (event, alertId) => {
+    onSelectOne(alertId);
+  };
 
   return (
     <Card>
@@ -42,84 +72,60 @@ export const CustomersTable = (props) => {
           <Table>
             <TableHead>
               <TableRow>
-                <TableCell padding="checkbox">
-                  <Checkbox
-                    checked={selectedAll}
-                    indeterminate={selectedSome}
-                    onChange={(event) => {
-                      if (event.target.checked) {
-                        onSelectAll?.();
-                      } else {
-                        onDeselectAll?.();
-                      }
-                    }}
-                  />
+                <TableCell>
+                  Machine IP
                 </TableCell>
                 <TableCell>
-                  Name
+                  Type
                 </TableCell>
                 <TableCell>
-                  Email
+                  Date & Time
                 </TableCell>
                 <TableCell>
-                  Location
+                  Under usage date & time
                 </TableCell>
                 <TableCell>
-                  Phone
-                </TableCell>
-                <TableCell>
-                  Signed Up
+                  Average usage percentage
                 </TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
-              {items.map((customer) => {
-                const isSelected = selected.includes(customer.id);
-                const createdAt = format(customer.createdAt, 'dd/MM/yyyy');
+              {items.map((alert) => {
+                const isSelected = selected.includes(alert.id);
+                const AlertType = alert.type
+                const alertMachineIP = alert.machineIP
+                const alertUnderUsageDateTime = alert.underUsageDateTime
+                const alertCreatedAt = format(new Date(alert.createdAt), 'dd/MM/yyyy HH:mm:ss');
+                const averageUsage = parseFloat(alert.averageUsage);
 
                 return (
                   <TableRow
                     hover
-                    key={customer.id}
+                    key={alert.id}
                     selected={isSelected}
                   >
-                    <TableCell padding="checkbox">
-                      <Checkbox
-                        checked={isSelected}
-                        onChange={(event) => {
-                          if (event.target.checked) {
-                            onSelectOne?.(customer.id);
-                          } else {
-                            onDeselectOne?.(customer.id);
-                          }
-                        }}
-                      />
-                    </TableCell>
                     <TableCell>
                       <Stack
                         alignItems="center"
                         direction="row"
                         spacing={2}
                       >
-                        <Avatar src={customer.avatar}>
-                          {getInitials(customer.name)}
-                        </Avatar>
                         <Typography variant="subtitle2">
-                          {customer.name}
+                          {alertMachineIP}
                         </Typography>
                       </Stack>
                     </TableCell>
                     <TableCell>
-                      {customer.email}
+                      {AlertType}
                     </TableCell>
                     <TableCell>
-                      {customer.address.city}, {customer.address.state}, {customer.address.country}
+                      {alertCreatedAt}
                     </TableCell>
                     <TableCell>
-                      {customer.phone}
+                      {alertUnderUsageDateTime}
                     </TableCell>
                     <TableCell>
-                      {createdAt}
+                      {averageUsage}
                     </TableCell>
                   </TableRow>
                 );
@@ -131,8 +137,8 @@ export const CustomersTable = (props) => {
       <TablePagination
         component="div"
         count={count}
-        onPageChange={onPageChange}
-        onRowsPerPageChange={onRowsPerPageChange}
+        onPageChange={handlePageChange}
+        onRowsPerPageChange={handleRowsPerPageChange}
         page={page}
         rowsPerPage={rowsPerPage}
         rowsPerPageOptions={[5, 10, 25]}
@@ -143,7 +149,6 @@ export const CustomersTable = (props) => {
 
 CustomersTable.propTypes = {
   count: PropTypes.number,
-  items: PropTypes.array,
   onDeselectAll: PropTypes.func,
   onDeselectOne: PropTypes.func,
   onPageChange: PropTypes.func,

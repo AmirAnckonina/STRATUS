@@ -32,7 +32,7 @@ namespace CloudApiClient.AwsServices
             _pricingUtils = new PricingUtils();
         }
 
-        public async Task<List<InstanceDetails>> GetOptionalVms(InstanceFilterHelper instanceFilters, int maxResults)
+        public async Task<List<InstanceDetails>> GetOptionalVms(InstanceFilterHelper instanceFilters, int maxResults, Task<InstanceDetails> currentInstanceDetails)
         {
             var potentialInstances = new List<InstanceDetails>();
             try
@@ -52,6 +52,7 @@ namespace CloudApiClient.AwsServices
 
                     Product product = _pricingUtils.BuildProductFromPriceListString(rawPriceListItem);
                     PricePlan pricePlan = _pricingUtils.BuildPricePlanFromPriceListString(rawPriceListItem, product.Sku);
+                    //TODo: Add the current instance details to filter the potential instances list.
                     var singlePotentialInstance = new InstanceDetails()
                     {
                         Id = product.Sku,

@@ -43,8 +43,9 @@ namespace CloudApiClient.Utils
                 //await page.GetByRole(AriaRole.Button , new PageGetByRoleOptions { Name = "vCPU" }).ClickAsync();
                 await page.ClickAsync("[class='awsui_button-trigger_18eso_1550o_97 awsui_has-caret_18eso_1550o_137']");
                 // Wait for the dropdown options to be available
-
-                //await page.WaitForSelectorAsync("#formField29-1688911664346-8879");
+                //await page.EvalOnSelectorAllAsync("select[class='awsui_button-trigger_18eso_1550o_97 awsui_has-caret_18eso_1550o_137']", "select => select[0].click()");
+                var listBox = await page.QuerySelectorAsync("#option-list31-1689165628728-5290");
+                
                 //await page.WaitForTimeoutAsync(1000); // Adjust the timeout duration as needed
                 // Get the listbox element.
 

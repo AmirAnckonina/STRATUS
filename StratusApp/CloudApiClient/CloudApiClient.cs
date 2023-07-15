@@ -37,6 +37,10 @@ namespace CloudApiClient
         }
 
         //Please NOTE to change the hard-coded instanceID
+        public async Task<List<AlternativeInstance>> ScrapeInstancesDetails()
+        {
+            return await _awsScraper.ScrapeInstanceDetails();
+        }
         public async Task<List<Datapoint>> GetInstanceCPUStatistics(string instanceId)
         {
             return await _cloudWatchService.GetInstanceCPUStatistics(instanceId);
@@ -104,8 +108,8 @@ namespace CloudApiClient
 
             InstanceFilterHelper currentVMUsageFilters = CreateVMInstanceFilters(currentInstanceDetails.Result);
 
-            List<InstanceDetails> fittedInstances = await GetOptionalVms(currentVMUsageFilters, 100);
 
+            List<InstanceDetails> fittedInstances = await GetOptionalVms(currentVMUsageFilters, 100, currentInstanceDetails);
             // What is That?
             // availableInstances = await GetAvailableInstances(accessKey, secretKey, region);
 
@@ -130,23 +134,24 @@ namespace CloudApiClient
             InstanceFilterHelper instanceFilterHelper = new();
 
             //instanceFilterHelper.AddFilter(FilterType.TERM_MATCH, "operatingSystem", instance.OperatingSystem);
-            instanceFilterHelper.AddFilter(FilterType.TERM_MATCH, "operatingSystem", "Linux");
+            instanceFilterHelper.AddFilter(FilterType.TERM_MATCH, "operatingSystem", instance.OperatingSystem);
             //instanceFilterHelper.AddFilter(FilterType.TERM_MATCH, "price", instance.Price.ToString());
             //instanceFilterHelper.AddFilter(FilterType.TERM_MATCH, "cpuUsageAverage", instance.CpuStatistics[0].Average.ToString());
             instanceFilterHelper.AddFilter(FilterType.TERM_MATCH, "preInstalledSw", "NA");
             instanceFilterHelper.AddFilter(FilterType.TERM_MATCH, "capacitystatus", "Used");
             instanceFilterHelper.AddFilter(FilterType.TERM_MATCH, "tenancy", "Shared");
             instanceFilterHelper.AddFilter(FilterType.TERM_MATCH, "location", "US East (N. Virginia)");
-            instanceFilterHelper.AddFilter(FilterType.TERM_MATCH, "memory", "192 Gib");
+            instanceFilterHelper.AddFilter(FilterType.TERM_MATCH, "memory", $"{instance.TotalStorageSize} Gib");
             //instanceFilterHelper.AddFilter(FilterType.TERM_MATCH, "Storage", instance.Storage);
 
 
             return instanceFilterHelper;
         }
 
-        public async Task<List<InstanceDetails>> GetOptionalVms(InstanceFilterHelper instanceFilters, int maxResults)
+        public async Task<List<InstanceDetails>> GetOptionalVms(InstanceFilterHelper instanceFilters, int maxResults, Task<InstanceDetails> currentInstanceDetails)
+
         {
-            return await _pricingService.GetOptionalVms(instanceFilters, maxResults);
+            return await _pricingService.GetOptionalVms(instanceFilters, maxResults, currentInstanceDetails);
         }
 
         public async Task<string> GetInstanceOperatingSystem(string instanceId)

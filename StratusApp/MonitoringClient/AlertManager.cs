@@ -9,6 +9,7 @@ namespace MonitoringClient
         private const int CPU_PERCENTAGE_THRESHOLD = 70;
         private const int MEMORY_PERCENTAGE_THRESHOLD = 70;
         private const int STORAGE_PERCENTAGE_THRESHOLD = 70;
+
         private readonly List<AlertData> _alerts = new List<AlertData>();
 
         public AlertManager()
