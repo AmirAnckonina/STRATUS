@@ -12,10 +12,13 @@ namespace StratusApp.Services.MongoDBServices
     {
         private readonly MongoClient _mongoClient;
         private Dictionary<string, List<string>> _databasesAndCollections;
+        private const string DB_NAME = "StratusDB";
+
         public MongoDBService(MyDatabaseSettings mongoDbSettings) 
         {
             _mongoClient = new MongoClient(mongoDbSettings.ConnectionString);
         }
+
         public async Task<Dictionary<string, List<string>>> GetDatabasesAndCollections()
         {
             if (_databasesAndCollections != null) return _databasesAndCollections;
@@ -23,56 +26,80 @@ namespace StratusApp.Services.MongoDBServices
             _databasesAndCollections = new Dictionary<string, List<string>>();
             var databasesResult = _mongoClient.ListDatabaseNames();
 
-            await databasesResult.ForEachAsync(async databaseName =>
+            await databasesResult.ForEachAsync(async DB_NAME =>
             {
                 var collectionNames = new List<string>();
-                var database = _mongoClient.GetDatabase(databaseName);
+                var database = _mongoClient.GetDatabase(DB_NAME);
                 var collectionNamesResult = database.ListCollectionNames();
                 await collectionNamesResult.ForEachAsync(
                     collectionName => { collectionNames.Add(collectionName); });
-                _databasesAndCollections.Add(databaseName, collectionNames);
+                _databasesAndCollections.Add(DB_NAME, collectionNames);
             });
 
             return _databasesAndCollections;
         }
-        public async Task<List<BsonDocument>> GetDocumentsByFilter(string databaseName, string collectionName, Expression<Func<BsonDocument, bool>> filter)
+
+        public async Task<List<BsonDocument>> GetDocuments(string DB_NAME, string collectionName, Func<BsonDocument, bool> filter = null)
         {
-            var collection = GetCollection(databaseName, collectionName);
-            var bson = new BsonDocument();
-            try
-            {
-                var documents = await collection.Find(filter).ToListAsync();
-                return documents;
-            }
-            catch (Exception)
-            {
-                throw;
-            }   
+            List<BsonDocument> result = new List<BsonDocument>();
+            List<BsonDocument> collection = await GetCollectionAsList(collectionName); 
             
+            foreach(BsonDocument document in collection)
+            {
+                if(filter == null) // no filter added
+                {
+                    result.Add(document);
+                }
+                else if(filter(document))
+                {
+                    result.Add(document);
+                }
+            }
+
+            return result;
         }
 
-        public async Task<long> GetCollectionCount(string databaseName, string collectionName)
+        public async Task<long> GetCollectionCount(string DB_NAME, string collectionName)
         {
-            var collection = GetCollection(databaseName, collectionName);
+            var collection = GetCollection(DB_NAME, collectionName);
+
             return await collection.EstimatedDocumentCountAsync();
         }
 
-        private IMongoCollection<BsonDocument> GetCollection(string databaseName, string collectionName)
+        private IMongoCollection<BsonDocument> GetCollection(string DB_NAME, string collectionName)
         {
-            var db = _mongoClient.GetDatabase(databaseName);
+            var db = _mongoClient.GetDatabase(DB_NAME);
+
             return db.GetCollection<BsonDocument>(collectionName);
         }
-        public async Task<UpdateResult> CreateOrUpdateField(string databaseName, string collectionName, string id, string fieldName, string value)
+
+        public Task<List<BsonDocument>> GetCollectionAsList(string collectionName)
         {
-            var collection = GetCollection(databaseName, collectionName);
-            var update = Builders<BsonDocument>.Update.Set(fieldName, new BsonString(value));
-            return await collection.UpdateOneAsync(CreateIdFilter(id), update);
+            var db = _mongoClient.GetDatabase(DB_NAME);
+
+            return db.GetCollection<BsonDocument>(collectionName).Find(_ => true).ToListAsync();
         }
 
-        public async Task<DeleteResult> DeleteDocument(string databaseName, string collectionName, string id)
+        public async Task<UpdateResult> CreateOrUpdateField(string collectionName, ObjectId id, string fieldName, string value)
         {
-            var collection = GetCollection(databaseName, collectionName);
-            return await collection.DeleteOneAsync(CreateIdFilter(id));
+            var documentToUpdate = GetDocumentById(collectionName, id);
+            var collection = GetCollection(DB_NAME, collectionName);
+            var update = Builders<BsonDocument>.Update.Set(fieldName, new BsonString(value));
+
+            return await collection.UpdateOneAsync(documentToUpdate, update);
+        }
+
+        public async Task<DeleteResult> DeleteDocument(string collectionName, ObjectId id)
+        {
+            var collection = GetCollection(DB_NAME, collectionName);
+            var documentToDelete = GetDocumentById(collectionName, id);
+
+            return await collection.DeleteOneAsync(documentToDelete);
+        }
+
+        public BsonDocument? GetDocumentById(string collectionName, ObjectId id)
+        {
+            return GetDocuments(DB_NAME, collectionName, (document) => document.GetValue("_id") == id).Result.FirstOrDefault();
         }
 
         private static BsonDocument CreateIdFilter(string id)
@@ -80,16 +107,22 @@ namespace StratusApp.Services.MongoDBServices
             return new BsonDocument("_id", new BsonObjectId(new ObjectId(id)));
         }
 
-        public async Task InsertDocument(string databaseName, string collectionName)
+        public async Task InsertDocument(string DB_NAME, string collectionName, BsonDocument documentToInsert = null)
         {
-            var collection = GetCollection(databaseName, collectionName);
-            var insert = new BsonDocument()
-            .Set("email", "bobo")
-            .Set("password", "1111")
-            .Set("accessKey", "1111")
-            .Set("secretKey", "1111");
-            await collection.InsertOneAsync(insert);
+            var collection = GetCollection(DB_NAME, collectionName);
+
+            await collection.InsertOneAsync(documentToInsert);
         }
 
+        public async Task InsertDocumentByForeignKey(string DB_NAME, string collectionName, BsonDocument documentToInsert, string foreignCollectionName, ObjectId foreignKey)
+        {
+            var collection = GetCollection(DB_NAME, collectionName);
+
+            if(GetDocumentById(foreignCollectionName, foreignKey) != null)
+            {
+                documentToInsert.Set("userId", foreignKey);
+                await collection.InsertOneAsync(documentToInsert);
+            }
+        }
     }
 }
