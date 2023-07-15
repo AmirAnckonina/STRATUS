@@ -9,6 +9,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MonitoringClient", "Monitor
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CloudApiClient", "CloudApiClient\CloudApiClient.csproj", "{A74B3918-D57A-46F9-9A22-3F6474112DDC}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Utils", "Utils\Utils.csproj", "{A4C32816-0422-40BA-95A8-EEB9B3207ACF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{A74B3918-D57A-46F9-9A22-3F6474112DDC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A74B3918-D57A-46F9-9A22-3F6474112DDC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A74B3918-D57A-46F9-9A22-3F6474112DDC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A4C32816-0422-40BA-95A8-EEB9B3207ACF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A4C32816-0422-40BA-95A8-EEB9B3207ACF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A4C32816-0422-40BA-95A8-EEB9B3207ACF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A4C32816-0422-40BA-95A8-EEB9B3207ACF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

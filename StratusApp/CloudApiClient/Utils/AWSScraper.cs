@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using System.Net.Http;
 using HtmlAgilityPack;
 using Microsoft.Playwright;
-using CloudApiClient.DTO;
+using Utils.DTO;
 
 namespace CloudApiClient.Utils
 {

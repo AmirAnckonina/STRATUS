@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Security.AccessControl;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Utils.DTO;
 using static System.Net.WebRequestMethods;
 
 
@@ -20,12 +21,14 @@ namespace MonitoringClient
         private HttpClient _promHttpClient;
         private PrometheusRequestUtils _requestsUtils;
         private PrometheusResponseUtils _responseUtils;
+        private AlertManager _alertManager;
         
         public PrometheusClient()
         {
             _requestsUtils = new PrometheusRequestUtils();
             _responseUtils = new PrometheusResponseUtils();
             _promHttpClient = new HttpClient();
+            _alertManager = new AlertManager();
         }
 
         public async Task<string> GetNumberOfvCPU(string instanceAddr)
@@ -109,6 +112,11 @@ namespace MonitoringClient
 
             // Should decide the return type.
             return await getAvgFreeMemorySizeResponse.Content.ReadAsStringAsync();
+        }
+
+        public async Task<List<AlertData>> GetAlerts(string instance)
+        {
+            return _alertManager.GetAlertTable();            
         }
     }
 }
