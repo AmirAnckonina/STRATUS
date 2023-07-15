@@ -48,10 +48,11 @@ namespace StratusApp.Controllers
             //}
         }
         [HttpGet("GetDocumentByFilter")]
-        public async Task<ActionResult<StratusResponse<StratusUser>>> GetDocumentByFilter(string filter)
+        public async Task<ActionResult<StratusResponse<StratusUser>>> GetDocumentByFilter(string collectionName, string fieldName, string value)
         {
             var getDocumentByFilterResp = new StratusResponse<StratusUser>();
-            var filterdDocs = await _mongoDatabase.GetDocumentsByFilter("StratusDB", "Users", (documnet) => documnet.GetElement("email").ToString().Equals(filter));
+            var filterdDocs = await _mongoDatabase.GetDocuments("StratusDB", collectionName, (documnet) => documnet.GetValue(fieldName).AsString == value);
+
             return Ok();
         }
 
