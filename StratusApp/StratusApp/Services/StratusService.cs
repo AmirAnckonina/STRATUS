@@ -14,14 +14,25 @@ namespace StratusApp.Services
             new StratusUser {Id = 2, Name = "user B"},
         };
 
-        private readonly DataContext _dataContext;
-
-        public StratusService(DataContext dataContext) 
+        public Task<ActionResult<StratusResponse<List<StratusUser>>>> GetAllStratusUsers()
         {
-            _dataContext = dataContext;
+            throw new NotImplementedException();
         }
 
-        public async Task<ActionResult<StratusResponse<StratusUser>>> GetStratusUser(string username)
+        public Task<ActionResult<StratusResponse<StratusUser>>> GetStratusUser(string username)
+        {
+            throw new NotImplementedException();
+        }
+
+        //private readonly DataContext _dataContext;
+
+        /*public StratusService(DataContext dataContext) 
+        {
+            _dataContext = dataContext;
+        }*/
+
+
+        /*public async Task<ActionResult<StratusResponse<StratusUser>>> GetStratusUser(string username)
         {
             var getStratusUserResp = new StratusResponse<StratusUser>();
             StratusUser stratusUser = _users.FirstOrDefault(user => user.Name == username);
@@ -37,6 +48,6 @@ namespace StratusApp.Services
             getAllStratusUsersResp.Data = dbStratusUsers;
 
             return getAllStratusUsersResp;
-        }
+        }*/
     }
 }

@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using MonitoringClient;
 using StratusApp.Models.Responses;
+using StratusApp.Services;
+using System.Linq.Expressions;
 using System.Reflection;
 using Utils.DTO;
 
@@ -12,10 +14,12 @@ namespace StratusApp.Controllers
     public class PrometheusController : Controller
     {
         private readonly MonitoringClient.PrometheusClient _prometheusClient;
+        private readonly IStratusService _stratusService;
 
-        public PrometheusController()
+        public PrometheusController(IStratusService stratusService)
         {
-            _prometheusClient = new MonitoringClient.PrometheusClient(); 
+            _prometheusClient = new MonitoringClient.PrometheusClient();
+            _stratusService = stratusService;
         }
 
         [HttpGet("GetNumberOfvCPU")]
@@ -46,6 +50,26 @@ namespace StratusApp.Controllers
             cpuUsageResponse.Data = await _prometheusClient.GetAvgCpuUsageUtilization(instance, timeFilter);
 
             return Ok(cpuUsageResponse);
+        }
+        
+        [HttpGet("GetAvgCpuUsageUtilizationOverTime")]
+        public async Task<ActionResult<StratusResponse<List<CpuUsageData>>>> GetAvgCpuUsageUtilizationOverTime(
+            string instance = "34.125.220.240",
+            string timeFilter = "month")
+        {
+            try
+            {
+                var avgCpuOverTimeResponse = new StratusResponse<List<CpuUsageData>>();
+
+                avgCpuOverTimeResponse.Data = await _prometheusClient.GetAvgCpuUsageUtilizationOverTime(instance, timeFilter);
+
+                return Ok(avgCpuOverTimeResponse);
+
+            }
+            catch (Exception ex) 
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         [HttpGet("GetAvgCpuUtilizationByCpu")]
@@ -117,6 +141,7 @@ namespace StratusApp.Controllers
             }
         }
 
+        //todo : the timefilter structure from UI is : "month", "year", etc.. we should convert it as well.
         [HttpGet("GetAvgFreeMemorySizeInGB")]
         public async Task<ActionResult<StratusResponse<double>>> GetAvgFreeMemorySizeInGB(string instance, string timeFilter ="4w")
         {
