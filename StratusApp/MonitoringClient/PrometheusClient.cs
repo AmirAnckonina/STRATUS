@@ -1,4 +1,6 @@
-﻿using MonitoringClient.Models;
+﻿using Amazon.Runtime;
+using MonitoringClient.Enums;
+using MonitoringClient.Models;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Net.Http;
@@ -16,7 +18,6 @@ namespace MonitoringClient
     {
         private const string PROM_QUERY_PATH =      "/api/v1/query";
         private const string PROM_BASE_URL =        "http://localhost:9090/";
-        //Test
 
         private HttpClient _promHttpClient;
         private PrometheusRequestUtils _requestsUtils;
@@ -45,6 +46,7 @@ namespace MonitoringClient
         {
             string instanceAddrWithPort = _requestsUtils.ConcateInstanceAddrWithPort(instanceAddr);
             // 100 - (avg(rate(node_cpu_seconds_total{instance='34.125.220.240:9100',mode="idle"}[15m])) * 100)
+            // 100 * (avg by (instance) (rate(node_cpu_seconds_total{mode!="idle"}[14d])))
             string query = "query=100 - (avg(rate(node_cpu_seconds_total{instance='" + $"{instanceAddrWithPort}" + "',mode='idle'}" + $"[{timeFilter}])) * 100)";
             Uri endPointWithQuery = _requestsUtils.CreateEndPointRequestUri(PROM_BASE_URL, PROM_QUERY_PATH, query);
             HttpResponseMessage getCpuUsageResponse = await _promHttpClient.GetAsync(endPointWithQuery);
@@ -150,6 +152,24 @@ namespace MonitoringClient
             // TODO: Impl calling to all methods under PromClient (Disk, Memrory, Cpu..)
             throw new NotImplementedException();
         }
+
+        public async Task<List<CpuUsageData>> GetAvgCpuUsageUtilizationOverTime(string instance, string timePeriodStr)
+        {
+            List<CpuUsageData> cpuUsageDataList = new List<CpuUsageData>();
+
+            TimePeriod timePeriod = _requestsUtils.ParseTimePeriodStrToTimePeriodEnum(timePeriodStr);
+
+            // According to the requested time period we should set num of iter, and offset for promQL queries.
+            // each iter should return the avgCpu of a specific time period.
+            // I.E. if the requested time perod is "Month" we should set 30 iter, for each day.
+            // in each iter we set offset 1d, 2d,...30d
+            // At the end we should return List<CpuUsageData>
+
+
+            return cpuUsageDataList;
+
+        }
+
 
     }
 }
