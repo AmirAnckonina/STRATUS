@@ -3,12 +3,9 @@ using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using MonitoringClient;
 using StratusApp.Models.Responses;
-<<<<<<< HEAD
 using StratusApp.Services;
 using System.Linq.Expressions;
-=======
 using StratusApp.Services.MongoDBServices;
->>>>>>> f627405 (add alerts controller and service)
 using System.Reflection;
 using Utils.DTO;
 
@@ -18,21 +15,12 @@ namespace StratusApp.Controllers
     public class PrometheusController : Controller
     {
         private readonly MonitoringClient.PrometheusClient _prometheusClient;
-<<<<<<< HEAD
         private readonly IStratusService _stratusService;
 
         public PrometheusController(IStratusService stratusService)
         {
             _prometheusClient = new MonitoringClient.PrometheusClient();
             _stratusService = stratusService;
-=======
-        private readonly MongoDBService _mongoDBService;
-
-        public PrometheusController(MongoDBService mongoDBService)
-        {
-            _mongoDBService = mongoDBService;
-            _prometheusClient = new PrometheusClient();
->>>>>>> f627405 (add alerts controller and service)
         }
 
         [HttpGet("GetNumberOfvCPU")]
