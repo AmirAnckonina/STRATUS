@@ -28,7 +28,7 @@ namespace MonitoringClient
             _requestsUtils = new PrometheusRequestUtils();
             _responseUtils = new PrometheusResponseUtils();
             _promHttpClient = new HttpClient();
-            _alertManager = new AlertManager();
+            _alertManager = new AlertManager(this);
         }
 
         public async Task<string> GetNumberOfvCPU(string instanceAddr)
@@ -143,12 +143,7 @@ namespace MonitoringClient
 
             double result = double.Parse(promResp.Data.Result.FirstOrDefault()?.TimestampAndValue[1]);
             return result;
-        }
-
-        public List<AlertData> GetAlerts()
-        {
-            return _alertManager.GetAlertTable();
-        }
+        }      
 
         public Task<InstanceDetailsDTO> GetInstanceSpecifications(string instanceAddr)
         {

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using MonitoringClient;
 using StratusApp.Models.Responses;
+using StratusApp.Services.MongoDBServices;
 using System.Reflection;
 using Utils.DTO;
 
@@ -12,10 +13,12 @@ namespace StratusApp.Controllers
     public class PrometheusController : Controller
     {
         private readonly MonitoringClient.PrometheusClient _prometheusClient;
+        private readonly MongoDBService _mongoDBService;
 
-        public PrometheusController()
+        public PrometheusController(MongoDBService mongoDBService)
         {
-            _prometheusClient = new MonitoringClient.PrometheusClient(); 
+            _mongoDBService = mongoDBService;
+            _prometheusClient = new PrometheusClient();
         }
 
         [HttpGet("GetNumberOfvCPU")]
@@ -26,17 +29,7 @@ namespace StratusApp.Controllers
             cpuUsageResponse.Data = await _prometheusClient.GetNumberOfvCPU(instance);
 
             return Ok(cpuUsageResponse);
-        }
-
-        [HttpGet("GetAlerts")]
-        public async Task<ActionResult<StratusResponse<List<AlertData>>>> GetInstanceCpuUsage()
-        {
-            var alertResponse = new StratusResponse<List<AlertData>>();
-
-            alertResponse.Data = _prometheusClient.GetAlerts();
-
-            return Ok(alertResponse);
-        }
+        }       
 
         [HttpGet("GetAvgCpuUsageUtilization")]
         public async Task<ActionResult<StratusResponse<double>>> GetCpuUsageUtilization(string instance = "34.125.220.240", string timeFilter = "4w")
@@ -160,7 +153,5 @@ namespace StratusApp.Controllers
                 return BadRequest(ex.Message);
             }
         }
-
-
     }
 }
