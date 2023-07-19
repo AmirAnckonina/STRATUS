@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
+using Microsoft.OpenApi.Writers;
 using MongoDB.Driver;
 using StratusApp.Data;
 using StratusApp.Models.MongoDB;
@@ -31,14 +32,8 @@ namespace StratusApp
                 options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
             });
 
-           // services.Configure<MyDatabaseSettings>(ConfigRoot.GetSection(nameof(MyDatabaseSettings)));
-           //
-           // services.AddSingleton<MyDatabaseSettings>(sp =>
-           //   sp.GetRequiredService<IOptions<MyDatabaseSettings>>().Value);
-
-            // Add services to the container.
-            services.AddDbContext<DataContext>(options =>
-                options.UseSqlServer(ConfigRoot.GetConnectionString("DefaultConnection")));
+            /*services.AddDbContext<DataContext>(options =>
+                options.UseSqlServer(ConfigRoot.GetConnectionString("DefaultConnection")));*/
 
             services.AddCors(options =>
             {
@@ -54,10 +49,10 @@ namespace StratusApp
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             services.AddEndpointsApiExplorer();
             services.AddSwaggerGen();
-            services.AddTransient<IStratusService, StratusService>();
 
             // Add MongoDB connection
             services.AddSingleton<MongoDBService>();
+            services.AddSingleton<IStratusService, StratusService>();
             //services.AddRazorPages();
         }
 
