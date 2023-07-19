@@ -1,5 +1,4 @@
-﻿using OpenQA.Selenium;
-using System.Timers;
+﻿using System.Timers;
 using Utils.DTO;
 
 namespace MonitoringClient
@@ -39,13 +38,6 @@ namespace MonitoringClient
         private void InitTimer(double interval = 1000 * 60)
         {
             // update table with new data and delete records that machine id that was terminated
-            _alerts.Add(new AlertData()
-            {
-                MachineId = "1",
-                Type = eAlertType.CPU,
-                CreationTime = DateTime.Now
-            });
-
             _timer = new System.Timers.Timer();
             _timer.Interval = interval; // should be confiugre by the user
             _timer.Elapsed += timer_Elapsed;
@@ -58,7 +50,7 @@ namespace MonitoringClient
             // send request to promethius
             // processing the response
             // update table with new data and delete records that machine id that was terminated
-            int alertsCount = _alerts.Count;
+
             //foreach user:
             //foreach user instance:
 
@@ -67,28 +59,9 @@ namespace MonitoringClient
             double avgFreeDiskSpaceInGB = _prometheusClient.GetAvgFreeDiskSpaceInGB("id", "1d").Result;
             double avgFreeMemorySizeInGB = _prometheusClient.GetAvgFreeMemorySizeInGB("id", "1d").Result;
             
-            //machine id is harcoded
             DetectAndInsertLowUsage("1", avgCpuUsageUtilization,eAlertType.CPU);
             DetectAndInsertLowUsage("1", avgFreeDiskSpaceInGB, eAlertType.STORAGE);
             DetectAndInsertLowUsage("1", avgFreeMemorySizeInGB, eAlertType.MEMORY);
-
-            InsertAlertsToDB(alertsCount);
-        }
-
-        private void InsertAlertsToDB(int alertsCount)
-        {
-            if(alertsCount < _alerts.Count)
-            {
-                for (int i = alertsCount; i < _alerts.Count; i++)
-                {
-                    InsertSingleAlertToDB(_alerts[i]);
-                }
-            }
-        }
-
-        private void InsertSingleAlertToDB(AlertData alertData)
-        {
-            //db add alertdata
         }
 
         private void DetectAndInsertLowUsage(string machineId, double avgUsage, eAlertType eAlertType)

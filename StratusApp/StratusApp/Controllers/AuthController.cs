@@ -22,7 +22,7 @@ namespace StratusApp.Controllers
         public async Task<ActionResult<StratusResponse<StratusUser>>> RegisterToStratusService(string username, string password, string accessKey,string secretKey)
         {
             var registerToStratusServiceResp = new StratusResponse<StratusUser>();
-            await _mongoDatabase.InsertDocument("StratusDB", "Users");
+            //await _mongoDatabase.InsertDocument("StratusDB", "Users");
             return Ok(registerToStratusServiceResp);
             //var user = new StratusUser()
             //{
@@ -51,7 +51,7 @@ namespace StratusApp.Controllers
         public async Task<ActionResult<StratusResponse<StratusUser>>> GetDocumentByFilter(string collectionName, string fieldName, string value)
         {
             var getDocumentByFilterResp = new StratusResponse<StratusUser>();
-            var filterdDocs = await _mongoDatabase.GetDocuments("StratusDB", collectionName, (documnet) => documnet.GetValue(fieldName).AsString == value);
+            var filterdDocs = await _mongoDatabase.GetDocuments(collectionName, (documnet) => documnet.GetValue(fieldName).AsString == value);
 
             return Ok();
         }
