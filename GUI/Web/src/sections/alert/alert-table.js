@@ -81,10 +81,7 @@ export const AlertsTable = (props) => {
                 </TableCell>
                 <TableCell>
                   Creation alert time
-                </TableCell>
-                <TableCell>
-                  Under usage detected time
-                </TableCell>
+                </TableCell>                
                 <TableCell>
                   Average usage percentage
                 </TableCell>
@@ -95,9 +92,8 @@ export const AlertsTable = (props) => {
                 const isSelected = selected.includes(alert.machineId);
                 const AlertType = alert.type
                 const alertMachineIP = alert.machineId
-                const alertUnderUsageDateTime = format(new Date(alert.underUsageDetectedTime), 'dd/MM/yyyy HH:mm:ss');
                 const alertCreatedAt = format(new Date(alert.creationTime), 'dd/MM/yyyy HH:mm:ss');
-                const averageUsage = parseFloat(alert.percetageUsage);
+                const averageUsage = alert.percentageUsage.toFixed(3);
 
                 return (
                   <TableRow
@@ -121,12 +117,9 @@ export const AlertsTable = (props) => {
                     </TableCell>
                     <TableCell>
                       {alertCreatedAt}
-                    </TableCell>
+                    </TableCell>                    
                     <TableCell>
-                      {alertUnderUsageDateTime}
-                    </TableCell>
-                    <TableCell>
-                      {averageUsage}
+                      {averageUsage} %
                     </TableCell>
                   </TableRow>
                 );

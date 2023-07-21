@@ -5,6 +5,8 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Amazon.SecurityToken.Model;
 using System.Linq.Expressions;
+using MongoDB.Bson.Serialization;
+using Utils.DTO;
 
 namespace StratusApp.Services.MongoDBServices
 {
@@ -17,8 +19,18 @@ namespace StratusApp.Services.MongoDBServices
         public MongoDBService(MyDatabaseSettings mongoDbSettings) 
         {
             _mongoClient = new MongoClient(mongoDbSettings.ConnectionString);
-        }
 
+            RegisterToMapClasses();
+         }
+
+        private void RegisterToMapClasses()
+        {
+            var res = BsonClassMap.RegisterClassMap<AlertData>(classMap =>
+            {
+                classMap.AutoMap();
+            });
+        }
+       
         public async Task<Dictionary<string, List<string>>> GetDatabasesAndCollections()
         {
             if (_databasesAndCollections != null) return _databasesAndCollections;
@@ -59,18 +71,18 @@ namespace StratusApp.Services.MongoDBServices
             return result;
         }
 
-        public async Task<long> GetCollectionCount(string collectionName)
+        public async Task<long> GetCollectionCount<T>(string collectionName)
         {
-            var collection = GetCollection(collectionName);
+            var collection = GetCollection<T>(collectionName);
 
             return await collection.EstimatedDocumentCountAsync();
         }
 
-        private IMongoCollection<BsonDocument> GetCollection(string collectionName)
+        public IMongoCollection<T> GetCollection<T>(string collectionName)
         {
             var db = _mongoClient.GetDatabase(DB_NAME);
 
-            return db.GetCollection<BsonDocument>(collectionName);
+            return db.GetCollection<T>(collectionName);
         }
 
         public async Task<List<BsonDocument>> GetCollectionAsList(string collectionName)
@@ -80,18 +92,18 @@ namespace StratusApp.Services.MongoDBServices
             return await db.GetCollection<BsonDocument>(collectionName).Find(_ => true).ToListAsync();
         }
 
-        public async Task<UpdateResult> CreateOrUpdateField(string collectionName, ObjectId id, string fieldName, string value)
+        public async Task<UpdateResult> CreateOrUpdateField<T>(string collectionName, ObjectId id, string fieldName, string value)
         {
             var documentToUpdate = GetDocumentById(collectionName, id);
-            var collection = GetCollection(collectionName);
-            var update = Builders<BsonDocument>.Update.Set(fieldName, new BsonString(value));
+            var collection = GetCollection<T>(collectionName);
+            var update = Builders<T>.Update.Set(fieldName, new BsonString(value));
 
             return await collection.UpdateOneAsync(documentToUpdate, update);
         }
 
-        public async Task<DeleteResult> DeleteDocument(string collectionName, ObjectId id)
+        public async Task<DeleteResult> DeleteDocument<T>(string collectionName, ObjectId id)
         {
-            var collection = GetCollection(collectionName);
+            var collection = GetCollection<T>(collectionName);
             var documentToDelete = GetDocumentById(collectionName, id);
 
             return await collection.DeleteOneAsync(documentToDelete);
@@ -107,20 +119,20 @@ namespace StratusApp.Services.MongoDBServices
             return new BsonDocument("_id", new BsonObjectId(new ObjectId(id)));
         }
 
-        public async Task InsertDocument(string collectionName, BsonDocument documentToInsert = null)
+        public async Task InsertDocument<T>(string collectionName, T documentToInsert)
         {
-            var collection = GetCollection(collectionName);
+            var collection = GetCollection<T>(collectionName);
 
             await collection.InsertOneAsync(documentToInsert);
         }
 
-        public async Task InsertDocumentByForeignKey(string collectionName, BsonDocument documentToInsert, string foreignCollectionName, ObjectId foreignKey)
+        public async Task InsertDocumentByForeignKey<T>(string collectionName, T documentToInsert, string foreignCollectionName, ObjectId foreignKey)
         {
-            var collection = GetCollection(collectionName);
-
-            if(GetDocumentById(foreignCollectionName, foreignKey) != null)
+            var collection = GetCollection<T>(collectionName);
+            
+            if (GetDocumentById(foreignCollectionName, foreignKey) != null)
             {
-                documentToInsert.Set("userId", foreignKey);
+                //documentToInsert.Set("userId", foreignKey); todo: get class with foreign key and no need to set
                 await collection.InsertOneAsync(documentToInsert);
             }
         }

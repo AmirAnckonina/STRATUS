@@ -30,7 +30,11 @@ namespace StratusApp
             services.AddControllers().AddJsonOptions(options =>
             {
                 options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
+
+                var enumConverter = new JsonStringEnumConverter();
+                options.JsonSerializerOptions.Converters.Add(enumConverter);
             });
+
 
             /*services.AddDbContext<DataContext>(options =>
                 options.UseSqlServer(ConfigRoot.GetConnectionString("DefaultConnection")));*/
@@ -53,6 +57,7 @@ namespace StratusApp
             // Add MongoDB connection
             services.AddSingleton<MongoDBService>();
             services.AddSingleton<IStratusService, StratusService>();
+            services.AddSingleton<AlertsService>();
             //services.AddRazorPages();
         }
 

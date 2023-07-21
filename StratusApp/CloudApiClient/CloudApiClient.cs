@@ -134,14 +134,14 @@ namespace CloudApiClient
             InstanceFilterHelper instanceFilterHelper = new();
 
             //instanceFilterHelper.AddFilter(FilterType.TERM_MATCH, "operatingSystem", instance.OperatingSystem);
-            instanceFilterHelper.AddFilter(FilterType.TERM_MATCH, "operatingSystem", instance.OperatingSystem);
+            instanceFilterHelper.AddFilter(FilterType.TERM_MATCH, "operatingSystem", "Linux");
             //instanceFilterHelper.AddFilter(FilterType.TERM_MATCH, "price", instance.Price.ToString());
             //instanceFilterHelper.AddFilter(FilterType.TERM_MATCH, "cpuUsageAverage", instance.CpuStatistics[0].Average.ToString());
             instanceFilterHelper.AddFilter(FilterType.TERM_MATCH, "preInstalledSw", "NA");
             instanceFilterHelper.AddFilter(FilterType.TERM_MATCH, "capacitystatus", "Used");
             instanceFilterHelper.AddFilter(FilterType.TERM_MATCH, "tenancy", "Shared");
             instanceFilterHelper.AddFilter(FilterType.TERM_MATCH, "location", "US East (N. Virginia)");
-            instanceFilterHelper.AddFilter(FilterType.TERM_MATCH, "memory", $"{instance.TotalStorageSize} Gib");
+            instanceFilterHelper.AddFilter(FilterType.TERM_MATCH, "memory", "8 Gib");
             //instanceFilterHelper.AddFilter(FilterType.TERM_MATCH, "Storage", instance.Storage);
 
 

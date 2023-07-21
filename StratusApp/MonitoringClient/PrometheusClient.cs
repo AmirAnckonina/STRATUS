@@ -22,14 +22,12 @@ namespace MonitoringClient
         private HttpClient _promHttpClient;
         private PrometheusRequestUtils _requestsUtils;
         private PrometheusResponseUtils _responseUtils;
-        private readonly AlertManager _alertManager;
         
         public PrometheusClient()
         {
             _requestsUtils = new PrometheusRequestUtils();
             _responseUtils = new PrometheusResponseUtils();
             _promHttpClient = new HttpClient();
-            _alertManager = new AlertManager(this);
         }
 
         public async Task<string> GetNumberOfvCPU(string instanceAddr)
