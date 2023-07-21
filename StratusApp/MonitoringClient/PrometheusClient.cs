@@ -1,5 +1,4 @@
 ﻿using Amazon.Runtime;
-using MonitoringClient.Enums;
 using MonitoringClient.Models;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -9,6 +8,7 @@ using System.Security.AccessControl;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Utils.DTO;
+using Utils.Enums;
 using static System.Net.WebRequestMethods;
 
 
@@ -31,6 +31,9 @@ namespace MonitoringClient
             _promHttpClient = new HttpClient();
             _alertManager = new AlertManager(this);
         }
+
+        public PrometheusRequestUtils ReqUtils { get; set; }
+        public PrometheusResponseUtils RespUtils { get; set; }
 
         public async Task<string> GetNumberOfvCPU(string instanceAddr)
         {
@@ -153,23 +156,20 @@ namespace MonitoringClient
             throw new NotImplementedException();
         }
 
-        public async Task<List<CpuUsageData>> GetAvgCpuUsageUtilizationOverTime(string instance, string timePeriodStr)
+        /*public Task<CpuUsageData> GetAvgCpuUsageUtilization(
+            string instance,
+            QueryOverTimePeriod singleQueryTimePeriod,
+            QueryTimeOffsetType timeOffsetType,
+            int currentOffset)
         {
-            List<CpuUsageData> cpuUsageDataList = new List<CpuUsageData>();
-
-            TimePeriod timePeriod = _requestsUtils.ParseTimePeriodStrToTimePeriodEnum(timePeriodStr);
-
-            // According to the requested time period we should set num of iter, and offset for promQL queries.
-            // each iter should return the avgCpu of a specific time period.
-            // I.E. if the requested time perod is "Month" we should set 30 iter, for each day.
-            // in each iter we set offset 1d, 2d,...30d
-            // At the end we should return List<CpuUsageData>
+            // http://localhost:9090/api/v1/query_range?query=(avg_over_time(node_filesystem_free_bytes{instance='34.125.220.240:9100',mountpoint='/'}[4w]))/(1024^3)&start=2023-07-19T20:10:30.781Z&end=2023-07-20T20:11:00.781Z&step=15s
 
 
-            return cpuUsageDataList;
+        }*/
 
+        public Task<PrometheusResponse> ExecutePromQLQuery(Dictionary<PrometheusParameter, string> queryParams)
+        {
+            throw new NotImplementedException();
         }
-
-
     }
 }

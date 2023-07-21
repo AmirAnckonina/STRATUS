@@ -7,7 +7,9 @@ using MongoDB.Driver;
 using StratusApp.Data;
 using StratusApp.Models.MongoDB;
 using StratusApp.Services;
+using StratusApp.Services.Collector;
 using StratusApp.Services.MongoDBServices;
+using StratusApp.Services.Recommendations;
 using System.Text.Json.Serialization;
 
 namespace StratusApp
@@ -52,7 +54,10 @@ namespace StratusApp
 
             // Add MongoDB connection
             services.AddSingleton<MongoDBService>();
+            services.AddSingleton<AlertsService>();
             services.AddSingleton<IStratusService, StratusService>();
+            services.AddSingleton<CollectorService>();
+            services.AddSingleton<RecommendationsService>();
             //services.AddRazorPages();
         }
 

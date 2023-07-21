@@ -8,7 +8,6 @@ using Amazon;
 using Amazon.Pricing;
 using Amazon.Pricing.Model;
 using Amazon.CloudWatch;
-using CloudApiClient.Utils;
 using Amazon.EC2.Model;
 using Amazon.EC2;
 using Newtonsoft.Json.Linq;
@@ -16,6 +15,7 @@ using Amazon.Runtime;
 using CloudApiClient.AwsServices.Models;
 using Newtonsoft.Json;
 using Utils.DTO;
+using CloudApiClient.AwsServices.AwsUtils;
 
 namespace CloudApiClient.AwsServices
 {

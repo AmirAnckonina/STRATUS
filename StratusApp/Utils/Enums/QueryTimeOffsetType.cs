@@ -4,12 +4,15 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MonitoringClient.Enums
+namespace Utils.Enums
 {
-    public enum TimePeriod
+    public enum QueryTimeOffsetType
     {
-        Year,
+        Hour,
+        Day,
+        Week,
+        TwoWeeks,
         Month,
-        Day
+        Year,
     }
 }
