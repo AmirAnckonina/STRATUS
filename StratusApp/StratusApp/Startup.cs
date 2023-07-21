@@ -32,7 +32,11 @@ namespace StratusApp
             services.AddControllers().AddJsonOptions(options =>
             {
                 options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
+
+                var enumConverter = new JsonStringEnumConverter();
+                options.JsonSerializerOptions.Converters.Add(enumConverter);
             });
+
 
             /*services.AddDbContext<DataContext>(options =>
                 options.UseSqlServer(ConfigRoot.GetConnectionString("DefaultConnection")));*/
@@ -58,6 +62,7 @@ namespace StratusApp
             services.AddSingleton<IStratusService, StratusService>();
             services.AddSingleton<CollectorService>();
             services.AddSingleton<RecommendationsService>();
+
             //services.AddRazorPages();
         }
 

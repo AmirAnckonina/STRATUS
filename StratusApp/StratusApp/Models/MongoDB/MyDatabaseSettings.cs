@@ -7,6 +7,8 @@
             this.ConnectionString = connectionString;
         }
 
+        public MyDatabaseSettings() { }
+
         public string ConnectionString { get; set; }
     }
 }

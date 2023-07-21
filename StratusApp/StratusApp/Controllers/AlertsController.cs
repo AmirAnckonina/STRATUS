@@ -1,7 +1,5 @@
 ﻿using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
-using MongoDB.Driver;
-using MongoDB.Bson;
 using StratusApp.Models;
 using StratusApp.Models.Responses;
 using StratusApp.Services.MongoDBServices;
@@ -22,14 +20,13 @@ namespace StratusApp.Controllers
         }
 
         [HttpGet("GetAlerts")]
-        public async Task<ActionResult<StratusResponse<List<BsonDocument>>>> GetInstanceCpuUsage()
+        public async Task<ActionResult<StratusResponse<List<AlertData>>>> GetInstanceCpuUsage()
         {
-            var alertResponse = new StratusResponse<List<BsonDocument>>();
+            var alertResponse = new StratusResponse<List<AlertData>>();
 
-            alertResponse.Data = _alertsService.GetAlertsTable();
+            alertResponse.Data = _alertsService.GetAlertsCollection().Result;
 
             return Ok(alertResponse);
         }
-
     }
 }
