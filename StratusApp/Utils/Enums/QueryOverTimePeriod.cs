@@ -4,13 +4,18 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CloudApiClient.Utils
+namespace Utils.Enums
 {
-    public enum FilterTime
+    public enum QueryOverTimePeriod
     {
+        Second,
+        ThirtySeconds,
+        Minute,
+        Hour,
         Day,
         Week,
         Month,
-        Year
+        Year,
+        None
     }
 }

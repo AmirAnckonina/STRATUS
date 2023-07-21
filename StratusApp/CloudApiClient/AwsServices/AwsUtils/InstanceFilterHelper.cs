@@ -6,13 +6,13 @@ using System.Threading.Tasks;
 using Amazon.Pricing;
 using Amazon.Pricing.Model;
 
-namespace CloudApiClient.Utils
+namespace CloudApiClient.AwsServices.AwsUtils
 {
     public class InstanceFilterHelper
     {
         private readonly List<Filter> filters = new List<Filter>();
 
-        public void AddFilter(FilterType filterType, string field,  string value)
+        public void AddFilter(FilterType filterType, string field, string value)
         {
             Filter newFilter = new Filter()
             {

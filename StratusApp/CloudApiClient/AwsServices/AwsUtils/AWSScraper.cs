@@ -10,7 +10,7 @@ using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium.Support.UI;
 using Utils.DTO;
 
-namespace CloudApiClient.Utils
+namespace CloudApiClient.AwsServices.AwsUtils
 {
     public class AWSScraper
     {
@@ -21,7 +21,7 @@ namespace CloudApiClient.Utils
             _httpClient = new HttpClient();
         }
 
-               public async Task<List<AlternativeInstance>> ScrapeInstanceDetails()
+        public async Task<List<AlternativeInstance>> ScrapeInstanceDetails()
         {
             // Launch the Chrome browser
             using (IWebDriver driver = new ChromeDriver())
