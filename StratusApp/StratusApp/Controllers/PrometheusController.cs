@@ -42,26 +42,7 @@ namespace StratusApp.Controllers
 
             return Ok(cpuUsageResponse);
         }
-        
-        [HttpGet("GetAvgCpuUsageUtilizationOverTime")]
-        public async Task<ActionResult<StratusResponse<List<CpuUsageData>>>> GetAvgCpuUsageUtilizationOverTime(
-            string instance = "34.125.220.240",
-            string timeFilter = "month")
-        {
-            try
-            {
-                var avgCpuOverTimeResponse = new StratusResponse<List<CpuUsageData>>();
-
-                avgCpuOverTimeResponse.Data = await _prometheusClient.GetAvgCpuUsageUtilizationOverTime(instance, timeFilter);
-
-                return Ok(avgCpuOverTimeResponse);
-
-            }
-            catch (Exception ex) 
-            {
-                return BadRequest(ex.Message);
-            }
-        }
+       
 
         [HttpGet("GetAvgCpuUtilizationByCpu")]
         public async Task<ActionResult<StratusResponse<List<SingleCpuUtilizationDTO>>>> GetAvgCpuUtilizationByCpu(string instance, string timeFilter = "4w")

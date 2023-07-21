@@ -4,9 +4,9 @@ using Amazon.Runtime;
 using Amazon.EC2;
 using Amazon.Pricing;
 using Amazon.EC2.Model;
-using CloudApiClient.Utils;
 using CloudApiClient.AwsServices;
 using Utils.DTO;
+using CloudApiClient.AwsServices.AwsUtils;
 
 namespace CloudApiClient
 {

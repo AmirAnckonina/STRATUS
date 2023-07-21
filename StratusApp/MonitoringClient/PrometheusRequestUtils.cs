@@ -1,10 +1,10 @@
-﻿using MonitoringClient.Enums;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Utils.Enums;
 
 namespace MonitoringClient
 {
@@ -40,23 +40,21 @@ namespace MonitoringClient
             return $"{instanceAddr}:9100";
         }
 
-        public string ParseTimePeriodStrToPrometheusTimeFilterFormat(string timePeriodStr)
+        public string ParseTimePeriodToPrometheusTimeFilterFormat(QueryOverTimePeriod timePeriod)
         {
             string timeFilter;
-            TimePeriod timePeriod = ParseTimePeriodStrToTimePeriodEnum(timePeriodStr);
 
             switch (timePeriod)
             {
-                case TimePeriod.Year:
+                case QueryOverTimePeriod.Year:
                     timeFilter = "1y";
                     break;
 
-
-                case TimePeriod.Day:
+                case QueryOverTimePeriod.Day:
                     timeFilter = "1d";
                     break;
 
-                case TimePeriod.Month:
+                case QueryOverTimePeriod.Month:
                 default:
                     timeFilter = "30d";
                     break;
@@ -65,11 +63,7 @@ namespace MonitoringClient
             return timeFilter; 
         }
 
-        public TimePeriod ParseTimePeriodStrToTimePeriodEnum(string timePeriodStr)
-        {
-            TimePeriod timePeriod = (TimePeriod)Enum.Parse(typeof(TimePeriod), timePeriodStr);
-            return timePeriod;
-        }
+        
     }
 
 }
