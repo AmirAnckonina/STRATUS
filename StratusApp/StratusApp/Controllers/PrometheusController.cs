@@ -42,7 +42,19 @@ namespace StratusApp.Controllers
 
             return Ok(cpuUsageResponse);
         }
-       
+
+        [HttpGet("GetMaxCpuUsageUtilization")]
+        public async Task<ActionResult<StratusResponse<double>>> GetMaxCpuUsageUtilization(string instance = "34.125.220.240", string timeFilter = "4w")
+        {
+            var cpuUsageResponse = new StratusResponse<double>();
+
+            /// Should be modified to get the max and not the avarage!
+            /// Dummy dummy dummy
+            cpuUsageResponse.Data = await _prometheusClient.GetAvgCpuUsageUtilization(instance, timeFilter);
+
+            return Ok(cpuUsageResponse);
+        }
+
 
         [HttpGet("GetAvgCpuUtilizationByCpu")]
         public async Task<ActionResult<StratusResponse<List<SingleCpuUtilizationDTO>>>> GetAvgCpuUtilizationByCpu(string instance, string timeFilter = "4w")
