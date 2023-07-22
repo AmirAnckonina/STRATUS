@@ -16,8 +16,8 @@ namespace MonitoringClient
 {
     public class PrometheusClient
     {
-        private const string PROM_QUERY_PATH =      "/api/v1/query";
         private const string PROM_BASE_URL =        "http://localhost:9090/";
+        private const string PROM_QUERY_PATH =      "/api/v1/";
 
         private HttpClient _promHttpClient;
         private PrometheusRequestUtils _requestsUtils;
@@ -35,21 +35,28 @@ namespace MonitoringClient
 
         public async Task<string> GetNumberOfvCPU(string instanceAddr)
         {
+            string expQueryType = _requestsUtils.GetExperssionQueryString(PrometheusExpressionQueryType.InstantQuery);
+            string queryPath = PROM_QUERY_PATH + expQueryType;
+
+
             string instanceAddrWithPort = _requestsUtils.ConcateInstanceAddrWithPort(instanceAddr);
             // count(node_cpu_seconds_total{instance="34.125.220.240:9100"}) by (cpu)
             string query = "query=count(node_cpu_seconds_total{instance='" + $"{instanceAddrWithPort}" + "'}) by (cpu)";
-            Uri endPointWithQuery = _requestsUtils.CreateEndPointRequestUri(PROM_BASE_URL, PROM_QUERY_PATH, query);
+            Uri endPointWithQuery = _requestsUtils.CreateEndPointRequestUri(PROM_BASE_URL, queryPath, query);
             HttpResponseMessage getNoOfvCPU = await _promHttpClient.GetAsync(endPointWithQuery);
             return await getNoOfvCPU.Content.ReadAsStringAsync();
         }
 
         public async Task<double> GetAvgCpuUsageUtilization(string instanceAddr, string timeFilter)
         {
+            string expQueryType = _requestsUtils.GetExperssionQueryString(PrometheusExpressionQueryType.InstantQuery);
+            string queryPath = PROM_QUERY_PATH + expQueryType;
+
             string instanceAddrWithPort = _requestsUtils.ConcateInstanceAddrWithPort(instanceAddr);
             // 100 - (avg(rate(node_cpu_seconds_total{instance='34.125.220.240:9100',mode="idle"}[15m])) * 100)
             // 100 * (avg by (instance) (rate(node_cpu_seconds_total{mode!="idle"}[14d])))
             string query = "query=100 - (avg(rate(node_cpu_seconds_total{instance='" + $"{instanceAddrWithPort}" + "',mode='idle'}" + $"[{timeFilter}])) * 100)";
-            Uri endPointWithQuery = _requestsUtils.CreateEndPointRequestUri(PROM_BASE_URL, PROM_QUERY_PATH, query);
+            Uri endPointWithQuery = _requestsUtils.CreateEndPointRequestUri(PROM_BASE_URL, queryPath, query);
             HttpResponseMessage getCpuUsageResponse = await _promHttpClient.GetAsync(endPointWithQuery);
 
             string respContent = await getCpuUsageResponse.Content.ReadAsStringAsync();
@@ -63,10 +70,13 @@ namespace MonitoringClient
         {
             List<SingleCpuUtilizationDTO> cpusUtilizationDTOs = new List<SingleCpuUtilizationDTO>();
 
+            string expQueryType = _requestsUtils.GetExperssionQueryString(PrometheusExpressionQueryType.InstantQuery);
+            string queryPath = PROM_QUERY_PATH + expQueryType;
+
             string instanceAddrWithPort = _requestsUtils.ConcateInstanceAddrWithPort(instanceAddr);
             // 100 - (avg by (cpu) (rate(node_cpu_seconds_total{instance='34.125.220.240:9100',mode="idle"}[15m])) * 100)
             string query = "query=100 - (avg by (cpu) (rate(node_cpu_seconds_total{instance='" + $"{instanceAddrWithPort}" + "',mode='idle'}" + $"[{timeFilter}])) * 100)";
-            Uri endPointWithQuery = _requestsUtils.CreateEndPointRequestUri(PROM_BASE_URL, PROM_QUERY_PATH, query);
+            Uri endPointWithQuery = _requestsUtils.CreateEndPointRequestUri(PROM_BASE_URL, queryPath, query);
             HttpResponseMessage getCpuUsageByCpuResponse = await _promHttpClient.GetAsync(endPointWithQuery);
 
             string respContent = await getCpuUsageByCpuResponse.Content.ReadAsStringAsync();
@@ -84,12 +94,15 @@ namespace MonitoringClient
 
         public async Task<double> GetTotalDiskSizeInGB(string instanceAddr)
         {
+            string expQueryType = _requestsUtils.GetExperssionQueryString(PrometheusExpressionQueryType.InstantQuery);
+            string queryPath = PROM_QUERY_PATH + expQueryType;
+
             string instanceAddrWithPort = _requestsUtils.ConcateInstanceAddrWithPort(instanceAddr);
 
             //sum(node_filesystem_size_bytes{instance='34.125.220.240:9100'})/(1024^3)
             string query = "query=sum(node_filesystem_size_bytes{instance='" + $"{instanceAddrWithPort}" + "'})/(1024^3)";
 
-            Uri endPointWithQuery = _requestsUtils.CreateEndPointRequestUri(PROM_BASE_URL, PROM_QUERY_PATH, query);
+            Uri endPointWithQuery = _requestsUtils.CreateEndPointRequestUri(PROM_BASE_URL, queryPath, query);
             HttpResponseMessage getDiskSizeResponse = await _promHttpClient.GetAsync(endPointWithQuery);
             string respContent = await getDiskSizeResponse.Content.ReadAsStringAsync();
             PrometheusResponse? promResp = JsonConvert.DeserializeObject<PrometheusResponse>(respContent);
@@ -100,13 +113,16 @@ namespace MonitoringClient
 
         public async Task<double> GetAvgFreeDiskSpaceInGB(string instanceAddr, string timeFilter)
         {
+            string expQueryType = _requestsUtils.GetExperssionQueryString(PrometheusExpressionQueryType.InstantQuery);
+            string queryPath = PROM_QUERY_PATH + expQueryType;
+
             string instanceAddrWithPort = _requestsUtils.ConcateInstanceAddrWithPort(instanceAddr);
             // (avg_over_time(node_filesystem_free_bytes{instance='34.125.220.240:9100',mountpoint='/'}[4w]))/(1024^3)
             string query = 
                 "query=avg_over_time(node_filesystem_free_bytes{instance='" +
                 $"{instanceAddrWithPort}" + "',mountpoint='/'}" + $"[{timeFilter}])/(1024^3)";
 
-            Uri endPointWithQuery = _requestsUtils.CreateEndPointRequestUri(PROM_BASE_URL, PROM_QUERY_PATH, query);
+            Uri endPointWithQuery = _requestsUtils.CreateEndPointRequestUri(PROM_BASE_URL, queryPath, query);
             HttpResponseMessage getAvgAvailableDiskSpaceResponse = await _promHttpClient.GetAsync(endPointWithQuery);
             
             string respContent = await getAvgAvailableDiskSpaceResponse.Content.ReadAsStringAsync();
@@ -118,11 +134,14 @@ namespace MonitoringClient
 
         public async Task<double> GetTotalMemorySizeInGB(string instanceAddr)
         {
+            string expQueryType = _requestsUtils.GetExperssionQueryString(PrometheusExpressionQueryType.InstantQuery);
+            string queryPath = PROM_QUERY_PATH + expQueryType;
+
             string instanceAddrWithPort = _requestsUtils.ConcateInstanceAddrWithPort(instanceAddr);
             string query = "query=(node_memory_MemTotal_bytes{instance='" +
                 $"{instanceAddrWithPort}" + "'})/(1024^3)";
 
-            Uri endPointWithQuery = _requestsUtils.CreateEndPointRequestUri(PROM_BASE_URL, PROM_QUERY_PATH, query);
+            Uri endPointWithQuery = _requestsUtils.CreateEndPointRequestUri(PROM_BASE_URL, queryPath, query);
             HttpResponseMessage getTotalMemorySizeResponse = await _promHttpClient.GetAsync(endPointWithQuery);
 
             string respContent = await getTotalMemorySizeResponse.Content.ReadAsStringAsync();
@@ -134,11 +153,14 @@ namespace MonitoringClient
 
         public async Task<double> GetAvgFreeMemorySizeInGB(string instanceAddr, string timeFilter)
         {
+            string expQueryType = _requestsUtils.GetExperssionQueryString(PrometheusExpressionQueryType.InstantQuery);
+            string queryPath = PROM_QUERY_PATH + expQueryType;
+
             string instanceAddrWithPort = _requestsUtils.ConcateInstanceAddrWithPort(instanceAddr);
             string query = "query=avg_over_time(node_memory_MemFree_bytes{instance='" +
                 $"{instanceAddrWithPort}" + "'}" + $"[{timeFilter}])/(1024^3)";
 
-            Uri endPointWithQuery = _requestsUtils.CreateEndPointRequestUri(PROM_BASE_URL, PROM_QUERY_PATH, query);
+            Uri endPointWithQuery = _requestsUtils.CreateEndPointRequestUri(PROM_BASE_URL, queryPath, query);
             HttpResponseMessage getAvgFreeMemorySizeResponse = await _promHttpClient.GetAsync(endPointWithQuery);
 
             string respContent = await getAvgFreeMemorySizeResponse.Content.ReadAsStringAsync();
@@ -154,20 +176,23 @@ namespace MonitoringClient
             throw new NotImplementedException();
         }
 
-        /*public Task<CpuUsageData> GetAvgCpuUsageUtilization(
-            string instance,
-            QueryOverTimePeriod singleQueryTimePeriod,
-            QueryTimeOffsetType timeOffsetType,
-            int currentOffset)
+        public async Task<PrometheusResponse> ExecutePromQLQuery(PrometheusQueryParams queryParams)
         {
-            // http://localhost:9090/api/v1/query_range?query=(avg_over_time(node_filesystem_free_bytes{instance='34.125.220.240:9100',mountpoint='/'}[4w]))/(1024^3)&start=2023-07-19T20:10:30.781Z&end=2023-07-20T20:11:00.781Z&step=15s
+            string expQueryType = _requestsUtils.GetExperssionQueryString(queryParams.ExpressionQuery);
 
+            string queryPath = PROM_QUERY_PATH + expQueryType;
 
-        }*/
+            string query = _requestsUtils.BuildPromQLQueryContentByParams(queryParams);
 
-        public Task<PrometheusResponse> ExecutePromQLQuery(Dictionary<PrometheusParameter, string> queryParams)
-        {
-            throw new NotImplementedException();
+            Uri endPointWithQuery = _requestsUtils.CreateEndPointRequestUri(PROM_BASE_URL, queryPath, query);
+         
+            HttpResponseMessage rawResp = await _promHttpClient.GetAsync(endPointWithQuery);
+
+            string respContent = await rawResp.Content.ReadAsStringAsync();
+
+            PrometheusResponse? promResp = JsonConvert.DeserializeObject<PrometheusResponse>(respContent);
+
+            return promResp;
         }
     }
 }

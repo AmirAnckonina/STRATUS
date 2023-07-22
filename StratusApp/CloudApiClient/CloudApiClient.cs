@@ -7,6 +7,7 @@ using Amazon.EC2.Model;
 using CloudApiClient.AwsServices;
 using Utils.DTO;
 using CloudApiClient.AwsServices.AwsUtils;
+using CloudApiClient.AwsServices.AwsUtils;
 
 namespace CloudApiClient
 {

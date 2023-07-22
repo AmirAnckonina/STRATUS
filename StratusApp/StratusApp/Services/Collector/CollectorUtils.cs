@@ -11,7 +11,7 @@ namespace StratusApp.Services.Collector
 
         public QueryOverTimePeriod ParseTimePeriodStrToTimePeriodEnum(string timePeriodStr)
         {
-            QueryOverTimePeriod timePeriod = (QueryOverTimePeriod)Enum.Parse(typeof(QueryOverTimePeriod), timePeriodStr);
+            QueryOverTimePeriod timePeriod = (QueryOverTimePeriod)Enum.Parse(typeof(QueryOverTimePeriod), timePeriodStr, true);
             return timePeriod;
         }
 
