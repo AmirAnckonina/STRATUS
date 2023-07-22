@@ -14,6 +14,10 @@ using System.Timers;
 using Utils.DTO;
 using MongoDB.Bson.Serialization;
 using MongoDB.Bson.IO;
+using DTO;
+using Amazon.Runtime.Documents;
+using MongoDB.Driver;
+using System.Linq.Expressions;
 
 namespace StratusApp.Services
 {
@@ -23,13 +27,14 @@ namespace StratusApp.Services
         private readonly PrometheusClient _prometheusClient;
         private System.Timers.Timer _timer;
         private readonly Dictionary<eAlertType, int> _alertTypesConverter;
+        private int _cpuPercentageThreshold = 70;
+        private int _memoryPercentageThreshold = 70;
+        private int _storagePercentageThreshold = 70;
+        private double _intervalTimeToAlert = 1000 * 60;
 
-        private const int CPU_PERCENTAGE_THRESHOLD = 70;
-        private const int MEMORY_PERCENTAGE_THRESHOLD = 70;
-        private const int STORAGE_PERCENTAGE_THRESHOLD = 70;
-        private const string ALERTS_TABLE = "Alerts";
+        private const string ALERTS_COLLECTION = "Alerts";
+        private const string ALERTS_CONFIGURATIONS_COLLECTION = "AlertConfigurations";
         private const string INTERVAL_FILTER = "1d";
-        private const long INTERVAL = 1000 * 60;
 
         private readonly List<AlertData> _alerts = new List<AlertData>();
 
@@ -40,18 +45,18 @@ namespace StratusApp.Services
             _prometheusClient = new PrometheusClient();
             _alertTypesConverter = new Dictionary<eAlertType, int>()
             {
-                [eAlertType.CPU] = CPU_PERCENTAGE_THRESHOLD,
-                [eAlertType.STORAGE] = STORAGE_PERCENTAGE_THRESHOLD,
-                [eAlertType.MEMORY] = MEMORY_PERCENTAGE_THRESHOLD,
+                [eAlertType.CPU] = _cpuPercentageThreshold,
+                [eAlertType.STORAGE] = _storagePercentageThreshold,
+                [eAlertType.MEMORY] = _memoryPercentageThreshold,
             };
 
-            InitTimer();
+            InitTimer(_intervalTimeToAlert);
         }
 
         internal async Task<List<AlertData>> GetAlertsCollection()
         {
             var result = new List<AlertData>();
-            var alertsData =  _mongoDatabase.GetCollectionAsList(ALERTS_TABLE).Result;            
+            var alertsData =  _mongoDatabase.GetCollectionAsList(ALERTS_COLLECTION).Result;            
 
             foreach (var alert in alertsData)
             {
@@ -66,7 +71,7 @@ namespace StratusApp.Services
             return result;
         }    
 
-        private void InitTimer(double interval = INTERVAL)
+        private void InitTimer(double interval)
         {
             // update table with new data and delete records that machine id that was terminated
 
@@ -98,11 +103,9 @@ namespace StratusApp.Services
             InsertAlertsToDB();
         }
 
-        private void InsertAlertsToDB()
+        private async void InsertAlertsToDB()
         {
-            var alertsCollection = _mongoDatabase.GetCollection<AlertData>(ALERTS_TABLE);
-
-            alertsCollection.InsertManyAsync(_alerts);
+            await _mongoDatabase.InsertMultipleDocuments(ALERTS_COLLECTION, _alerts);
         }
 
         private void DetectAndInsertLowUsage(string machineId, double avgUsage, eAlertType eAlertType)
@@ -116,6 +119,64 @@ namespace StratusApp.Services
                     CreationTime = DateTime.Now,
                     PercentageUsage = avgUsage,
                 });
+            }
+        }
+
+        internal bool SetConfigurations(AlertsConfigurations alertsConfigurations)
+        {
+            bool result = false;
+
+            try
+            {
+                SetIntervalTime(alertsConfigurations);
+                SetThresholdValues(alertsConfigurations);
+                var deleteResult = ResetAlertsConfigurationsCollection();
+
+                if (deleteResult.IsAcknowledged)
+                {
+                    InsertAlertsConfigurationsToDB(alertsConfigurations);
+
+                    result = true;
+                }
+            }
+            catch { }
+
+            return result;
+        }
+
+        private void SetThresholdValues(AlertsConfigurations alertsConfigurations)
+        {
+            _cpuPercentageThreshold = alertsConfigurations.CpuThreshold;
+            _memoryPercentageThreshold = alertsConfigurations.MemoryThreshold;
+            _storagePercentageThreshold = alertsConfigurations.DiskThreshold;
+            _intervalTimeToAlert = alertsConfigurations.IntervalTimeMilisec;
+            _timer.Interval = _intervalTimeToAlert;
+        }
+
+        private async void InsertAlertsConfigurationsToDB(AlertsConfigurations alertsConfigurations)
+        {
+            await _mongoDatabase.InsertDocument(ALERTS_CONFIGURATIONS_COLLECTION, alertsConfigurations);
+        }
+
+        private DeleteResult ResetAlertsConfigurationsCollection()
+        {
+            // need to reset only for specific user !!
+
+            return _mongoDatabase.DeleteDocuments(ALERTS_CONFIGURATIONS_COLLECTION, Builders<AlertsConfigurations>.Filter.Empty).Result;
+        }
+
+        private void SetIntervalTime(AlertsConfigurations alertsConfigurations)
+        {
+            switch(alertsConfigurations.IntervalPeriod)
+            {
+                case "hour":
+                    alertsConfigurations.IntervalTimeMilisec = 1000 * 60 * 60 * alertsConfigurations.IntervalPeriodValue; break;
+                case "day":
+                    alertsConfigurations.IntervalTimeMilisec = 1000 * 60 * 60 * 24 * alertsConfigurations.IntervalPeriodValue; break;
+                case "week":
+                    alertsConfigurations.IntervalTimeMilisec = 1000 * 60 * 60 * 24 * 7 * alertsConfigurations.IntervalPeriodValue; break;
+                case "month":
+                    alertsConfigurations.IntervalTimeMilisec = 1000 * 60 * 60 * 24 * 20 * alertsConfigurations.IntervalPeriodValue; break;
             }
         }
 

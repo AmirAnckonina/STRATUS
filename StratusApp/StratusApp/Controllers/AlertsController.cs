@@ -6,6 +6,7 @@ using StratusApp.Services.MongoDBServices;
 using MonitoringClient;
 using Utils.DTO;
 using StratusApp.Services;
+using DTO;
 
 namespace StratusApp.Controllers
 {
@@ -27,6 +28,27 @@ namespace StratusApp.Controllers
             alertResponse.Data = _alertsService.GetAlertsCollection().Result;
 
             return Ok(alertResponse);
+        }
+
+        [HttpPost("SetConfigurations")]
+        public async Task<ActionResult<StratusResponse<string>>> SetConfigurations([FromBody] AlertsConfigurations alertsConfigurations)
+        {
+
+            bool result = _alertsService.SetConfigurations(alertsConfigurations);
+
+            if (result)
+            {
+                var response = new StratusResponse<string>
+                {
+                    Data = "Configurations saved successfully"
+                };
+
+                return Ok(response);
+            }
+            else
+            {
+                return BadRequest();
+            }            
         }
     }
 }
