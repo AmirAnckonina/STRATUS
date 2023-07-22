@@ -1,4 +1,6 @@
 ﻿using MonitoringClient;
+using MonitoringClient.Enums;
+using System;
 using Utils.DTO;
 using Utils.Enums;
 
@@ -15,7 +17,7 @@ namespace StratusApp.Services.Collector
             _collectorUtils = new CollectorUtils();
         }
 
-        public async Task<List<CpuUsageData>> GetAvgCpuUsageUtilizationOverTime(string instance, string timePeriodStr)
+        /*public async Task<List<CpuUsageData>> GetAvgCpuUsageUtilizationOverTime(string instance, string timePeriodStr)
         {
             List<CpuUsageData> cpuUsageDataList = new List<CpuUsageData>();
             int queriesToExec = 0;
@@ -60,6 +62,55 @@ namespace StratusApp.Services.Collector
 
             }
 
+
+            return cpuUsageDataList;
+
+        }*/
+
+        public async Task<List<CpuUsageData>> GetAvgCpuUsageUtilizationOverTime(string instanceAddr, string timePeriodStr)
+        {
+            List<CpuUsageData> cpuUsageDataList = new List<CpuUsageData>();
+            PrometheusQueryParams queryParams = new PrometheusQueryParams();
+            QueryOverTimePeriod overallTimePeriod;
+            QueryOverTimePeriod queryStep;
+            DateTime endTime = DateTime.UtcNow;
+            DateTime startTime;
+
+            overallTimePeriod = _collectorUtils.ParseTimePeriodStrToTimePeriodEnum(timePeriodStr);
+
+            //export to method inCollectorUtils.
+            switch (overallTimePeriod)
+            {
+                case QueryOverTimePeriod.Day:
+                   startTime = endTime.AddDays(-1);
+                   queryStep = QueryOverTimePeriod.Hour;
+                   break;
+
+                case QueryOverTimePeriod.Year:
+                   startTime = endTime.AddYears(-1);
+                   queryStep = QueryOverTimePeriod.Month;
+                   break;
+
+                case QueryOverTimePeriod.Month:
+                case QueryOverTimePeriod.None:
+                    startTime = endTime.AddMonths(-1);
+                    queryStep = QueryOverTimePeriod.Day;
+                    break;
+
+                default:
+                    throw new Exception("Query overall time isn't supported.");
+            }
+
+            // Fill queryParams
+            queryParams.InstanceAddr = instanceAddr;
+            queryParams.ExpressionQuery = PrometheusExpressionQueryType.RangeQuery;
+            queryParams.OverTimeFilter = queryStep;
+            queryParams.QueryType = PrometheusQueryType.GetAvgCpuUsageUtilizationOverTime;
+            queryParams.StartTime = startTime;
+            queryParams.EndTime = endTime;
+            queryParams.QueryStep = queryStep;
+
+            var result = _prometheusClient.ExecutePromQLQuery(queryParams);
 
             return cpuUsageDataList;
 

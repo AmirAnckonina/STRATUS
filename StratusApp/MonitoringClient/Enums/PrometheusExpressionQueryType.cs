@@ -6,7 +6,9 @@ using System.Threading.Tasks;
 
 namespace MonitoringClient
 {
-    internal class PrometheusQueryTypeMapper
+    public enum PrometheusExpressionQueryType
     {
+        InstantQuery,
+        RangeQuery
     }
 }
