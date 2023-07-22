@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
 
-namespace CloudApiClient.Utils
+namespace CloudApiClient.AwsServices.AwsUtils
 {
     internal class PricingUtils
     {
@@ -32,8 +32,8 @@ namespace CloudApiClient.Utils
 
                 string? priceInString = firstPriceDimension?.Value["pricePerUnit"]?["USD"]?.ToString();
                 if (priceInString != null)
-                { 
-                    onDemandPricePlan.priceInUSD = decimal.Parse(priceInString); 
+                {
+                    onDemandPricePlan.priceInUSD = decimal.Parse(priceInString);
                 }
                 onDemandPricePlan.unit = firstPriceDimension?.Value["unit"]?.ToString();
                 onDemandPricePlan.description = firstPriceDimension?.Value["description"]?.ToString();
@@ -42,7 +42,7 @@ namespace CloudApiClient.Utils
             {
                 throw new Exception("Price dimensions field not found or not parsed successfully.");
             }
-               
+
 
             return onDemandPricePlan;
         }
@@ -55,7 +55,7 @@ namespace CloudApiClient.Utils
             JObject priceListJson = JObject.Parse(rawPriceListItem);
             var rawProduct = priceListJson?["product"];
 
-            if (rawProduct != null) 
+            if (rawProduct != null)
             {
                 string rawProductJson = rawProduct.ToString();
                 product = JsonConvert.DeserializeObject<Product>(rawProductJson);
@@ -67,6 +67,6 @@ namespace CloudApiClient.Utils
             }
 
             return product;
-        }        
+        }
     }
 }

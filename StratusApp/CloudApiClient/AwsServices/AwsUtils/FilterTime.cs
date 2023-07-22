@@ -4,12 +4,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MonitoringClient.Enums
+namespace CloudApiClient.AwsServices.AwsUtils
 {
-    public enum TimePeriod
+    public enum FilterTime
     {
-        Year,
+        Day,
+        Week,
         Month,
-        Day
+        Year
     }
 }

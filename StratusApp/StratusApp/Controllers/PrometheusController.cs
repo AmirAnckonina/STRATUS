@@ -5,6 +5,7 @@ using MonitoringClient;
 using StratusApp.Models.Responses;
 using StratusApp.Services;
 using System.Linq.Expressions;
+using StratusApp.Services.MongoDBServices;
 using System.Reflection;
 using Utils.DTO;
 
@@ -30,17 +31,7 @@ namespace StratusApp.Controllers
             cpuUsageResponse.Data = await _prometheusClient.GetNumberOfvCPU(instance);
 
             return Ok(cpuUsageResponse);
-        }
-
-        [HttpGet("GetAlerts")]
-        public async Task<ActionResult<StratusResponse<List<AlertData>>>> GetInstanceCpuUsage()
-        {
-            var alertResponse = new StratusResponse<List<AlertData>>();
-
-            alertResponse.Data = _prometheusClient.GetAlerts();
-
-            return Ok(alertResponse);
-        }
+        }       
 
         [HttpGet("GetAvgCpuUsageUtilization")]
         public async Task<ActionResult<StratusResponse<double>>> GetCpuUsageUtilization(string instance = "34.125.220.240", string timeFilter = "4w")
@@ -51,26 +42,19 @@ namespace StratusApp.Controllers
 
             return Ok(cpuUsageResponse);
         }
-        
-        [HttpGet("GetAvgCpuUsageUtilizationOverTime")]
-        public async Task<ActionResult<StratusResponse<List<CpuUsageData>>>> GetAvgCpuUsageUtilizationOverTime(
-            string instance = "34.125.220.240",
-            string timeFilter = "month")
+
+        [HttpGet("GetMaxCpuUsageUtilization")]
+        public async Task<ActionResult<StratusResponse<double>>> GetMaxCpuUsageUtilization(string instance = "34.125.220.240", string timeFilter = "4w")
         {
-            try
-            {
-                var avgCpuOverTimeResponse = new StratusResponse<List<CpuUsageData>>();
+            var cpuUsageResponse = new StratusResponse<double>();
 
-                avgCpuOverTimeResponse.Data = await _prometheusClient.GetAvgCpuUsageUtilizationOverTime(instance, timeFilter);
+            /// Should be modified to get the max and not the avarage!
+            /// Dummy dummy dummy
+            cpuUsageResponse.Data = await _prometheusClient.GetAvgCpuUsageUtilization(instance, timeFilter);
 
-                return Ok(avgCpuOverTimeResponse);
-
-            }
-            catch (Exception ex) 
-            {
-                return BadRequest(ex.Message);
-            }
+            return Ok(cpuUsageResponse);
         }
+
 
         [HttpGet("GetAvgCpuUtilizationByCpu")]
         public async Task<ActionResult<StratusResponse<List<SingleCpuUtilizationDTO>>>> GetAvgCpuUtilizationByCpu(string instance, string timeFilter = "4w")
@@ -185,7 +169,5 @@ namespace StratusApp.Controllers
                 return BadRequest(ex.Message);
             }
         }
-
-
     }
 }

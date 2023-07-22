@@ -4,9 +4,10 @@ using Amazon.Runtime;
 using Amazon.EC2;
 using Amazon.Pricing;
 using Amazon.EC2.Model;
-using CloudApiClient.Utils;
 using CloudApiClient.AwsServices;
 using Utils.DTO;
+using CloudApiClient.AwsServices.AwsUtils;
+using CloudApiClient.AwsServices.AwsUtils;
 
 namespace CloudApiClient
 {
@@ -134,14 +135,14 @@ namespace CloudApiClient
             InstanceFilterHelper instanceFilterHelper = new();
 
             //instanceFilterHelper.AddFilter(FilterType.TERM_MATCH, "operatingSystem", instance.OperatingSystem);
-            instanceFilterHelper.AddFilter(FilterType.TERM_MATCH, "operatingSystem", instance.OperatingSystem);
+            instanceFilterHelper.AddFilter(FilterType.TERM_MATCH, "operatingSystem", "Linux");
             //instanceFilterHelper.AddFilter(FilterType.TERM_MATCH, "price", instance.Price.ToString());
             //instanceFilterHelper.AddFilter(FilterType.TERM_MATCH, "cpuUsageAverage", instance.CpuStatistics[0].Average.ToString());
             instanceFilterHelper.AddFilter(FilterType.TERM_MATCH, "preInstalledSw", "NA");
             instanceFilterHelper.AddFilter(FilterType.TERM_MATCH, "capacitystatus", "Used");
             instanceFilterHelper.AddFilter(FilterType.TERM_MATCH, "tenancy", "Shared");
             instanceFilterHelper.AddFilter(FilterType.TERM_MATCH, "location", "US East (N. Virginia)");
-            instanceFilterHelper.AddFilter(FilterType.TERM_MATCH, "memory", $"{instance.TotalStorageSize} Gib");
+            instanceFilterHelper.AddFilter(FilterType.TERM_MATCH, "memory", "8 Gib");
             //instanceFilterHelper.AddFilter(FilterType.TERM_MATCH, "Storage", instance.Storage);
 
 

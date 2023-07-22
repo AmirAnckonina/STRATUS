@@ -11,7 +11,7 @@ using OpenQA.Selenium.Support.UI;
 using SeleniumExtras.WaitHelpers;
 using Utils.DTO;
 
-namespace CloudApiClient.Utils
+namespace CloudApiClient.AwsServices.AwsUtils
 {
     public class AWSScraper
     {
