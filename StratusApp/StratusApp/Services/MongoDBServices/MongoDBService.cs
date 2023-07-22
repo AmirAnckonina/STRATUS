@@ -7,6 +7,7 @@ using Amazon.SecurityToken.Model;
 using System.Linq.Expressions;
 using MongoDB.Bson.Serialization;
 using Utils.DTO;
+using DTO;
 
 namespace StratusApp.Services.MongoDBServices
 {
@@ -126,6 +127,13 @@ namespace StratusApp.Services.MongoDBServices
             await collection.InsertOneAsync(documentToInsert);
         }
 
+        public async Task InsertMultipleDocuments<T>(string collectionName, List<T> documentsToInsert)
+        {
+            var collection = GetCollection<T>(collectionName);
+
+            await collection.InsertManyAsync(documentsToInsert);
+        }
+
         public async Task InsertDocumentByForeignKey<T>(string collectionName, T documentToInsert, string foreignCollectionName, ObjectId foreignKey)
         {
             var collection = GetCollection<T>(collectionName);
@@ -135,6 +143,13 @@ namespace StratusApp.Services.MongoDBServices
                 //documentToInsert.Set("userId", foreignKey); todo: get class with foreign key and no need to set
                 await collection.InsertOneAsync(documentToInsert);
             }
+        }
+
+        internal async Task<DeleteResult> DeleteDocuments<T>(string collectionName, FilterDefinition<T> filter)
+        {
+            var collection = GetCollection<T>(collectionName);
+
+            return await collection.DeleteManyAsync(filter);
         }
     }
 }
