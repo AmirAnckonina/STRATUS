@@ -234,8 +234,69 @@ const Page = () => {
       <Dialog open={isConfigFormOpen} onClose={handleConfigFormClose}>
         <DialogTitle>Configurations</DialogTitle>
         <DialogContent>
-          {/* ... (Form fields remain the same) */}
+          <TextField
+            label="CPU Threshold"
+            value={cpuThreshold}
+            onChange={(e) => {
+              setCpuThreshold(e.target.value);
+              setCpuThresholdError(''); // Reset the error when the user types
+            }}
+            fullWidth
+            margin="normal"
+            error={!!cpuThresholdError}
+            helperText={cpuThresholdError}
+          />
+          <TextField
+            label="Memory Threshold"
+            value={memoryThreshold}
+            onChange={(e) => {
+              setMemoryThreshold(e.target.value);
+              setMemoryThresholdError(''); // Reset the error when the user types
+            }}
+            fullWidth
+            margin="normal"
+            error={!!memoryThresholdError}
+            helperText={memoryThresholdError}
+          />
+          <TextField
+            label="Disk Threshold"
+            value={diskThreshold}
+            onChange={(e) => {
+              setDiskThreshold(e.target.value);
+              setDiskThresholdError(''); // Reset the error when the user types
+            }}
+            fullWidth
+            margin="normal"
+            error={!!diskThresholdError}
+            helperText={diskThresholdError}
+          />
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            <Typography variant="subtitle1" sx={{ marginRight: '8px' }}>Interval:</Typography>
+            <select
+              value={intervalPeriod}
+              onChange={(e) => setIntervalPeriod(e.target.value)}
+              style={{ marginRight: '16px', padding: '4px 8px' }}
+            >
+              <option value="day">Day</option>
+              <option value="week">Week</option>
+              <option value="month">Month</option>
+              <option value="hour">Hour</option> {/* Changed from "year" to "hour" */}
+            </select>
+            <TextField
+              label="Interval Value"
+              value={intervalPeriodValue}
+              onChange={(e) => {
+                setIntervalPeriodValue(e.target.value);
+                setIntervalValueError(''); // Reset the error when the user types
+              }}
+              type="number"
+              inputProps={{ min: '1' }}
+              error={!!intervalValueError}
+              helperText={intervalValueError}
+            />
+          </Box>
         </DialogContent>
+
         <DialogActions>
           <Button onClick={handleConfigFormClose}>Cancel</Button>
           <Button onClick={handleConfigFormSubmit} color="primary">Confirm</Button>

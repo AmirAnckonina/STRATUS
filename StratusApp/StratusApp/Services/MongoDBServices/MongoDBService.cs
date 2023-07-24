@@ -8,6 +8,7 @@ using System.Linq.Expressions;
 using MongoDB.Bson.Serialization;
 using Utils.DTO;
 using DTO;
+using OpenQA.Selenium;
 
 namespace StratusApp.Services.MongoDBServices
 {
@@ -31,7 +32,7 @@ namespace StratusApp.Services.MongoDBServices
                 classMap.AutoMap();
             });
         }
-       
+
         public async Task<Dictionary<string, List<string>>> GetDatabasesAndCollections()
         {
             if (_databasesAndCollections != null) return _databasesAndCollections;
@@ -52,10 +53,10 @@ namespace StratusApp.Services.MongoDBServices
             return _databasesAndCollections;
         }
 
-        public async Task<List<BsonDocument>> GetDocuments(string collectionName, Func<BsonDocument, bool> filter = null)
+        public async Task<List<BsonDocument>> GetDocuments(eCollectionName collectionType, Func<BsonDocument, bool> filter = null)
         {
             List<BsonDocument> result = new List<BsonDocument>();
-            List<BsonDocument> collection = await GetCollectionAsList(collectionName); 
+            List<BsonDocument> collection = await GetCollectionAsList<BsonDocument>(collectionType); 
             
             foreach(BsonDocument document in collection)
             {
@@ -72,47 +73,57 @@ namespace StratusApp.Services.MongoDBServices
             return result;
         }
 
-        public async Task<long> GetCollectionCount<T>(string collectionName)
+        public async Task<long> GetCollectionCount<T>(eCollectionName collectionType)
         {
-            var collection = GetCollection<T>(collectionName);
+            var collection = GetCollection<T>(collectionType);
 
             return await collection.EstimatedDocumentCountAsync();
         }
 
-        public IMongoCollection<T> GetCollection<T>(string collectionName)
+        public IMongoCollection<T> GetCollection<T>(eCollectionName collectionType)
         {
             var db = _mongoClient.GetDatabase(DB_NAME);
+            var colName = MongoDBCollectionNames.GetCollectionName(collectionType);
 
-            return db.GetCollection<T>(collectionName);
+            return db.GetCollection<T>(colName);
         }
 
-        public async Task<List<BsonDocument>> GetCollectionAsList(string collectionName)
+        public async Task<List<T>> GetCollectionAsList<T>(eCollectionName collectionType)
         {
             var db = _mongoClient.GetDatabase(DB_NAME);
+            var colName = MongoDBCollectionNames.GetCollectionName(collectionType);
+            List<T> result = new List<T>();
 
-            return await db.GetCollection<BsonDocument>(collectionName).Find(_ => true).ToListAsync();
-        }
+            var collecition =  await db.GetCollection<BsonDocument>(colName).Find(_ => true).ToListAsync();
 
-        public async Task<UpdateResult> CreateOrUpdateField<T>(string collectionName, ObjectId id, string fieldName, string value)
+            foreach (var item in collecition)
+            {
+                result.Add(BsonSerializer.Deserialize<T>(item));
+            }
+
+            return result;
+         }
+
+        public async Task<UpdateResult> CreateOrUpdateField<T>(eCollectionName collectionType, ObjectId id, string fieldName, string value)
         {
-            var documentToUpdate = GetDocumentById(collectionName, id);
-            var collection = GetCollection<T>(collectionName);
+            var documentToUpdate = GetDocumentById(collectionType, id);
+            var collection = GetCollection<T>(collectionType);
             var update = Builders<T>.Update.Set(fieldName, new BsonString(value));
 
             return await collection.UpdateOneAsync(documentToUpdate, update);
         }
 
-        public async Task<DeleteResult> DeleteDocument<T>(string collectionName, ObjectId id)
+        public async Task<DeleteResult> DeleteDocument<T>(eCollectionName collectionType, ObjectId id)
         {
-            var collection = GetCollection<T>(collectionName);
-            var documentToDelete = GetDocumentById(collectionName, id);
+            var collection = GetCollection<T>(collectionType);
+            var documentToDelete = GetDocumentById(collectionType, id);
 
             return await collection.DeleteOneAsync(documentToDelete);
         }
 
-        public BsonDocument? GetDocumentById(string collectionName, ObjectId id)
+        public BsonDocument? GetDocumentById(eCollectionName collectionType, ObjectId id)
         {
-            return GetDocuments(collectionName, (document) => document.GetValue("_id") == id).Result.FirstOrDefault();
+            return GetDocuments(collectionType, (document) => document.GetValue("_id") == id).Result.FirstOrDefault();
         }
 
         private static BsonDocument CreateIdFilter(string id)
@@ -120,34 +131,34 @@ namespace StratusApp.Services.MongoDBServices
             return new BsonDocument("_id", new BsonObjectId(new ObjectId(id)));
         }
 
-        public async Task InsertDocument<T>(string collectionName, T documentToInsert)
+        public async Task InsertDocument<T>(eCollectionName collectionType, T documentToInsert)
         {
-            var collection = GetCollection<T>(collectionName);
+            var collection = GetCollection<T>(collectionType);
 
             await collection.InsertOneAsync(documentToInsert);
         }
 
-        public async Task InsertMultipleDocuments<T>(string collectionName, List<T> documentsToInsert)
+        public async Task InsertMultipleDocuments<T>(eCollectionName collectionType, List<T> documentsToInsert)
         {
-            var collection = GetCollection<T>(collectionName);
+            var collection = GetCollection<T>(collectionType);
 
             await collection.InsertManyAsync(documentsToInsert);
         }
 
-        public async Task InsertDocumentByForeignKey<T>(string collectionName, T documentToInsert, string foreignCollectionName, ObjectId foreignKey)
+        public async Task InsertDocumentByForeignKey<T>(eCollectionName collectionType, T documentToInsert, eCollectionName foreignCollectionType, ObjectId foreignKey)
         {
-            var collection = GetCollection<T>(collectionName);
+            var collection = GetCollection<T>(collectionType);
             
-            if (GetDocumentById(foreignCollectionName, foreignKey) != null)
+            if (GetDocumentById(foreignCollectionType, foreignKey) != null)
             {
                 //documentToInsert.Set("userId", foreignKey); todo: get class with foreign key and no need to set
                 await collection.InsertOneAsync(documentToInsert);
             }
         }
 
-        internal async Task<DeleteResult> DeleteDocuments<T>(string collectionName, FilterDefinition<T> filter)
+        internal async Task<DeleteResult> DeleteDocuments<T>(eCollectionName collectionType, FilterDefinition<T> filter)
         {
-            var collection = GetCollection<T>(collectionName);
+            var collection = GetCollection<T>(collectionType);
 
             return await collection.DeleteManyAsync(filter);
         }

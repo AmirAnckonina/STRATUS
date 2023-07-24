@@ -59,6 +59,7 @@ namespace StratusApp
             // Add MongoDB connection
             services.AddSingleton<MongoDBService>();
             services.AddSingleton<AlertsService>();
+            services.AddSingleton<AwsService>();
             services.AddSingleton<IStratusService, StratusService>();
             services.AddSingleton<CollectorService>();
             services.AddSingleton<RecommendationsService>();

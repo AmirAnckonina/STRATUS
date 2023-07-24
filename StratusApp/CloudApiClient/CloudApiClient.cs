@@ -58,16 +58,19 @@ namespace CloudApiClient
             {
                 foreach (var instance in reservation.Instances)
                 {
-                    if (instance != null && instance.State.Name == "running") // filter out non-running instances if desired
+                    if (instance != null) // filter out non-running instances if desired
                     {
 
                         var vm = new InstanceDetails
                         {
-                            Id = instance.InstanceId,
+                            InstanceId = instance.InstanceId,
+                            Type = instance.InstanceType.ToString(),
+                            IP = instance.PrivateIpAddress.ToString(),
                             OperatingSystem = instance.PlatformDetails,
                             Price = await _costExplorerService.GetInstancePrice(instance.InstanceId),
-                            CpuSpecifications = $"{instance.CpuOptions.CoreCount} Core/s, {instance.CpuOptions.ThreadsPerCore} threads per Core",
+                            VCPU = $"{instance.CpuOptions.CoreCount} Core/s, {instance.CpuOptions.ThreadsPerCore} threads per Core",
                             TotalStorageSize = await GetInstanceTotalVolumesSize(instance.InstanceId),
+
                             //string.Join(", ", instance.BlockDeviceMappings.Select<InstanceBlockDeviceMapping, string>(bdm => $"{bdm.DeviceName}")).Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).ToList(),
                         };
 

@@ -32,8 +32,6 @@ namespace StratusApp.Services
         private int _storagePercentageThreshold = 70;
         private double _intervalTimeToAlert = 1000 * 60;
 
-        private const string ALERTS_COLLECTION = "Alerts";
-        private const string ALERTS_CONFIGURATIONS_COLLECTION = "AlertConfigurations";
         private const string INTERVAL_FILTER = "1d";
 
         private readonly List<AlertData> _alerts = new List<AlertData>();
@@ -56,15 +54,15 @@ namespace StratusApp.Services
         internal async Task<List<AlertData>> GetAlertsCollection()
         {
             var result = new List<AlertData>();
-            var alertsData =  _mongoDatabase.GetCollectionAsList(ALERTS_COLLECTION).Result;            
+            var alertsData =  _mongoDatabase.GetCollectionAsList<AlertData>(eCollectionName.Alerts).Result;            
 
             foreach (var alert in alertsData)
             {
-                var alertDataToAdd = BsonSerializer.Deserialize<AlertData>(alert);
+                //var alertDataToAdd = BsonSerializer.Deserialize<AlertData>(alert);
 
-                if (alertDataToAdd != null)
+                if (alert != null)
                 {
-                    result.Add(alertDataToAdd);
+                    result.Add(alert);
                 }
             }
 
@@ -105,7 +103,7 @@ namespace StratusApp.Services
 
         private async void InsertAlertsToDB()
         {
-            await _mongoDatabase.InsertMultipleDocuments(ALERTS_COLLECTION, _alerts);
+            await _mongoDatabase.InsertMultipleDocuments(eCollectionName.AlertConfigurations, _alerts);
         }
 
         private void DetectAndInsertLowUsage(string machineId, double avgUsage, eAlertType eAlertType)
@@ -155,14 +153,14 @@ namespace StratusApp.Services
 
         private async void InsertAlertsConfigurationsToDB(AlertsConfigurations alertsConfigurations)
         {
-            await _mongoDatabase.InsertDocument(ALERTS_CONFIGURATIONS_COLLECTION, alertsConfigurations);
+            await _mongoDatabase.InsertDocument(eCollectionName.AlertConfigurations, alertsConfigurations);
         }
 
         private DeleteResult ResetAlertsConfigurationsCollection()
         {
             // need to reset only for specific user !!
 
-            return _mongoDatabase.DeleteDocuments(ALERTS_CONFIGURATIONS_COLLECTION, Builders<AlertsConfigurations>.Filter.Empty).Result;
+            return _mongoDatabase.DeleteDocuments(eCollectionName.AlertConfigurations, Builders<AlertsConfigurations>.Filter.Empty).Result;
         }
 
         private void SetIntervalTime(AlertsConfigurations alertsConfigurations)

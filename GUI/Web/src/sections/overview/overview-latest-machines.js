@@ -52,6 +52,12 @@ export const OverviewLatestMachines = (props) => {
                   Id
                 </TableCell>
                 <TableCell>
+                  IP
+                </TableCell>
+                <TableCell>
+                  Type
+                </TableCell>
+                <TableCell>
                   OS
                 </TableCell>
                 <TableCell>
@@ -74,7 +80,13 @@ export const OverviewLatestMachines = (props) => {
                     key={data.id}
                   >
                      <TableCell>
-                      {data.id}
+                      {data.instanceId}
+                    </TableCell>
+                    <TableCell>
+                      {data.ip}
+                    </TableCell>
+                    <TableCell>
+                      {data.type}
                     </TableCell>
                     <TableCell>
                       {data.operatingSystem}
@@ -83,7 +95,7 @@ export const OverviewLatestMachines = (props) => {
                       {data.price}
                     </TableCell>
                     <TableCell>
-                      {data.cpuSpecifications}
+                      {data.vcpu}
                     </TableCell>
                     <TableCell>
                       {data.totalStorageSize} GB
