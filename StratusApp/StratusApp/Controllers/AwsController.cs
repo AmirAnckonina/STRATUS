@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Cors;
 using CloudApiClient.AwsServices.AwsUtils;
 using StratusApp.Data;
 using Utils.DTO;
-
+using StratusApp.Services;
 
 namespace StratusApp.Controllers
 {
@@ -16,12 +16,11 @@ namespace StratusApp.Controllers
     [EnableCors("AllowAnyOrigin")]
     public class AwsController : Controller
     {
-
-        private readonly AwsClient _awsClient;
-
-        public AwsController() 
+        private readonly AwsService _awsService;
+        
+        public AwsController(AwsService awsService) 
         {
-            _awsClient = new AwsClient();
+            _awsService = awsService;
         }
 
         [HttpGet("GetUserInstanceData")]
@@ -29,7 +28,7 @@ namespace StratusApp.Controllers
         {
             var userInstanceDataStartusResp = new StratusResponse<List<InstanceDetails>>();
 
-            userInstanceDataStartusResp.Data = await _awsClient.GetInstanceFormalData();
+            userInstanceDataStartusResp.Data = await _awsService.GetInstanceFormalData();
 
             return Ok(userInstanceDataStartusResp);
         }
@@ -39,7 +38,7 @@ namespace StratusApp.Controllers
         {
             var userInstanceDataStartusResp = new StratusResponse<List<Datapoint>>();
 
-            userInstanceDataStartusResp.Data = await _awsClient.GetInstanceCPUStatistics(instanceId);
+            userInstanceDataStartusResp.Data = await _awsService.GetInstanceCPUStatistics(instanceId);
 
             return Ok(userInstanceDataStartusResp);
         }
@@ -49,7 +48,7 @@ namespace StratusApp.Controllers
         {
             var userInstanceCpuUsageDataOverTimeStartusResp = new StratusResponse<List<CpuUsageData>>();
 
-            userInstanceCpuUsageDataOverTimeStartusResp.Data = await _awsClient.GetInstanceCpuUsageOverTime(instanceId, filterTime);
+            userInstanceCpuUsageDataOverTimeStartusResp.Data = await _awsService.GetInstanceCpuUsageOverTime(instanceId, filterTime);
 
             return Ok(userInstanceCpuUsageDataOverTimeStartusResp);
         }
@@ -59,7 +58,7 @@ namespace StratusApp.Controllers
         {
             var userInstanceStartusResp = new StratusResponse<StratusUser>();
 
-            userInstanceStartusResp.Data = await _awsClient.GetInstances();
+            userInstanceStartusResp.Data = await _awsService.GetInstances();
 
             return Ok(userInstanceStartusResp);
         }
@@ -68,7 +67,7 @@ namespace StratusApp.Controllers
         public async Task<ActionResult<List<Instance>>> GetMoreFittedInstancesFromAWS(string instanceId)
         {
             var instancesListResponse = new StratusResponse<List<InstanceDetails>>();
-            instancesListResponse.Data = await _awsClient.GetMoreFittedInstances(instanceId);
+            instancesListResponse.Data = await _awsService.GetMoreFittedInstances(instanceId);
 
             return Ok(instancesListResponse);
         }
@@ -78,7 +77,7 @@ namespace StratusApp.Controllers
         {
             var instanceVolumeResponse = new StratusResponse<List<Volume>>();
 
-            instanceVolumeResponse.Data = await _awsClient.GetInstanceVolumes(instanceId);
+            instanceVolumeResponse.Data = await _awsService.GetInstanceVolumes(instanceId);
 
             return Ok(instanceVolumeResponse);
         }
@@ -88,7 +87,7 @@ namespace StratusApp.Controllers
         {
             var instanceVolumeResponse = new StratusResponse<int>();
 
-            instanceVolumeResponse.Data = await _awsClient.GetInstanceTotalVolumesSize(instanceId);
+            instanceVolumeResponse.Data = await _awsService.GetInstanceTotalVolumesSize(instanceId);
 
             return Ok(instanceVolumeResponse);
         }
@@ -97,7 +96,7 @@ namespace StratusApp.Controllers
         {
             var instanceVolumeResponse = new StratusResponse<double>();
 
-            instanceVolumeResponse.Data = await _awsClient.GetCurrentInstanceVolumesUsage(instanceId);
+            instanceVolumeResponse.Data = await _awsService.GetCurrentInstanceVolumesUsage(instanceId);
 
             return Ok(instanceVolumeResponse);
         }
@@ -106,7 +105,7 @@ namespace StratusApp.Controllers
         {
             var instanceVolumeResponse = new StratusResponse<string>();
 
-            instanceVolumeResponse.Data = await _awsClient.GetInstanceOperatingSystem(instanceId);
+            instanceVolumeResponse.Data = await _awsService.GetInstanceOperatingSystem(instanceId);
 
             return Ok(instanceVolumeResponse);
         }
@@ -116,7 +115,7 @@ namespace StratusApp.Controllers
         {
             var instanceBasicDetailsResponse = new StratusResponse<InstanceDetails>();
 
-            instanceBasicDetailsResponse.Data = await _awsClient.GetInstanceBasicDetails(instanceId);
+            instanceBasicDetailsResponse.Data = await _awsService.GetInstanceBasicDetails(instanceId);
 
             return Ok(instanceBasicDetailsResponse);
         }
@@ -125,7 +124,7 @@ namespace StratusApp.Controllers
         {
             var instanceBasicDetailsResponse = new StratusResponse<List<AlternativeInstance>>();
 
-            instanceBasicDetailsResponse.Data = await _awsClient.ScrapeInstancesDetails();
+            instanceBasicDetailsResponse.Data = await _awsService.ScrapeInstancesDetails();
 
             return Ok(instanceBasicDetailsResponse);
         }

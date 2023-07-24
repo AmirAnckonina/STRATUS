@@ -55,11 +55,11 @@ namespace CloudApiClient.AwsServices
                     //TODo: Add the current instance details to filter the potential instances list.
                     var singlePotentialInstance = new InstanceDetails()
                     {
-                        Id = product.Sku,
+                        InstanceId = product.Sku,
                         Type = product.Attributes.instanceType,
                         Storage = product.Attributes.storage,
                         OperatingSystem = product.Attributes.operatingSystem,
-                        CpuSpecifications = product.Attributes.vcpu,
+                        VCPU = product.Attributes.vcpu,
                         Price = pricePlan.priceInUSD,
                         Unit = pricePlan.unit,
                         PriceDescription = pricePlan.description
