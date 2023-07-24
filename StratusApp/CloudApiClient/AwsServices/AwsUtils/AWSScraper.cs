@@ -17,6 +17,9 @@ namespace CloudApiClient.AwsServices.AwsUtils
     {
         private readonly HttpClient _httpClient;
         private readonly IWebDriver _driver;
+        private readonly string regionListBoxClassElement = ".awsui_options-list_19gcf_1apnh_93 li";
+        private readonly string instanceDetailsTableClassElement = ".awsui_table_wih1l_5nk4n_144";
+        private readonly string nextPageButtonClassElement = ".awsui_arrow_fvjdu_f73zt_141[aria-label='Next page']";
 
         public AWSScraper()
         {
@@ -48,7 +51,7 @@ namespace CloudApiClient.AwsServices.AwsUtils
 
                 // Find all the options inside the list
                 var options = _driver.FindElements(By.CssSelector(".awsui_options-list_19gcf_1apnh_93 li"));
-
+                //listBoxButtons[1].Click();
                 // Loop through each option and click on it
                 for (int j = 0; j < options.Count; j++)
                 {
@@ -65,9 +68,19 @@ namespace CloudApiClient.AwsServices.AwsUtils
 
                                 // Wait for the options to be clickable
                                 var optionsToClick = _driver.FindElements(By.CssSelector(".awsui_options-list_19gcf_1apnh_93 li"));
-                                optionsToClick[j].Click();
-                                List<AlternativeInstance> alternativeInstances = getAlternativeInstancesFromHtmlTable();
-                                break; // Successfully clicked, break out of the retry loop
+                                if (optionsToClick[j].Text.Contains("US") || optionsToClick[j].Text.Contains("Canada"))
+                                {
+                                    var text = optionsToClick[j].Text;
+                                    optionsToClick[j].Click();
+                                    string region = listBoxButtons[1].Text;
+                                    string operatingSystem = listBoxButtons[2].Text;
+                                    List<AlternativeInstance> alternativeInstances = getAlternativeInstancesFromHtmlTable(region, operatingSystem);
+                                    break; // Successfully clicked, break out of the retry loop
+                                }
+                                else
+                                {
+                                    break; // Not a US machine.
+                                }
                             }
                             catch (Exception e)
                             {
@@ -92,14 +105,17 @@ namespace CloudApiClient.AwsServices.AwsUtils
             _driver.Quit();
             return null;
         }
-        private List<AlternativeInstance> getAlternativeInstancesFromHtmlTable()
+        private List<AlternativeInstance> getAlternativeInstancesFromHtmlTable(string region, string operatingSystem)
         {
             // Wait for the instance details table to be visible
             WebDriverWait wait = new WebDriverWait(_driver, TimeSpan.FromSeconds(10));
             wait.Until(driver => driver.FindElement(By.CssSelector(".awsui_table_wih1l_5nk4n_144")).Displayed);
-
             // Extract instance details from all table pages
             var instanceDetails = new List<AlternativeInstance>();
+            //wait.Until(driver => driver.FindElement(By.CssSelector(".awsui_page-number_fvjdu_f73zt_151.awsui_button_fvjdu_f73zt_113.awsui_button-current_fvjdu_f73zt_157[aria-label='Page 1 of all pages']")).Displayed);
+
+            wait.Until(driver => ((IJavaScriptExecutor)driver).ExecuteScript("return document.readyState").Equals("complete"));
+            wait.Until(driver => driver.FindElements(By.CssSelector(".awsui_row_wih1l_5nk4n_316")).Count > 0);
             while (true)
             {
                 // Extract instance details from the current page
@@ -112,8 +128,10 @@ namespace CloudApiClient.AwsServices.AwsUtils
                     string memory = row.FindElement(By.CssSelector("td:nth-child(4)")).Text;
                     string storage = row.FindElement(By.CssSelector("td:nth-child(5)")).Text;
                     string networkPerformance = row.FindElement(By.CssSelector("td:nth-child(6)")).Text;
+                    string regionName = region;
+                    string operatingSystemName = operatingSystem;
 
-                    AlternativeInstance instance = new AlternativeInstance(instanceName, hourlyRate, vCPU, memory, storage, networkPerformance);
+                    AlternativeInstance instance = new AlternativeInstance(instanceName, hourlyRate, vCPU, memory, storage, networkPerformance, regionName, operatingSystemName);
                     instanceDetails.Add(instance);
                 }
 
@@ -133,9 +151,12 @@ namespace CloudApiClient.AwsServices.AwsUtils
                 wait.Until(driver => driver.FindElements(By.CssSelector(".awsui_row_wih1l_5nk4n_316")).Count > 0);
             }
 
+            // If there are more tables to process, navigate back to the first page of the next table
+
             // Close the browser
             //_driver.Quit();
-
+            IWebElement firstPageButton = _driver.FindElement(By.CssSelector(".awsui_page-number_fvjdu_f73zt_151.awsui_button_fvjdu_f73zt_113"));
+            firstPageButton.Click();
             return instanceDetails;
         }
         public async Task<decimal> GetInstancePrice(string instanceId)
