@@ -124,7 +124,7 @@ namespace StratusApp.Controllers
         {
             var instanceBasicDetailsResponse = new StratusResponse<List<AlternativeInstance>>();
 
-            instanceBasicDetailsResponse.Data = await _awsService.ScrapeInstancesDetails();
+            instanceBasicDetailsResponse.Data = await _awsService.ScrapeInstancesDetailsIntoDB();
 
             return Ok(instanceBasicDetailsResponse);
         }

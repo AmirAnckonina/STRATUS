@@ -30,7 +30,7 @@ namespace CloudApiClient.AwsServices.AwsUtils
         public async Task<List<AlternativeInstance>> ScrapeInstanceDetails()
         {
             var url = "https://aws.amazon.com/ec2/pricing/on-demand/";
-
+            List<AlternativeInstance> alternativeInstances = new List<AlternativeInstance>();
             // Navigate to the web page
             _driver.Navigate().GoToUrl(url);
 
@@ -74,7 +74,7 @@ namespace CloudApiClient.AwsServices.AwsUtils
                                     optionsToClick[j].Click();
                                     string region = listBoxButtons[1].Text;
                                     string operatingSystem = listBoxButtons[2].Text;
-                                    List<AlternativeInstance> alternativeInstances = getAlternativeInstancesFromHtmlTable(region, operatingSystem);
+                                    getAlternativeInstancesFromHtmlTable(region, operatingSystem, alternativeInstances);
                                     break; // Successfully clicked, break out of the retry loop
                                 }
                                 else
@@ -103,15 +103,14 @@ namespace CloudApiClient.AwsServices.AwsUtils
                 Console.WriteLine(e.Message);
             }
             _driver.Quit();
-            return null;
+            return alternativeInstances;
         }
-        private List<AlternativeInstance> getAlternativeInstancesFromHtmlTable(string region, string operatingSystem)
+        private void getAlternativeInstancesFromHtmlTable(string region, string operatingSystem, List<AlternativeInstance> alternativeInstances)
         {
             // Wait for the instance details table to be visible
             WebDriverWait wait = new WebDriverWait(_driver, TimeSpan.FromSeconds(10));
             wait.Until(driver => driver.FindElement(By.CssSelector(".awsui_table_wih1l_5nk4n_144")).Displayed);
             // Extract instance details from all table pages
-            var instanceDetails = new List<AlternativeInstance>();
             //wait.Until(driver => driver.FindElement(By.CssSelector(".awsui_page-number_fvjdu_f73zt_151.awsui_button_fvjdu_f73zt_113.awsui_button-current_fvjdu_f73zt_157[aria-label='Page 1 of all pages']")).Displayed);
 
             wait.Until(driver => ((IJavaScriptExecutor)driver).ExecuteScript("return document.readyState").Equals("complete"));
@@ -132,7 +131,7 @@ namespace CloudApiClient.AwsServices.AwsUtils
                     string operatingSystemName = operatingSystem;
 
                     AlternativeInstance instance = new AlternativeInstance(instanceName, hourlyRate, vCPU, memory, storage, networkPerformance, regionName, operatingSystemName);
-                    instanceDetails.Add(instance);
+                    alternativeInstances.Add(instance);
                 }
 
                 // Check if there is a next page button
@@ -157,7 +156,6 @@ namespace CloudApiClient.AwsServices.AwsUtils
             //_driver.Quit();
             IWebElement firstPageButton = _driver.FindElement(By.CssSelector(".awsui_page-number_fvjdu_f73zt_151.awsui_button_fvjdu_f73zt_113"));
             firstPageButton.Click();
-            return instanceDetails;
         }
         public async Task<decimal> GetInstancePrice(string instanceId)
         {
