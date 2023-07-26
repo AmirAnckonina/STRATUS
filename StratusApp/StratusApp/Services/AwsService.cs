@@ -2,6 +2,7 @@ using Amazon.CloudWatch.Model;
 using Amazon.EC2.Model;
 using StratusApp.Models;
 using StratusApp.Services.MongoDBServices;
+using System.Collections.Generic;
 using Utils.DTO;
 using AwsClient = CloudApiClient.CloudApiClient;
 
@@ -50,21 +51,22 @@ namespace StratusApp.Services
 
         private void InsertUserInstancesToDB(List<InstanceDetails> instances)
         {
-            foreach(InstanceDetails instance in instances)
+            //Get DB instances here to prevent redundant DB calls
+            var dBInstances = _mongoDBService.GetCollectionAsList<InstanceDetails>(eCollectionName.Instances).Result;
+            foreach (InstanceDetails instance in instances)
             {
-                if(!IsInstanceExistsInDB(instance))
+                if(!IsInstanceExistsInDB(instance, dBInstances))
                 {
                     _mongoDBService.InsertDocument<InstanceDetails>(eCollectionName.Instances, instance);
                 }
             }
         }
 
-        private bool IsInstanceExistsInDB(InstanceDetails instance)
-        {
-            var instances = _mongoDBService.GetCollectionAsList<InstanceDetails>(eCollectionName.Instances).Result;
+        private bool IsInstanceExistsInDB(InstanceDetails instance, List<InstanceDetails> dBInstances)
+        {  
             bool result = false;
 
-            foreach(InstanceDetails instanceDetails in instances)
+            foreach(InstanceDetails instanceDetails in dBInstances)
             {
                 if(instanceDetails != null && instanceDetails.InstanceId.Equals(instance.InstanceId) && instanceDetails.IP.Equals(instance.IP))
                 {
@@ -101,9 +103,40 @@ namespace StratusApp.Services
             return await _cloudApiClient.GetMoreFittedInstances(instanceId);
         }
 
-        internal async Task<List<AlternativeInstance>?> ScrapeInstancesDetails()
+        internal async Task<List<AlternativeInstance>?> ScrapeInstancesDetailsIntoDB()
         {
-            return await _cloudApiClient.ScrapeInstancesDetails();
+            List < AlternativeInstance >instances = await _cloudApiClient.ScrapeInstancesDetails();
+            InsertAlternativeInstancesToDB(instances);
+            return instances;
+        }
+
+        private void InsertAlternativeInstancesToDB(List<AlternativeInstance> instances)
+        {
+            var DBAlternativeinstances = _mongoDBService.GetCollectionAsList<AlternativeInstance>(eCollectionName.AlternativeInstances).Result;
+            foreach (AlternativeInstance instance in instances)
+            {
+                if (!IsAlternativeInstanceExistsInDB(instance, DBAlternativeinstances))
+                {
+                    _mongoDBService.InsertDocument<AlternativeInstance>(eCollectionName.AlternativeInstances, instance);
+                }
+            }
+            throw new NotImplementedException();
+        }
+
+        private bool IsAlternativeInstanceExistsInDB(AlternativeInstance instance, List<AlternativeInstance> DBAlternativeInstances)
+        {
+            bool result = false;
+
+            foreach (AlternativeInstance alternativeInstance in DBAlternativeInstances)
+            {
+                if (alternativeInstance != null && alternativeInstance.InstanceType.Equals(instance.InstanceType) && alternativeInstance.region.Equals(instance.region))
+                {
+                    result = true;
+                    break;
+                }
+            }
+
+            return result;
         }
     }
 }
