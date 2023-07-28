@@ -5,6 +5,7 @@ using MongoDB.Bson;
 using StratusApp.Models;
 using StratusApp.Models.Responses;
 using StratusApp.Services.MongoDBServices;
+using StratusApp.Services;
 
 namespace StratusApp.Controllers
 {
@@ -12,18 +13,30 @@ namespace StratusApp.Controllers
     public class AuthController : Controller
     {
         private readonly MongoDBService _mongoDatabase;
+        private readonly AuthService _authService;
 
         public AuthController(MongoDBService mongoDatabase)
         {
             _mongoDatabase = mongoDatabase;
+            _authService = new AuthService(mongoDatabase);
         }
 
         [HttpGet("RegisterToStratusService")]
         public async Task<ActionResult<StratusResponse<StratusUser>>> RegisterToStratusService(string username, string password, string accessKey,string secretKey)
         {
             var registerToStratusServiceResp = new StratusResponse<StratusUser>();
-            //await _mongoDatabase.InsertDocument("StratusDB", "Users");
-            return Ok(registerToStratusServiceResp);
+            bool isUserExists = await _authService.IsUserExists(username, password);
+            if (isUserExists)
+            {
+                registerToStratusServiceResp.Message = "User already exists";
+                return BadRequest(registerToStratusServiceResp);
+            }
+            else
+            {
+                await _authService.RegisterToStratusService(username, password, accessKey, secretKey);
+                //await _mongoDatabase.InsertDocument("StratusDB", "Users");
+                return Ok(registerToStratusServiceResp);
+            }
             //var user = new StratusUser()
             //{
             //    Username = username,
