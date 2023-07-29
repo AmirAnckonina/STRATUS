@@ -1,7 +1,7 @@
 ﻿using MongoDB.Bson.Serialization.Attributes;
 using MongoDB.Bson;
 
-namespace StratusApp.Models
+namespace Utils.DTO
 {
     public class StratusUser
     {
@@ -14,7 +14,7 @@ namespace StratusApp.Models
         public string Email { get; set; }
         [BsonElement("password")]
         public string Password { get; set; }
-        [BsonElement("accesKey")]
+        [BsonElement("accessKey")]
         public string AccessKey { get; set; }
         [BsonElement("secretKey")]
         public string SecretKey { get; set; }

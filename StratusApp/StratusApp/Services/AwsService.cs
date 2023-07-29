@@ -101,7 +101,7 @@ namespace StratusApp.Services
             return await _cloudApiClient.GetInstanceOperatingSystem(instanceId);
         }
 
-        internal async Task<StratusUser?> GetInstances()
+        internal async Task<List<Instance>?> GetInstances()
         {
             return await _cloudApiClient.GetInstances();
         }

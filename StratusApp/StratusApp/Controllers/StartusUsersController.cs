@@ -2,6 +2,7 @@
 using StratusApp.Models;
 using StratusApp.Models.Responses;
 using StratusApp.Services;
+using Utils.DTO;
 
 namespace StratusApp.Controllers
 {
