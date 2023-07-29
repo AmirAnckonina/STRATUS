@@ -26,7 +26,7 @@ namespace Utils.DTO
             var metadata = EnumExtensions.GetDisplayAttributesFrom(CurrencyType, typeof(eCurrencyType));
             var periodTime = Enum.GetName(typeof(ePeriodTime), PeriodTime);
 
-            return Value.ToString() + metadata.Name + "per " + periodTime;
+            return Value.ToString() + metadata.Name + " Per " + periodTime;
         }
 
         public static Price? Parse(string priceString, ePeriodTime periodTime)
