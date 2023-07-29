@@ -1,5 +1,4 @@
-﻿using MonitoringClient.Prometheus.PrometheusModels.SingleResultModels;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,7 +14,7 @@ namespace MonitoringClient.Prometheus.PrometheusModels.GeneralResponseModels
         public string ResultType { get; set; }
 
         [JsonProperty("result")]
-        public List<PrometheusSingleResult>? Result { get; set; }
+        public List<PrometheusResult>? Result { get; set; }
         //public List<PrometheusSingleResult>? Result { get; set; }
     }
 }

@@ -43,7 +43,7 @@ namespace StratusApp.Controllers
 
             /// Should be modified to get the max and not the avarage!
             /// Dummy dummy dummy
-            cpuUsageResponse.Data = await _collectorService.GetAvgCpuUsageUtilization(instance, timeFilter);
+            cpuUsageResponse.Data = await _collectorService.GetMaxCpuUsageUtilization(instance, timeFilter);
 
             return Ok(cpuUsageResponse);
         }

@@ -20,14 +20,15 @@ using System.Linq.Expressions;
 using MonitoringClient.Prometheus;
 using MonitoringClient.Prometheus.PrometheusApi;
 using Utils.Enums;
-
+using StratusApp.Services.Collector;
 
 namespace StratusApp.Services
 {
     public class AlertsService
     {
         private readonly MongoDBService _mongoDatabase;
-        private readonly PrometheusClient _prometheusClient;
+        //private readonly PrometheusClient _prometheusClient;
+        private readonly CollectorService _collectorService;
         private System.Timers.Timer _timer;
         private readonly Dictionary<eAlertType, int> _alertTypesConverter;
         private int _cpuPercentageThreshold = 70;
@@ -40,10 +41,12 @@ namespace StratusApp.Services
         private readonly List<AlertData> _alerts = new List<AlertData>();
 
 
-        public AlertsService(MongoDBService mongoDatabase) 
+        public AlertsService(MongoDBService mongoDatabase, CollectorService collectorService) 
         {
             _mongoDatabase = mongoDatabase;
-            _prometheusClient = new PrometheusClient();
+            //_prometheusClient = new PrometheusClient();
+            _collectorService = collectorService;
+
             _alertTypesConverter = new Dictionary<eAlertType, int>()
             {
                 [eAlertType.CPU] = _cpuPercentageThreshold,
@@ -92,9 +95,9 @@ namespace StratusApp.Services
             //foreach user:
             //foreach user instance:
 
-            double avgCpuUsageUtilization = _prometheusClient.GetAvgCpuUsageUtilization(machineId, INTERVAL_FILTER).Result;
-            double avgFreeDiskSpaceInGB = _prometheusClient.GetAvgFreeDiskSpaceInGB(machineId, INTERVAL_FILTER).Result;
-            double avgFreeMemorySizeInGB = _prometheusClient.GetAvgFreeMemorySizeInGB(machineId, INTERVAL_FILTER).Result;
+            double avgCpuUsageUtilization = _collectorService.GetAvgCpuUsageUtilization(machineId, INTERVAL_FILTER).Result;
+            double avgFreeDiskSpaceInGB = _collectorService.GetAvgFreeDiskSpaceInGB(machineId, INTERVAL_FILTER).Result;
+            double avgFreeMemorySizeInGB = _collectorService.GetAvgFreeMemorySizeInGB(machineId, INTERVAL_FILTER).Result;
 
             _alerts.Clear();
             DetectAndInsertLowUsage(machineId, avgCpuUsageUtilization, eAlertType.CPU);

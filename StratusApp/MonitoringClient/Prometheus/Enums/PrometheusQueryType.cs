@@ -10,6 +10,7 @@ namespace MonitoringClient.Prometheus.Enums
     {
         GetNumberOfvCPU,
         GetAvgCpuUsageUtilization,
+        GetMaxCpuUsageUtilization,
         GetAvgCpuUtilizationByCpu,
         GetTotalDiskSizeInGB,
         GetAvgFreeDiskSpaceInGB,

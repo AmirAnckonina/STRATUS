@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MonitoringClient.Prometheus.PrometheusModels.SingleResultModels
+namespace MonitoringClient.Prometheus.PrometheusModels.MetricModels
 {
-    internal class MatrixSingleResult
+    public class EmptyMetric
     {
     }
 }

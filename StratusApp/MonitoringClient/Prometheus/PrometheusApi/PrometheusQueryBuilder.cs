@@ -95,28 +95,32 @@ namespace MonitoringClient.Prometheus.PrometheusApi
                     queryContent = BuildAvgCpuUsageUtilization(queryParams);
                     break;
 
+                case PrometheusQueryType.GetMaxCpuUsageUtilization:
+                    queryContent = BuildMaxCpuUsageUtiliziation(queryParams);
+                    break;
+
                 case PrometheusQueryType.GetAvgCpuUtilizationByCpu:
-                    queryContent = GetAvgCpuUtilizationByCpu(queryParams);
+                    queryContent = BuildAvgCpuUtilizationByCpu(queryParams);
                     break;
 
                 case PrometheusQueryType.GetTotalDiskSizeInGB:
-                    queryContent = GetTotalDiskSizeInGB(queryParams);
+                    queryContent = BuildTotalDiskSizeInGB(queryParams);
                     break;
 
                 case PrometheusQueryType.GetAvgFreeDiskSpaceInGB:
-                    queryContent = GetAvgFreeDiskSpaceInGB(queryParams);
+                    queryContent = BuildAvgFreeDiskSpaceInGB(queryParams);
                     break;
 
                 case PrometheusQueryType.GetTotalMemorySizeInGB:
-                    queryContent = GetTotalMemorySizeInGB(queryParams);
+                    queryContent = BuildTotalMemorySizeInGB(queryParams);
                     break;
 
                 case PrometheusQueryType.GetAvgFreeMemorySizeInGB:
-                    queryContent = GetAvgFreeMemorySizeInGB(queryParams);
+                    queryContent = BuildAvgFreeMemorySizeInGB(queryParams);
                     break;
 
                 case PrometheusQueryType.GetNumberOfvCPU:
-                    queryContent = GetNumberOfvCPU(queryParams);
+                    queryContent = BuildNumberOfvCPU(queryParams);
                     break;
 
                 default:
@@ -127,38 +131,49 @@ namespace MonitoringClient.Prometheus.PrometheusApi
             return queryContent;
         }
 
-        private string GetAvgFreeMemorySizeInGB(PrometheusQueryParams queryParams)
+        private string BuildMaxCpuUsageUtiliziation(PrometheusQueryParams queryParams)
+        {
+            // 100 - (min(rate(node_cpu_seconds_total{instance='34.125.220.240:9100',mode="idle"}[13d])) * 100)
+            return "query=100 - (min(rate(node_cpu_seconds_total{instance='" + $"{queryParams.InstanceAddrWithPort}" + "',mode='idle'}" + $"[{queryParams.OverTimeFilterStr}])) * 100)";
+        }          
+
+        private string BuildAvgFreeMemorySizeInGB(PrometheusQueryParams queryParams)
         {
             return "query=avg_over_time(node_memory_MemFree_bytes{instance='" + $"{queryParams.InstanceAddrWithPort}" + "'}" + $"[{queryParams.OverTimeFilterStr}])/(1024^3)";
         }
 
-        private string GetTotalMemorySizeInGB(PrometheusQueryParams queryParams)
+        private string BuildTotalMemorySizeInGB(PrometheusQueryParams queryParams)
         {
             return "query=(node_memory_MemTotal_bytes{instance='" + $"{queryParams.InstanceAddrWithPort}" + "'})/(1024^3)";
         }
 
-        private string GetAvgFreeDiskSpaceInGB(PrometheusQueryParams queryParams)
+        private string BuildAvgFreeDiskSpaceInGB(PrometheusQueryParams queryParams)
         {
+            // (avg_over_time(node_filesystem_free_bytes{instance='34.125.220.240:9100',mountpoint='/'}[4w]))/(1024^3)
             return "query=avg_over_time(node_filesystem_free_bytes{instance='" + $"{queryParams.InstanceAddrWithPort}" + "',mountpoint='/'}" + $"[{queryParams.OverTimeFilterStr}])/(1024^3)";
         }
 
-        private string GetTotalDiskSizeInGB(PrometheusQueryParams queryParams)
+        private string BuildTotalDiskSizeInGB(PrometheusQueryParams queryParams)
         {
+            //sum(node_filesystem_size_bytes{instance='34.125.220.240:9100'})/(1024^3)
             return "query=sum(node_filesystem_size_bytes{instance='" + $"{queryParams.InstanceAddrWithPort}" + "'})/(1024^3)";
         }
 
-        private string GetAvgCpuUtilizationByCpu(PrometheusQueryParams queryParams)
+        private string BuildAvgCpuUtilizationByCpu(PrometheusQueryParams queryParams)
         {
             return "query=100 - (avg by (cpu) (rate(node_cpu_seconds_total{instance='" + $"{queryParams.InstanceAddrWithPort}" + "',mode='idle'}" + $"[{queryParams.OverTimeFilterStr}])) * 100)";
         }
 
         private string BuildAvgCpuUsageUtilization(PrometheusQueryParams queryParams)
         {
+            // 100 - (avg(rate(node_cpu_seconds_total{instance='34.125.220.240:9100',mode="idle"}[15m])) * 100)
+            // 100 * (avg by (instance) (rate(node_cpu_seconds_total{mode!="idle"}[14d])))
             return "query=100 - (avg(rate(node_cpu_seconds_total{instance='" + $"{queryParams.InstanceAddrWithPort}" + "',mode='idle'}" + $"[{queryParams.OverTimeFilterStr}])) * 100)";
         }
 
-        private string GetNumberOfvCPU(PrometheusQueryParams queryParams)
+        private string BuildNumberOfvCPU(PrometheusQueryParams queryParams)
         {
+            // count(node_cpu_seconds_total{instance="34.125.220.240:9100"}) by (cpu)
             return "query=count(node_cpu_seconds_total{instance='" + $"{queryParams.InstanceAddrWithPort}" + "'}) by (cpu)";
         }
 
