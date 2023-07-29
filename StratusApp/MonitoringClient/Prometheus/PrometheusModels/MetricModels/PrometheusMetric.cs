@@ -6,9 +6,9 @@ using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
-namespace MonitoringClient.Models
+namespace MonitoringClient.Prometheus.PrometheusModels.MetricModels
 {
-    public class Metric
+    public abstract class PrometheusMetric
     {
         //public object? MetricObj { get; set; } 
     }

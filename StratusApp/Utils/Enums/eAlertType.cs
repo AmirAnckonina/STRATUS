@@ -1,5 +1,4 @@
-﻿
-namespace Utils.DTO
+﻿namespace Utils.Enums
 {
     public enum eAlertType
     {

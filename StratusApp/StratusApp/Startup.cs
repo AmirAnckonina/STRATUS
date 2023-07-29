@@ -38,9 +38,6 @@ namespace StratusApp
             });
 
 
-            /*services.AddDbContext<DataContext>(options =>
-                options.UseSqlServer(ConfigRoot.GetConnectionString("DefaultConnection")));*/
-
             services.AddCors(options =>
             {
                 options.AddPolicy("AllowAnyOrigin", builder =>

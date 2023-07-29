@@ -9,6 +9,7 @@ using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using Amazon;
+using Utils.DTO;
 
 namespace CloudApiClient.AwsServices
 {
@@ -21,7 +22,7 @@ namespace CloudApiClient.AwsServices
             //todo ==> uncomment 
             //_costExplorerClient = new AmazonCostExplorerClient(credentials, region);
         }
-        public async Task<decimal> GetInstancePrice(string instanceId)
+        public async Task<Price> GetInstancePrice(string instanceId)
         {
             //try
             //{ 
@@ -69,7 +70,7 @@ namespace CloudApiClient.AwsServices
             // todo ==> need to check use coseExplorer api without bankrupt
 
             Random random = new Random();
-            return random.Next(10, 501);
+            return new Price() { Value = random.Next(10, 501), CurrencyType = Utils.Enums.eCurrencyType.Dollar };
         }
     }
 }
