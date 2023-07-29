@@ -89,6 +89,8 @@ namespace MonitoringClient
                 cpusUtilizationDTOs.Add(new SingleCpuUtilizationDTO { CpuIdx = currCpuIdx++, UtilizationPercentage = result});
             }
 
+
+
             return cpusUtilizationDTOs;
         }
 

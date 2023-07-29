@@ -34,7 +34,8 @@ const Page = () => {
     const data = response.data.data;
       setMachine(data);
       if (data.length > 0) {
-        setSelectedMachine(data[0].id);
+        console.log("dataa: ", data[0].instanceId)
+        setSelectedMachine(data[0].instanceId);
       }
 
   })
@@ -49,7 +50,7 @@ const Page = () => {
     })
     .catch(error => console.error(error));
     },[]);
-  
+
   axios.get('https://localhost:7094/GetInstanceCPUStatistics?instanceId=' + selectedMachine)
     .then(response => {
     const statistics = response.data.data.filter(machine => machine.id === selectedMachine);
@@ -64,7 +65,7 @@ const Page = () => {
     axios.get('https://localhost:7094/GetInstanceCPUStatistics?instanceId=' + selectedMachine)
     .then(response => {
     const statistics = response.data.data.filter(machine => machine.id === selectedMachine);
-    //console.log("current1",  statistics)
+    console.log("current1",  statistics)
     //console.log("current2",  response.data.data)
     setStatistics(response.data.data[0]); //todo : need to use filter machine insteaf of data[0]
 
@@ -98,8 +99,8 @@ const Page = () => {
             Choose Machine:
             <Select value={selectedMachine} onChange={handleMachineChange} sx={{ ml: 2 }}>
               {machines.map((machine) => (
-              <MenuItem key={machine} value={machine.id}>
-                 {machine.id}
+              <MenuItem key={machine} value={machine.instanceId}>
+                 {machine.instanceId}
              </MenuItem>
              ))}
             </Select>
@@ -112,17 +113,18 @@ const Page = () => {
           spacing={3}
         >
           <Grid
-            xs={12}
-            sm={6}
-            lg={3}
-          >
-            <OverviewMinimumCpuUsage
-              difference={12}
-              positive
-              sx={{ height: '100%' }}
-              value={statistics ? statistics.minimum ? statistics.minimum.toFixed(2) : 0 : "N/A"}
-            />
-          </Grid>
+  xs={12}
+  sm={6}
+  lg={3}
+>
+  <OverviewMinimumCpuUsage
+    difference={12}
+    positive
+    sx={{ height: '100%' }}
+    value={statistics ? statistics.minimum ? statistics.minimum.toFixed(2) : 0 : "N/A"}
+  />
+</Grid>
+
           <Grid
             xs={12}
             sm={6}
@@ -152,7 +154,7 @@ const Page = () => {
           >
             <OverviewSumCpuUsage
               sx={{ height: '100%' }}
-              value={statistics ?statistics.sum ? statistics.sum.toFixed(2) : "N/A": "N/A"}
+              value={statistics ? statistics.sum ? statistics.sum.toFixed(2) : "N/A": "N/A"}
             />
           </Grid>
           <Grid xs={12} lg={8}>

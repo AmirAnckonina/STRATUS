@@ -53,12 +53,12 @@ namespace StratusApp.Services.MongoDBServices
             return _databasesAndCollections;
         }
 
-        public async Task<List<BsonDocument>> GetDocuments(eCollectionName collectionType, Func<BsonDocument, bool> filter = null)
+        public async Task<List<T>> GetDocuments<T>(eCollectionName collectionType, Func<T, bool> filter = null)
         {
-            List<BsonDocument> result = new List<BsonDocument>();
-            List<BsonDocument> collection = await GetCollectionAsList<BsonDocument>(collectionType); 
+            List<T> result = new List<T>();
+            List<T> collection = await GetCollectionAsList<T>(collectionType); 
             
-            foreach(BsonDocument document in collection)
+            foreach(T document in collection)
             {
                 if(filter == null) // no filter added
                 {
@@ -113,17 +113,16 @@ namespace StratusApp.Services.MongoDBServices
             return await collection.UpdateOneAsync(documentToUpdate, update);
         }
 
-        public async Task<DeleteResult> DeleteDocument<T>(eCollectionName collectionType, ObjectId id)
+        public async Task<DeleteResult> DeleteDocument<T>(eCollectionName collectionType, Expression<Func<T, bool>> filter)
         {
             var collection = GetCollection<T>(collectionType);
-            var documentToDelete = GetDocumentById(collectionType, id);
-
-            return await collection.DeleteOneAsync(documentToDelete);
+  
+            return await collection.DeleteOneAsync<T>(filter);
         }
 
         public BsonDocument? GetDocumentById(eCollectionName collectionType, ObjectId id)
         {
-            return GetDocuments(collectionType, (document) => document.GetValue("_id") == id).Result.FirstOrDefault();
+            return GetDocuments<BsonDocument>(collectionType, (document) => document.GetValue("_id") == id).Result.FirstOrDefault();
         }
 
         private static BsonDocument CreateIdFilter(string id)

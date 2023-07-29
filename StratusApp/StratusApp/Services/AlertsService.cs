@@ -18,6 +18,7 @@ using DTO;
 using Amazon.Runtime.Documents;
 using MongoDB.Driver;
 using System.Linq.Expressions;
+using Utils.Enums;
 
 namespace StratusApp.Services
 {

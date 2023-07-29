@@ -77,28 +77,28 @@ export const OverviewLatestMachines = (props) => {
                 return (
                   <TableRow
                     hover
-                    key={data.id}
+                    key={data.instanceId}
                   >
                      <TableCell>
                       {data.instanceId}
                     </TableCell>
                     <TableCell>
-                      {data.ip}
+                      {data.instanceAddress}
                     </TableCell>
                     <TableCell>
                       {data.type}
                     </TableCell>
                     <TableCell>
-                      {data.operatingSystem}
+                      {data.specifications.operatingSystem.toString()}
                     </TableCell>
                     <TableCell>
-                      {data.price}
+                      {data.specifications.price.priceAsString.toString()}
                     </TableCell>
                     <TableCell>
-                      {data.vcpu}
+                      {data.specifications.vcpu.toString()}
                     </TableCell>
                     <TableCell>
-                      {data.totalStorageSize} GB
+                      {data.specifications.storage.value.toString()} GB
                     </TableCell>
                   </TableRow>
                 );
@@ -126,7 +126,8 @@ export const OverviewLatestMachines = (props) => {
   );
 };
 
-OverviewLatestMachines.prototype = {
+OverviewLatestMachines.propTypes = {
   orders: PropTypes.array,
   sx: PropTypes.object
 };
+
