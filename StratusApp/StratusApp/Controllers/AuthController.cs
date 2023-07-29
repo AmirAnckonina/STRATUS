@@ -33,7 +33,7 @@ namespace StratusApp.Controllers
             }
             else
             {
-                await _authService.RegisterToStratusService(username, password, accessKey, secretKey);
+                //await _authService.RegisterToStratusService(username, password, accessKey, secretKey);
                 //await _mongoDatabase.InsertDocument("StratusDB", "Users");
                 return Ok(registerToStratusServiceResp);
             }
