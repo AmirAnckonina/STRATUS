@@ -22,10 +22,12 @@ namespace CloudApiClient
         private readonly CostExplorerService _costExplorerService;
         private readonly AWSScraper _awsScraper;
 
+        public RegionEndpoint Region { get => _region; set => _region = value; }
+
         public CloudApiClient()
         {
 
-            //_credentials = new BasicAWSCredentials();
+            //credentials = new BasicAWSCredentials();
             _region = RegionEndpoint.USEast1;
             //_cloudWatchClient = new AmazonCloudWatchClient(_credentials, RegionEndpoint.USEast2);
             //_ec2Client = new AmazonEC2Client(_credentials, _region);
@@ -48,9 +50,9 @@ namespace CloudApiClient
         }
 
         // Split it according to the services!!! 
-        public async Task<List<InstanceDetails>> GetInstanceFormalData()
+        public async Task<List<AwsInstanceDetails>> GetInstanceFormalData()
         {
-            var vms = new List<InstanceDetails>();
+            var vms = new List<AwsInstanceDetails>();
 
             DescribeInstancesResponse descInstancesResponse = await _ec2Service.DescribeInstancesAsync();
 
@@ -60,17 +62,26 @@ namespace CloudApiClient
                 {
                     if (instance != null) // filter out non-running instances if desired
                     {
-
-                        var vm = new InstanceDetails
+                        var vm = new AwsInstanceDetails
                         {
+                            Specifications = new InstanceSpecifications()
+                            {
+                                OperatingSystem = instance.PlatformDetails,
+                                VCPU = instance.CpuOptions.CoreCount,
+                                Storage = new Utils.DTO.Storage()
+                                { 
+                                    Value = await GetInstanceTotalVolumesSize(instance.InstanceId),
+                                    Unit = Utils.Enums.eMemoryUnit.GB
+                                },
+                                Price = new Price()
+                                {
+                                    Value = 10,
+                                    CurrencyType = Utils.Enums.eCurrencyType.Dollar
+                                }
+                            },
                             InstanceId = instance.InstanceId,
                             Type = instance.InstanceType.ToString(),
-                            IP = instance.PrivateIpAddress.ToString(),
-                            OperatingSystem = instance.PlatformDetails,
-                            Price = await _costExplorerService.GetInstancePrice(instance.InstanceId),
-                            VCPU = $"{instance.CpuOptions.CoreCount} Core/s, {instance.CpuOptions.ThreadsPerCore} threads per Core",
-                            TotalStorageSize = await GetInstanceTotalVolumesSize(instance.InstanceId),
-
+                            InstanceAddress = instance.PrivateIpAddress.ToString(),
                             //string.Join(", ", instance.BlockDeviceMappings.Select<InstanceBlockDeviceMapping, string>(bdm => $"{bdm.DeviceName}")).Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).ToList(),
                         };
 
@@ -259,13 +270,21 @@ namespace CloudApiClient
 
         public async Task<InstanceDetails> GetInstanceBasicDetails(string instanceId)
         {
-            InstanceDetails instanceDetails = new InstanceDetails();
+            InstanceDetails instanceDetails = new AwsInstanceDetails();
 
             // Operating System
-            instanceDetails.OperatingSystem = await GetInstanceOperatingSystem(instanceId);
+            instanceDetails.Specifications.OperatingSystem = await GetInstanceOperatingSystem(instanceId);
 
             // Cpu Usage
-            instanceDetails.CpuStatistics = await GetInstanceCPUStatistics(instanceId);
+            var res = GetInstanceCPUStatistics(instanceId).Result.FirstOrDefault();
+            instanceDetails.UsageData.CpuStatistics = new CpuStatisticsDTO()
+            {
+                Minimium = res.Minimum,
+                Maximum = res.Maximum,
+                Sum = res.Sum,
+                Average = res.Average
+            };
+                
 
             //Memory 
 
@@ -273,7 +292,7 @@ namespace CloudApiClient
             //instanceDetails.TotalVolumesSize = GetInstanceTotalVolumesSize(instanceId);
 
             // Price
-            instanceDetails.Price = await _costExplorerService.GetInstancePrice(instanceId);
+            instanceDetails.Specifications.Price = await _costExplorerService.GetInstancePrice(instanceId);
 
             return instanceDetails;
 
