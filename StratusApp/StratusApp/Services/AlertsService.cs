@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MongoDB.Bson;
-using MonitoringClient;
 using OpenQA.Selenium;
 using StratusApp.Data;
 using StratusApp.Models;
@@ -18,7 +17,10 @@ using DTO;
 using Amazon.Runtime.Documents;
 using MongoDB.Driver;
 using System.Linq.Expressions;
+using MonitoringClient.Prometheus;
+using MonitoringClient.Prometheus.PrometheusApi;
 using Utils.Enums;
+
 
 namespace StratusApp.Services
 {
