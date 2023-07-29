@@ -35,7 +35,7 @@ namespace StratusApp.Services
         internal Task RegisterToStratusService(string username, string password, string accessKey, string secretKey)
         {
             string hashedPassword = BCrypt.Net.BCrypt.HashPassword(password);
-            string hashedAccessKey = 
+            return null;
         }
 
     }

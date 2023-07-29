@@ -6,6 +6,7 @@ using StratusApp.Models;
 using StratusApp.Models.Responses;
 using StratusApp.Services.MongoDBServices;
 using StratusApp.Services;
+using Utils.EncryptionHelpers;
 
 namespace StratusApp.Controllers
 {
@@ -67,6 +68,14 @@ namespace StratusApp.Controllers
             var filterdDocs = await _mongoDatabase.GetDocuments(collectionType, (documnet) => documnet.GetValue(fieldName).AsString == value);
 
             return Ok();
+        }
+        [HttpGet("GenerateRandomKey")]
+        public async Task<ActionResult<StratusResponse<string>>> GenerateRandomKey()
+        {
+            var generateRandomKeyResp = new StratusResponse<string>();
+            var randomKey = KeyGenerator.GetBase64EncodedKey(KeyGenerator.GenerateRandomKey(32));
+            generateRandomKeyResp.Data = randomKey;
+            return Ok(generateRandomKeyResp);
         }
 
     }
