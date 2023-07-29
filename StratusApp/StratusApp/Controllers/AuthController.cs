@@ -6,7 +6,8 @@ using StratusApp.Models;
 using StratusApp.Models.Responses;
 using StratusApp.Services.MongoDBServices;
 using StratusApp.Services;
-using Utils.EncryptionHelpers;
+using StratusApp.Services.EncryptionHelpers;
+using Utils.DTO;
 
 namespace StratusApp.Controllers
 {
@@ -23,43 +24,30 @@ namespace StratusApp.Controllers
         }
 
         [HttpGet("RegisterToStratusService")]
-        public async Task<ActionResult<StratusResponse<StratusUser>>> RegisterToStratusService(string username, string password, string accessKey,string secretKey)
+        public async Task<ActionResult<StratusResponse<StratusUser>>> RegisterToStratusService(string username, string email, string password, string accessKey,string secretKey)
         {
             var registerToStratusServiceResp = new StratusResponse<StratusUser>();
-            bool isUserExists = await _authService.IsUserExists(username, password);
+            StratusUser user = new StratusUser(
+                username,
+                email,
+                password,
+                accessKey,
+                secretKey
+                );
+            
+            bool isUserExists = await _authService.IsUserExists(user);
             if (isUserExists)
             {
-                registerToStratusServiceResp.Message = "User already exists";
+                registerToStratusServiceResp.Message = "User name, email or password already exists";
                 return BadRequest(registerToStratusServiceResp);
             }
             else
             {
-                //await _authService.RegisterToStratusService(username, password, accessKey, secretKey);
-                //await _mongoDatabase.InsertDocument("StratusDB", "Users");
+                _authService.InsertUserToDB(user);
+                registerToStratusServiceResp.Data = user;
+                registerToStratusServiceResp.Message = "Registered successfully";
                 return Ok(registerToStratusServiceResp);
             }
-            //var user = new StratusUser()
-            //{
-            //    Username = username,
-            //    Password = password
-            //};
-            //
-            //var userExists = await _mongoDatabase.GetStratusUser(username);
-            //
-            //if (userExists == null)
-            //{
-            //    await _mongoDatabase.RegisterToStratusService(user);
-            //
-            //    registerToStratusServiceResp.Data = user;
-            //
-            //    return Ok(registerToStratusServiceResp);
-            //}
-            //else
-            //{
-            //    registerToStratusServiceResp.Error = "User already exists";
-            //
-            //    return BadRequest(registerToStratusServiceResp);
-            //}
         }
         [HttpGet("GetDocumentByFilter")]
         public async Task<ActionResult<StratusResponse<StratusUser>>> GetDocumentByFilter(eCollectionName collectionType, string fieldName, string value)
