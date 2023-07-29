@@ -1,7 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System.ComponentModel.DataAnnotations;
 
-namespace MonitoringClient.Models
+namespace MonitoringClient.Prometheus.PrometheusModels.GeneralResponseModels
 {
     public class PrometheusTimestampAndValue
     {
@@ -10,7 +10,5 @@ namespace MonitoringClient.Models
 
         [JsonProperty()]
         public string? Value { get; set; }
-
-        //public Dictionary<double, string?>? TSValue{ get; set; }
     }
 }

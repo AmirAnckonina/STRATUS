@@ -6,9 +6,9 @@ using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
-namespace MonitoringClient.Models
+namespace MonitoringClient.Prometheus.PrometheusModels.SingleResultModels
 {
-    public class PrometheusMetricAndWrappedValue
+    public class PrometheusSingleResult
     {
         [JsonProperty("metric"), Newtonsoft.Json.JsonIgnore]
         public object? Metric { get; set; }
