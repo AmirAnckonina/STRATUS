@@ -9,23 +9,23 @@ using System.Text;
 
 namespace Utils.EncryptionHelpers
 {
-    public class EncryptionHelper
+    public static class EncryptionHelper
     {
-        private static byte[] Key = Encoding.UTF8.GetBytes("your_secret_key_here"); // Replace with your secret encryption key.
+        private static byte[] encryptionKey = KeyGenerator.GenerateRandomKey(32); // Replace with your secret encryption key.
 
         public static string Encrypt(string plainText)
         {
             byte[] encrypted;
             using (Aes aesAlg = Aes.Create())
             {
-                aesAlg.Key = Key;
+                aesAlg.Key = encryptionKey;
                 aesAlg.GenerateIV();
 
                 ICryptoTransform encryptor = aesAlg.CreateEncryptor(aesAlg.Key, aesAlg.IV);
-                using (var msEncrypt = new System.IO.MemoryStream())
+                using (var msEncrypt = new MemoryStream())
                 {
                     using (var csEncrypt = new CryptoStream(msEncrypt, encryptor, CryptoStreamMode.Write))
-                    using (var swEncrypt = new System.IO.StreamWriter(csEncrypt))
+                    using (var swEncrypt = new StreamWriter(csEncrypt))
                     {
                         swEncrypt.Write(plainText);
                     }
@@ -40,17 +40,21 @@ namespace Utils.EncryptionHelpers
 
         public static string Decrypt(string encryptedText)
         {
-            byte[] cipherText = Convert.FromBase64String(encryptedText);
+            byte[] combined = Convert.FromBase64String(encryptedText);
 
             using (Aes aesAlg = Aes.Create())
             {
-                aesAlg.Key = Key;
-                aesAlg.IV = cipherText.Take(16).ToArray();
+                aesAlg.Key = encryptionKey;
+                byte[] iv = new byte[aesAlg.BlockSize / 8];
+                byte[] encrypted = new byte[combined.Length - iv.Length];
+                Buffer.BlockCopy(combined, 0, iv, 0, iv.Length);
+                Buffer.BlockCopy(combined, iv.Length, encrypted, 0, encrypted.Length);
+                aesAlg.IV = iv;
 
                 ICryptoTransform decryptor = aesAlg.CreateDecryptor(aesAlg.Key, aesAlg.IV);
-                using (var msDecrypt = new System.IO.MemoryStream(cipherText.Skip(16).ToArray()))
+                using (var msDecrypt = new MemoryStream(encrypted))
                 using (var csDecrypt = new CryptoStream(msDecrypt, decryptor, CryptoStreamMode.Read))
-                using (var srDecrypt = new System.IO.StreamReader(csDecrypt))
+                using (var srDecrypt = new StreamReader(csDecrypt))
                 {
                     return srDecrypt.ReadToEnd();
                 }
