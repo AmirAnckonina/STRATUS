@@ -19,6 +19,8 @@ using MongoDB.Driver;
 using System.Linq.Expressions;
 using MonitoringClient.Prometheus;
 using MonitoringClient.Prometheus.PrometheusApi;
+using Utils.Enums;
+
 
 namespace StratusApp.Services
 {

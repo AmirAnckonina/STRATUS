@@ -68,32 +68,6 @@ namespace MonitoringClient.Prometheus.PrometheusApi
             return result;
         }
 
-        /*public async Task<List<SingleCpuUtilizationDTO>> GetAvgCpuUtilizationByCpu(string instanceAddr, string timeFilter)
-        {
-           *//* List<SingleCpuUtilizationDTO> cpusUtilizationDTOs = new List<SingleCpuUtilizationDTO>();*//*
-
-            string expQueryType = PrometheusQueryParamsUtils.GetExperssionQueryString(PrometheusExpressionQueryType.InstantQuery);
-            string queryPath = PROM_QUERY_PATH + expQueryType;
-
-            string instanceAddrWithPort = _queryBuilder.ConcateInstanceAddrWithPort(instanceAddr);
-            // 100 - (avg by (cpu) (rate(node_cpu_seconds_total{instance='34.125.220.240:9100',mode="idle"}[15m])) * 100)
-            string query = "query=100 - (avg by (cpu) (rate(node_cpu_seconds_total{instance='" + $"{instanceAddrWithPort}" + "',mode='idle'}" + $"[{timeFilter}])) * 100)";
-            Uri endPointWithQuery = HttpRequestUtils.CreateEndPointRequestUri(PROM_BASE_URL, queryPath, query);
-            HttpResponseMessage getCpuUsageByCpuResponse = await _promHttpClient.GetAsync(endPointWithQuery);
-
-            string respContent = await getCpuUsageByCpuResponse.Content.ReadAsStringAsync();
-            PrometheusResponse? promResp = JsonConvert.DeserializeObject<PrometheusResponse>(respContent);
-
-           *//* int currCpuIdx = 0;
-            foreach(PrometheusMetricAndWrappedValue cpuMetric in promResp.Data.Result)
-            {
-                double result = double.Parse(cpuMetric.TimestampAndValue[1]);
-                cpusUtilizationDTOs.Add(new SingleCpuUtilizationDTO { CpuIdx = currCpuIdx++, UtilizationPercentage = result});
-            }
-
-            return cpusUtilizationDTOs;*//*
-        }*/
-
         public async Task<double> GetTotalDiskSizeInGB(string instanceAddr)
         {
             string expQueryType = PrometheusQueryParamsUtils.GetExperssionQueryString(PrometheusExpressionQueryType.InstantQuery);

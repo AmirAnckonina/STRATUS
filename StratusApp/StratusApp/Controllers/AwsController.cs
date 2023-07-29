@@ -24,9 +24,9 @@ namespace StratusApp.Controllers
         }
 
         [HttpGet("GetUserInstanceData")]
-        public async Task<ActionResult<StratusResponse<List<InstanceDetails>>>> GetUserInstanceData()
+        public async Task<ActionResult<StratusResponse<List<AwsInstanceDetails>>>> GetUserInstanceData()
         {
-            var userInstanceDataStartusResp = new StratusResponse<List<InstanceDetails>>();
+            var userInstanceDataStartusResp = new StratusResponse<List<AwsInstanceDetails>>();
 
             userInstanceDataStartusResp.Data = await _awsService.GetInstanceFormalData();
 
