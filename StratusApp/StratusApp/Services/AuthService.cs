@@ -32,11 +32,12 @@ namespace StratusApp.Services
             throw new NotImplementedException();
         }
 
-        internal Task RegisterToStratusService(string username, string password, string accessKey, string secretKey)
+        /*internal Task RegisterToStratusService(string username, string password, string accessKey, string secretKey)
         {
             string hashedPassword = BCrypt.Net.BCrypt.HashPassword(password);
-            string hashedAccessKey = 
-        }
+            //string hashedAccessKey = 
+            return new Task(string.Empty);
+        }*/
 
     }
 }
