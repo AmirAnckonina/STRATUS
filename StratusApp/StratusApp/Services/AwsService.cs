@@ -40,27 +40,28 @@ namespace StratusApp.Services
             return await _cloudApiClient.GetInstanceCpuUsageOverTime(instanceId, filterTime);
         }
 
-        internal async Task<List<AwsInstanceDetails>?> GetInstanceFormalData()
+        internal async Task<List<AwsInstanceDetails>> GetInstanceFormalData()
         {
             var instances = await _cloudApiClient.GetInstanceFormalData();
 
-            //SetPriceFromDB(instances);
+            SetPriceFromToInstances(instances);
             InsertUserInstancesToDB(instances);
             
             return instances;
         }
 
-        private void SetPriceFromDB(List<AwsInstanceDetails> instances)
+        private void SetPriceFromToInstances(List<AwsInstanceDetails> instances)
         {
             foreach (var instance in instances)     
             {
                 string type = instance.Type;
 
                 List<AlternativeInstance> filteredInstances = _mongoDBService.GetDocuments<AlternativeInstance>(eCollectionName.AlternativeInstances,
-                    (alternativeInstance) => alternativeInstance.InstanceType == type && alternativeInstance.region == _cloudApiClient.Region.DisplayName).Result;
+                (alternativeInstance) => alternativeInstance.InstanceType == type && alternativeInstance.Region == _cloudApiClient.Region.DisplayName).Result;
+                
                 if(filteredInstances.Count == 1)
                 {
-                    //instance.Price = filteredInstances.ElementAt(0).HourlyRate.;
+                    instance.Specifications.Price = filteredInstances.ElementAt(0).Specifications.Price;
                 }
             }
         }
@@ -138,7 +139,6 @@ namespace StratusApp.Services
                     _mongoDBService.InsertDocument<AlternativeInstance>(eCollectionName.AlternativeInstances, instance);
                 }
             }
-            throw new NotImplementedException();
         }
 
         private bool IsAlternativeInstanceExistsInDB(AlternativeInstance instance, List<AlternativeInstance> DBAlternativeInstances)
@@ -147,7 +147,7 @@ namespace StratusApp.Services
 
             foreach (AlternativeInstance alternativeInstance in DBAlternativeInstances)
             {
-                if (alternativeInstance != null && alternativeInstance.InstanceType.Equals(instance.InstanceType) && alternativeInstance.region.Equals(instance.region))
+                if (alternativeInstance != null && alternativeInstance.InstanceType.Equals(instance.InstanceType) && alternativeInstance.Region.Equals(instance.Region))
                 {
                     result = true;
                     break;

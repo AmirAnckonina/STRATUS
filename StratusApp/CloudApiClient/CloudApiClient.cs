@@ -73,11 +73,6 @@ namespace CloudApiClient
                                     Value = await GetInstanceTotalVolumesSize(instance.InstanceId),
                                     Unit = Utils.Enums.eMemoryUnit.GB
                                 },
-                                Price = new Price()
-                                {
-                                    Value = 10,
-                                    CurrencyType = Utils.Enums.eCurrencyType.Dollar
-                                }
                             },
                             InstanceId = instance.InstanceId,
                             Type = instance.InstanceType.ToString(),
@@ -92,19 +87,6 @@ namespace CloudApiClient
 
             return vms;
         }
-
-        // What is That?
-        //private async string GetOperatingSystem(string platform)
-        //{
-        //    switch (platform.ToLower())
-        //    {
-        //        case "windows":
-        //            return "Windows";
-        //        default:
-        //            return "Linux";
-        //    }
-        //}
-
 
         public async Task<List<CpuUsageData>> GetInstanceCpuUsageOverTime(string instanceId, string filterTime)
         {
