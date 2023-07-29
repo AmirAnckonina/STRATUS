@@ -103,6 +103,7 @@ namespace CloudApiClient.AwsServices.AwsUtils
                 Console.WriteLine(e.Message);
             }
             _driver.Quit();
+
             return alternativeInstances;
         }
         private void getAlternativeInstancesFromHtmlTable(string region, string operatingSystem, List<AlternativeInstance> alternativeInstances)
@@ -121,8 +122,8 @@ namespace CloudApiClient.AwsServices.AwsUtils
                 IReadOnlyCollection<IWebElement> instanceRows = _driver.FindElements(By.CssSelector(".awsui_row_wih1l_1wsf0_301"));
                 foreach (IWebElement row in instanceRows)
                 {
-                    string instanceName = row.FindElement(By.CssSelector("td:nth-child(1)")).Text;
-                    string hourlyRate = row.FindElement(By.CssSelector("td:nth-child(2)")).Text;
+                    string instanceType = row.FindElement(By.CssSelector("td:nth-child(1)")).Text;
+                    string pricePerHour = row.FindElement(By.CssSelector("td:nth-child(2)")).Text;
                     string vCPU = row.FindElement(By.CssSelector("td:nth-child(3)")).Text;
                     string memory = row.FindElement(By.CssSelector("td:nth-child(4)")).Text;
                     string storage = row.FindElement(By.CssSelector("td:nth-child(5)")).Text;
@@ -130,7 +131,20 @@ namespace CloudApiClient.AwsServices.AwsUtils
                     string regionName = region;
                     string operatingSystemName = operatingSystem;
 
-                    AlternativeInstance instance = new AlternativeInstance(instanceName, hourlyRate, vCPU, memory, storage, networkPerformance, regionName, operatingSystemName);
+                    AlternativeInstance instance = new AlternativeInstance()
+                    { 
+                        Specifications = new InstanceSpecifications()
+                        {
+                            Price = Price.Parse(pricePerHour, Utils.Enums.ePeriodTime.Hour),
+                            VCPU = int.Parse(vCPU),
+                            Memory = Memory.Parse(memory),
+                            Storage = new Storage() { }, //TODO
+                            OperatingSystem = operatingSystemName,
+                        },
+                        InstanceType = instanceType,
+                        NetworkPerformance = networkPerformance,
+                        Region = regionName,
+                    };
                     alternativeInstances.Add(instance);
                 }
 

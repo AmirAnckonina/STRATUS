@@ -16,5 +16,22 @@ namespace Utils.Enums
                            .First()
                            .GetCustomAttribute<DisplayAttribute>();
         }
+
+        public static eCurrencyType GetCurrencyType(string currencySymbol)
+        {
+            // Get all enum members of the CurrencyType enum
+            foreach (eCurrencyType currencyType in Enum.GetValues(typeof(eCurrencyType)))
+            {
+                // Use reflection to get the Display attribute value for each enum member
+                MemberInfo memberInfo = typeof(eCurrencyType).GetMember(currencyType.ToString())[0];
+                DisplayAttribute displayAttribute = memberInfo.GetCustomAttribute<DisplayAttribute>();
+                if (displayAttribute != null && displayAttribute.Name == currencySymbol)
+                {
+                    return currencyType;
+                }
+            }
+
+            throw new ArgumentException("Invalid currency symbol");
+        }
     }
 }
