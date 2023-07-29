@@ -1,16 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using MongoDB.Bson;
-using StratusApp.Data;
-using StratusApp.Models;
-using StratusApp.Models.MongoDB;
-using StratusApp.Models.Responses;
+﻿using StratusApp.Models;
 using StratusApp.Services.MongoDBServices;
-using System;
 using Utils.DTO;
-using MongoDB.Bson.Serialization;
-using MongoDB.Bson.IO;
-using Amazon.Runtime.Documents;
 using MongoDB.Driver;
 using BCrypt.Net;
 using System;
