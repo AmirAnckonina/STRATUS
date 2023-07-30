@@ -116,7 +116,7 @@ namespace StratusApp.Services
             return await _cloudApiClient.GetInstanceVolumes(instanceId);
         }
 
-        internal async Task<List<InstanceDetails>?> GetMoreFittedInstances(string instanceId)
+        internal async Task<List<AwsInstanceDetails>> GetMoreFittedInstances(string instanceId)
         {
             return await _cloudApiClient.GetMoreFittedInstances(instanceId);
         }
