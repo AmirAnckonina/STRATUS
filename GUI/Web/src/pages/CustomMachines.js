@@ -25,6 +25,7 @@ const Page = () => {
     axios.get('https://localhost:7094/GetMoreFittedInstancesFromAWS?instanceId=i-03a4336e41141f20f')
     .then(response => {
       const data = response.data.data;
+      console.log("custom: ", data);
       setMachines(data);
 
     })

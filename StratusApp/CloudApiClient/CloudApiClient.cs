@@ -26,8 +26,7 @@ namespace CloudApiClient
 
         public CloudApiClient()
         {
-
-            //credentials = new BasicAWSCredentials();
+            //_credentials = new BasicAWSCredentials();
             _region = RegionEndpoint.USEast1;
             //_cloudWatchClient = new AmazonCloudWatchClient(_credentials, RegionEndpoint.USEast2);
             //_ec2Client = new AmazonEC2Client(_credentials, _region);
@@ -36,7 +35,6 @@ namespace CloudApiClient
             _cloudWatchService = new CloudWatchService(_credentials, _region);
             _costExplorerService = new CostExplorerService(_credentials, RegionEndpoint.USEast2);
             _awsScraper = new AWSScraper();
-
         }
 
         //Please NOTE to change the hard-coded instanceID
@@ -98,7 +96,7 @@ namespace CloudApiClient
             return await _ec2Service.GetInstances();
         }
 
-        public async Task<List<InstanceDetails>> GetMoreFittedInstances(string instanceId)
+        public async Task<List<AwsInstanceDetails>> GetMoreFittedInstances(string instanceId)
         {
             // Get the current VM CPU usage metrics
             var currentInstanceDetails = GetInstanceBasicDetails(instanceId);
@@ -106,7 +104,7 @@ namespace CloudApiClient
             InstanceFilterHelper currentVMUsageFilters = CreateVMInstanceFilters(currentInstanceDetails.Result);
 
 
-            List<InstanceDetails> fittedInstances = await GetOptionalVms(currentVMUsageFilters, 100, currentInstanceDetails);
+            List<AwsInstanceDetails> fittedInstances = await GetOptionalVms(currentVMUsageFilters, 100, currentInstanceDetails);
             // What is That?
             // availableInstances = await GetAvailableInstances(accessKey, secretKey, region);
 
@@ -145,7 +143,7 @@ namespace CloudApiClient
             return instanceFilterHelper;
         }
 
-        public async Task<List<InstanceDetails>> GetOptionalVms(InstanceFilterHelper instanceFilters, int maxResults, Task<InstanceDetails> currentInstanceDetails)
+        public async Task<List<AwsInstanceDetails>> GetOptionalVms(InstanceFilterHelper instanceFilters, int maxResults, Task<InstanceDetails> currentInstanceDetails)
 
         {
             return await _pricingService.GetOptionalVms(instanceFilters, maxResults, currentInstanceDetails);
@@ -252,7 +250,11 @@ namespace CloudApiClient
 
         public async Task<InstanceDetails> GetInstanceBasicDetails(string instanceId)
         {
-            InstanceDetails instanceDetails = new AwsInstanceDetails();
+            InstanceDetails instanceDetails = new AwsInstanceDetails()
+            {
+                Specifications = new InstanceSpecifications(),
+                UsageData = new InstanceUsageData(),
+            };
 
             // Operating System
             instanceDetails.Specifications.OperatingSystem = await GetInstanceOperatingSystem(instanceId);
