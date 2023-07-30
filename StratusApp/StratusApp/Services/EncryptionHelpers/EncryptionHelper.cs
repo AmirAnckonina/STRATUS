@@ -4,7 +4,7 @@ namespace StratusApp.Services.EncryptionHelpers
 {
     public static class EncryptionHelper
     {
-        private static byte[] encryptionKey = KeyGenerator.GetBytesFromBase64EncodedKey("omwEJXNa2V04pkMPX2SpVSQUjLpAPwGAfpcIf0zYjnk="); // Replace with your secret encryption key.
+        private static byte[] encryptionKey = KeyGenerator.GetBytesFromBase64EncodedKey(""); // Replace with your secret encryption key.
 
         public static string Encrypt(string plainText)
         {
