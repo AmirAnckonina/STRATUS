@@ -1,7 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System.ComponentModel.DataAnnotations;
 
-namespace MonitoringClient.Prometheus.PrometheusModels.GeneralResponseModels
+namespace MonitoringClient.Prometheus.PrometheusModels.OldPrometheusModels_bkup
 {
     public class PrometheusTimestampAndValue
     {

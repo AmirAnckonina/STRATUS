@@ -3,7 +3,7 @@ using MonitoringClient.Prometheus;
 using MonitoringClient.Prometheus.Enums;
 using MonitoringClient.Prometheus.PrometheusApi;
 using MonitoringClient.Prometheus.PrometheusModels;
-using MonitoringClient.Prometheus.PrometheusModels.GeneralResponseModels;
+using MonitoringClient.Prometheus.PrometheusModels.OldPrometheusModels_bkup;
 using MonitoringClient.Prometheus.PrometheusModels.SingleResultModels;
 using System;
 using System.Reflection;

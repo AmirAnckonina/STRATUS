@@ -6,7 +6,7 @@ using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
-namespace MonitoringClient.Prometheus.PrometheusModels.GeneralResponseModels
+namespace MonitoringClient.Prometheus.PrometheusModels.OldPrometheusModels_bkup
 {
     public class PrometheusData
     {
@@ -15,6 +15,5 @@ namespace MonitoringClient.Prometheus.PrometheusModels.GeneralResponseModels
 
         [JsonProperty("result")]
         public List<PrometheusResult>? Result { get; set; }
-        //public List<PrometheusSingleResult>? Result { get; set; }
     }
 }

@@ -7,7 +7,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
-namespace MonitoringClient.Prometheus.PrometheusModels.GeneralResponseModels
+namespace MonitoringClient.Prometheus.PrometheusModels.OldPrometheusModels_bkup
 {
     
     public class PrometheusResponse
