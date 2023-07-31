@@ -33,14 +33,16 @@ namespace MonitoringClient.Prometheus.PrometheusConverter
             switch (_concreteResultType)
             {
                 case PrometheusConcreteResultType.EmptyMetricAndSingleValue:
-                    return JsonConvert.DeserializeObject<EmptyMetricAndSingleValueResult>(
+
+                    return JsonConvert.DeserializeObject<EmptyMetricAndSingleValue>(
                         jo.ToString(), SpecifiedSubclassConversion);
 
                 case PrometheusConcreteResultType.EmptyMetricAndValuesList:
-                    return JsonConvert.DeserializeObject<EmptyMetricAndValuesListResult>(jo.ToString(), SpecifiedSubclassConversion);
+                    return JsonConvert.DeserializeObject<EmptyMetricAndValuesList>(
+                        jo.ToString(), SpecifiedSubclassConversion);
 
-                case PrometheusConcreteResultType.CpuMetricAndSingleValue:
-                    return JsonConvert.DeserializeObject<CpuMetricAndSingleResultValueResult>(
+                case PrometheusConcreteResultType.ListOfCpuMetricAndSingleValue:
+                    return JsonConvert.DeserializeObject<List<CpuMetricAndSingleValue>>(
                         jo.ToString(), SpecifiedSubclassConversion);
                 default:
                     throw new Exception();

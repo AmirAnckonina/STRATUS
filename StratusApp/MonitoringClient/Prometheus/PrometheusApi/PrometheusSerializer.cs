@@ -19,42 +19,45 @@ namespace MonitoringClient.Prometheus.PrometheusApi
     {
         public PrometheusSerializer() { }
 
-        public List<T> DeserializeRawResponse<T>(PrometheusQueryType queryType, string respContent)
+        public T DeserializeRawResponse<T>(PrometheusQueryType queryType, string respContent)
         {
             BasePrometheusResultConverter baseConverter;
+            string resultTokenStr;
+            JObject rawJObj = JObject.Parse(respContent);
+            JToken resultToken = rawJObj["data"]?["result"];
 
             PrometheusConcreteResultType concreteResultType = GetPrometheusConcreteResultByQueryType(queryType);
 
             switch (concreteResultType)
             {
                 case PrometheusConcreteResultType.EmptyMetricAndSingleValue:
+                    resultTokenStr = resultToken.FirstOrDefault().ToString();
                     baseConverter = new BasePrometheusResultConverter(PrometheusConcreteResultType.EmptyMetricAndSingleValue);
                     break;
 
                 case PrometheusConcreteResultType.EmptyMetricAndValuesList:
+                    resultTokenStr = resultToken.FirstOrDefault().ToString();
                     baseConverter = new BasePrometheusResultConverter(PrometheusConcreteResultType.EmptyMetricAndValuesList);
                     break;
 
-                case PrometheusConcreteResultType.CpuMetricAndSingleValue:
-                    baseConverter = new BasePrometheusResultConverter(PrometheusConcreteResultType.CpuMetricAndSingleValue);
+                case PrometheusConcreteResultType.ListOfCpuMetricAndSingleValue:
+                    resultTokenStr = resultToken.ToString();
+                    baseConverter = new BasePrometheusResultConverter(PrometheusConcreteResultType.ListOfCpuMetricAndSingleValue);
                     break;
 
-                default:
-                    throw new Exception();
+                default:    
+                    throw new Exception(); 
 
             }
-
-            JObject rawJObj = JObject.Parse(respContent);
-            JToken resultToken = rawJObj["data"]?["result"];
-            string resultTokenStr = resultToken.FirstOrDefault().ToString();
-
-            if (typeof(T) == typeof(EmptyMetricAndSingleValueResult))
+            /// For testing.
+/*            if (typeof(T) == typeof(EmptyMetricAndSingleValueResult))
             {
                 EmptyMetricAndSingleValueResult a = JsonConvert.DeserializeObject<EmptyMetricAndSingleValueResult>(resultTokenStr);
-            }
+            }*/
+
             T? promResult = JsonConvert.DeserializeObject<T>(resultTokenStr, baseConverter);
 
-            return new List<T> { promResult };
+            return promResult;
 
         }
 
@@ -62,18 +65,16 @@ namespace MonitoringClient.Prometheus.PrometheusApi
         {
             switch (queryType)
             {
-                case PrometheusQueryType.GetAvgCpuUsageUtilization:
-                case PrometheusQueryType.GetMaxCpuUsageUtilization:
-                case PrometheusQueryType.GetTotalMemorySizeInGB:
-                case PrometheusQueryType.GetAvgFreeMemorySizeInGB:
-                case PrometheusQueryType.GetTotalDiskSizeInGB:
-                case PrometheusQueryType.GetAvgFreeDiskSpaceInGB:
-                    return PrometheusConcreteResultType.EmptyMetricAndSingleValue;
 
-                default:
+                case PrometheusQueryType.GetAvgCpuUsageUtilizationOverTime:
                     return PrometheusConcreteResultType.EmptyMetricAndValuesList;
 
 
+                case PrometheusQueryType.GetAvgCpuUtilizationByCpu:
+                    return PrometheusConcreteResultType.ListOfCpuMetricAndSingleValue;
+
+                default:
+                    return PrometheusConcreteResultType.EmptyMetricAndSingleValue;
             }
         }
     }

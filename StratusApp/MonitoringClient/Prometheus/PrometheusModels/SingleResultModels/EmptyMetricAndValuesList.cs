@@ -9,12 +9,12 @@ using System.Threading.Tasks;
 
 namespace MonitoringClient.Prometheus.PrometheusModels.SingleResultModels
 {
-    public class EmptyMetricAndSingleValueResult : BasePrometheusResult
+    public class EmptyMetricAndValuesList //: BasePrometheusResult
     {
         [JsonProperty("metric")]
         public EmptyMetric? Metric { get; set; }
 
-        [JsonProperty("value")]
-        public List<PrometheusTimestampAndValue>? TimestampAndValue { get; set; }
+        [JsonProperty("values")]
+        public List<List<string>>? TimestampsAndValues { get; set; }
     }
 }

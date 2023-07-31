@@ -10,6 +10,6 @@ namespace MonitoringClient.Prometheus.Enums
     {
         EmptyMetricAndSingleValue,
         EmptyMetricAndValuesList,
-        CpuMetricAndSingleValue
+        ListOfCpuMetricAndSingleValue
     }
 }

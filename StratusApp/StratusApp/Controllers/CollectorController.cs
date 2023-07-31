@@ -49,7 +49,7 @@ namespace StratusApp.Controllers
         }
 
         [HttpGet("GetAvgCpuUtilizationByCpu")]
-        public async Task<ActionResult<StratusResponse<List<SingleCpuUtilizationDTO>>>> GetAvgCpuUtilizationByCpu(string instance, string timeFilter = "month")
+        public async Task<ActionResult<StratusResponse<List<SingleCpuUtilizationDTO>>>> GetAvgCpuUtilizationByCpu(string instance = "34.125.220.240", string timeFilter = "month")
         {
             try
             {

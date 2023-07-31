@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 
 namespace MonitoringClient.Prometheus.PrometheusModels.GeneralResponseModels
 {
+    
     public class PrometheusResponse
     {
         [JsonProperty("status")]

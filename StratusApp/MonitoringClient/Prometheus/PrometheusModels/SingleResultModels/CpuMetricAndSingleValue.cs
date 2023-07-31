@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace MonitoringClient.Prometheus.PrometheusModels.SingleResultModels
 {
-    public class CpuMetricAndSingleResultValueResult : BasePrometheusResult
+    public class CpuMetricAndSingleValue 
     {
         [JsonProperty("metric")]
         public CpuUtilizationByVCpuMetric? Metric { get; set; }

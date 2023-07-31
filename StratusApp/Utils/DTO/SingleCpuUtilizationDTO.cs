@@ -8,7 +8,7 @@ namespace Utils.DTO
 {
     public class SingleCpuUtilizationDTO
     {
-        public int CpuIdx { get; set; }
+        public int CpuNo { get; set; }
 
         public double UtilizationPercentage { get; set; }
     }

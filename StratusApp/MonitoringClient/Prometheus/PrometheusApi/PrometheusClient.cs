@@ -55,27 +55,14 @@ namespace MonitoringClient.Prometheus.PrometheusApi
 
         public async Task<T> ExecutePromQLQuery<T>(PrometheusQueryParams queryParams)
         {
-            List<T> resultList = new List<T>();
-
             string expQueryType = PrometheusQueryParamsUtils.GetExperssionQueryString(queryParams.ExpressionQuery);
-
             string queryPath = PROM_QUERY_PATH + expQueryType;
-
             string query = _queryBuilder.BuildPromQLQueryContentByParams(queryParams);
-
             Uri endPointWithQuery = HttpRequestUtils.CreateEndPointRequestUri(PROM_BASE_URL, queryPath, query);
-
             HttpResponseMessage rawResp = await _promHttpClient.GetAsync(endPointWithQuery);
-
             string respContent = await rawResp.Content.ReadAsStringAsync();
-
-            resultList = _prometheusSerializer.DeserializeRawResponse<T>(queryParams.QueryType, respContent);
-            T result = JsonConvert.DeserializeObject<T>(respContent);
-
+            T result = _prometheusSerializer.DeserializeRawResponse<T>(queryParams.QueryType, respContent);
             return result;
-            //BasePrometheusResult result = _prometheusSerializer.DeserializeRawResponse(queryParams.QueryType, respContent); 
-            //PrometheusResponse? promResp = _prometheusSerializer.DeserializeRawResponse(queryParams.ExpressionQuery, respContent);
-
         }
     }
 }
