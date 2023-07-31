@@ -11,5 +11,12 @@ namespace Utils.DTO
         public int CpuNo { get; set; }
 
         public double UtilizationPercentage { get; set; }
+        public bool IsFreeSpaceValue { get; set; } = false;
+        public string Label { get { return ToString(); } }
+
+        public override string ToString()
+        {
+            return IsFreeSpaceValue == true ? "Unused" : "CPU " + CpuNo.ToString();
+        }
     }
 }

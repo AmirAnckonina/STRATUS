@@ -11,7 +11,7 @@ namespace StratusApp.Data
 
         }
 
-        public DbSet<StratusUser> Users { get; set; }
+        public DbSet<Utils.DTO.StratusUser> Users { get; set; }
 
         public DbSet<AlternativeInstance> AlternativeInstances { get; set; }
     }

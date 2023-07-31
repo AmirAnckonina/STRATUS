@@ -98,7 +98,7 @@ export const OverviewLatestMachines = (props) => {
                       {data.specifications.vcpu.toString()}
                     </TableCell>
                     <TableCell>
-                      {data.specifications.storage.value.toString()} GB
+                      {data.specifications.storage.asString.toString()} GB
                     </TableCell>
                   </TableRow>
                 );

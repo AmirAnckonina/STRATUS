@@ -1,17 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System;
-using System.Security.Cryptography;
-using System.Text;
+﻿using System.Security.Cryptography;
 
-namespace Utils.EncryptionHelpers
+namespace StratusApp.Services.EncryptionHelpers
 {
     public static class EncryptionHelper
     {
-        private static byte[] encryptionKey = KeyGenerator.GenerateRandomKey(32); // Replace with your secret encryption key.
+        private static byte[] encryptionKey = KeyGenerator.GetBytesFromBase64EncodedKey(""); // Replace with your secret encryption key.
 
         public static string Encrypt(string plainText)
         {

@@ -54,9 +54,9 @@ namespace StratusApp.Controllers
         }
 
         [HttpGet("GetInstanceFromAWS")]
-        public async Task<ActionResult<StratusResponse<StratusUser>>> GetInstanceFromAWS()
+        public async Task<ActionResult<StratusResponse<List<Instance>>>> GetInstanceFromAWS()
         {
-            var userInstanceStartusResp = new StratusResponse<StratusUser>();
+            var userInstanceStartusResp = new StratusResponse<List<Instance>>();
 
             userInstanceStartusResp.Data = await _awsService.GetInstances();
 
@@ -64,9 +64,9 @@ namespace StratusApp.Controllers
         }
         
         [HttpGet("GetMoreFittedInstancesFromAWS")]
-        public async Task<ActionResult<List<Instance>>> GetMoreFittedInstancesFromAWS(string instanceId)
+        public async Task<ActionResult<List<AwsInstanceDetails>>> GetMoreFittedInstancesFromAWS(string instanceId)
         {
-            var instancesListResponse = new StratusResponse<List<InstanceDetails>>();
+            var instancesListResponse = new StratusResponse<List<AwsInstanceDetails>>();
             instancesListResponse.Data = await _awsService.GetMoreFittedInstances(instanceId);
 
             return Ok(instancesListResponse);

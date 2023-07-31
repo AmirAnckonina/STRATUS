@@ -32,9 +32,9 @@ namespace CloudApiClient.AwsServices
             _pricingUtils = new PricingUtils();
         }
 
-        public async Task<List<InstanceDetails>> GetOptionalVms(InstanceFilterHelper instanceFilters, int maxResults, Task<InstanceDetails> currentInstanceDetails)
+        public async Task<List<AwsInstanceDetails>> GetOptionalVms(InstanceFilterHelper instanceFilters, int maxResults, Task<InstanceDetails> currentInstanceDetails)
         {
-            var potentialInstances = new List<InstanceDetails>();
+            var potentialInstances = new List<AwsInstanceDetails>();
             try
             {
                 var getProductsRequest = new GetProductsRequest
@@ -57,11 +57,11 @@ namespace CloudApiClient.AwsServices
                     {
                         Specifications = new InstanceSpecifications()
                         {
-      
-                            Storage = new Utils.DTO.Storage() { Value = double.Parse(product.Attributes.storage), Unit = Utils.Enums.eMemoryUnit.GB },
+                            Storage = new Utils.DTO.Storage(),
                             OperatingSystem = product.Attributes.operatingSystem,
                             VCPU = int.Parse(product.Attributes.vcpu),
-                            Price = new Price() { Value = (double)pricePlan.priceInUSD.Value, CurrencyType = Utils.Enums.eCurrencyType.Dollar },
+                            Memory = Memory.Parse(product.Attributes.memory),
+                            Price = new Price() { Value = (double)pricePlan.priceInUSD.Value, CurrencyType = Utils.Enums.eCurrencyType.Dollar, PeriodTime = Utils.Enums.ePeriodTime.Hour },
                         },
                         Type = product.Attributes.instanceType,
                         InstanceId = product.Sku,
@@ -71,11 +71,9 @@ namespace CloudApiClient.AwsServices
 
                 return potentialInstances;
             }
-            catch (Exception ex)
+            catch
             {
-                /// Change exception architecture to try-catch on controller.
-                /// 
-                return new List<InstanceDetails>();
+                return potentialInstances;
             }
         }
     }

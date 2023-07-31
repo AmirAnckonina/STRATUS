@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using StratusApp.Models.Responses;
 using StratusApp.Models;
+using Utils.DTO;
 
 namespace StratusApp.Services
 {

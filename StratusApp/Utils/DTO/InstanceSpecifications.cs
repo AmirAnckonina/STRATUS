@@ -15,7 +15,7 @@ namespace Utils.DTO
         public Storage Storage { get; set; }
 
         [BsonElement("memory")]
-        public Memory Memory;
+        public Memory Memory { get; set; }
 
         [BsonElement("vCPU")]
         public int VCPU { get; set; }

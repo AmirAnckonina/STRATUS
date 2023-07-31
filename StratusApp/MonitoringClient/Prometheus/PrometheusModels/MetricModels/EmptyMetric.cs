@@ -8,6 +8,5 @@ namespace MonitoringClient.Prometheus.PrometheusModels.MetricModels
 {
     public class EmptyMetric
     {
-        //public object? NoneValue { get; set; } 
     }
 }

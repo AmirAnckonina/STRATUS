@@ -34,8 +34,8 @@ const Page = () => {
     const data = response.data.data;
       setMachine(data);
       if (data.length > 0) {
-        console.log("dataa: ", data[0].instanceId)
-        setSelectedMachine(data[0].instanceId);
+        console.log("dataa: ", data[0].instanceAddress)
+        setSelectedMachine(data[0].instanceAddress);
       }
 
   })
@@ -43,9 +43,10 @@ const Page = () => {
   },[]);
 
   useEffect(() => {
-    axios.get('https://localhost:7094/setcpuUtilizations?instanceId=' + selectedMachine)
+    axios.get('https://localhost:7094/GetAvgCpuUtilizationByCpu?instance=34.125.220.240')
     .then(response => {
       const data = response.data.data;
+      console.log("current10",  data)
       setcpuUtilizations(data);
     })
     .catch(error => console.error(error));
@@ -53,7 +54,7 @@ const Page = () => {
 
   axios.get('https://localhost:7094/GetInstanceCPUStatistics?instanceId=' + selectedMachine)
     .then(response => {
-    const statistics = response.data.data.filter(machine => machine.id === selectedMachine);
+    const statistics = response.data.data.filter(machine => machine.instanceAddress === selectedMachine);
     //console.log("current1",  statistics)
     //console.log("current2",  response.data.data)
     setStatistics(response.data.data[0]); //todo : need to use filter machine insteaf of data[0]
@@ -64,17 +65,18 @@ const Page = () => {
 
     axios.get('https://localhost:7094/GetInstanceCPUStatistics?instanceId=' + selectedMachine)
     .then(response => {
-    const statistics = response.data.data.filter(machine => machine.id === selectedMachine);
-    console.log("current1",  statistics)
+    const statistics = response.data.data.filter(machine => machine.instanceAddress === selectedMachine);
+    
     //console.log("current2",  response.data.data)
     setStatistics(response.data.data[0]); //todo : need to use filter machine insteaf of data[0]
 
   })
   .catch(error => console.error(error));
 
-  axios.get('https://localhost:7094/setcpuUtilizations?instanceId=' + selectedMachine)
+  axios.get('https://localhost:7094/GetAvgCpuUtilizationByCpu?instance=34.125.220.240')
     .then(response => {
       const data = response.data.data;
+      console.log("current1",  data)
       setcpuUtilizations(data);
     })
     .catch(error => console.error(error));
@@ -99,8 +101,8 @@ const Page = () => {
             Choose Machine:
             <Select value={selectedMachine} onChange={handleMachineChange} sx={{ ml: 2 }}>
               {machines.map((machine) => (
-              <MenuItem key={machine} value={machine.instanceId}>
-                 {machine.instanceId}
+              <MenuItem key={machine} value={machine.instanceAddress}>
+                 {machine.instanceAddress}
              </MenuItem>
              ))}
             </Select>
@@ -170,8 +172,8 @@ const Page = () => {
             lg={4}
           >
             <OverviewCpuUtilization
-              chartSeries={cpuUtilizations.map((element) => element.utilizationsPercentages)}
-              labels={cpuUtilizations.map((element) => 'CPU ' + element.cpuIndex)}
+              chartSeries={cpuUtilizations.map((element) => element.utilizationPercentage)}
+              labels={cpuUtilizations.map((element) => element.label)}
               sx={{ height: '100%' }}
             />
           </Grid>
