@@ -6,6 +6,7 @@ namespace StratusApp.Services.EncryptionHelpers
     {
         public static byte[] GenerateRandomKey(int keySizeInBytes)
         {
+
             using (var randomNumberGenerator = new RNGCryptoServiceProvider())
             {
                 var key = new byte[keySizeInBytes];
@@ -13,7 +14,15 @@ namespace StratusApp.Services.EncryptionHelpers
                 return key;
             }
         }
-
+        public static string generateAesIV()
+        {
+            using (Aes aesAlg = Aes.Create())
+            {
+                aesAlg.GenerateIV();
+                return GetBase64EncodedKey(aesAlg.IV);
+            }
+                
+        }
         public static string GetBase64EncodedKey(byte[] key)
         {
             return Convert.ToBase64String(key);

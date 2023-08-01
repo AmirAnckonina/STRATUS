@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useReducer, useRef } from 'react';
 import PropTypes from 'prop-types';
+import { drawerClasses } from '@mui/material';
 
 const HANDLERS = {
   INITIALIZE: 'INITIALIZE',
@@ -128,10 +129,20 @@ export const AuthProvider = (props) => {
   };
 
   const signIn = async (email, password) => {
-    if (email !== 'demo@devias.io' || password !== 'Password123!') {
+    const queryParams = new URLSearchParams({
+      password: password,
+      email: email,
+    });
+    const response = await fetch(`https://localhost:7094/LogInToStratusService?${queryParams}`);
+    const data = await response.json();
+    console.log(data.message);
+    //
+    //if (email !== 'demo@devias.io' || password !== 'Password123!') {
+    //  throw new Error('Please check your email and password');
+    //}
+    if (response.ok === false){
       throw new Error('Please check your email and password');
-    }
-
+    } 
     try {
       window.sessionStorage.setItem('authenticated', 'true');
     } catch (err) {
@@ -139,10 +150,10 @@ export const AuthProvider = (props) => {
     }
 
     const user = {
-      id: '5e86809283e28b96d2d38537',
+      id: response.id,
       avatar: '/assets/avatars/avatar-anika-visser.png',
-      name: 'Anika Visser',
-      email: 'anika.visser@devias.io'
+      name: response.name,
+      email: email
     };
 
     dispatch({
@@ -151,8 +162,43 @@ export const AuthProvider = (props) => {
     });
   };
 
-  const signUp = async (email, name, password) => {
-    throw new Error('Sign up is not implemented');
+  const signUp = async (email, name, password, accessKey, secretKey) => {
+    const queryParams = new URLSearchParams({
+      username: name,
+      password: password,
+      email: email,
+      accessKey: accessKey,
+      secretKey: secretKey,
+    });
+
+    // Send the HTTP GET request
+    const response = await fetch(`https://localhost:7094/RegisterToStratusService?${queryParams}`);
+    const data = await response.json();
+    if (response.ok === false){
+      console.log(data.message);
+
+      throw new Error(data.message);
+    }
+         
+    try {
+      window.sessionStorage.setItem('authenticated', 'true');
+    } 
+    catch (err) 
+    {
+      console.error(err);
+    }
+
+    const user = {
+      id: response.id,
+      avatar: '/assets/avatars/avatar-anika-visser.png',
+      name: response.name,
+      email: email
+    };
+
+    dispatch({
+      type: HANDLERS.SIGN_IN,
+      payload: user
+    });
   };
 
   const signOut = () => {
