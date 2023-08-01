@@ -23,10 +23,13 @@ const Page = () => {
   const router = useRouter();
   const auth = useAuth();
   const [method, setMethod] = useState('email');
+  const [responseMessage, setResponseMessage] = useState('');
+  const [isSuccess, setIsSuccess] = useState(false);
+
   const formik = useFormik({
     initialValues: {
-      email: 'demo@devias.io',
-      password: 'Password123!',
+      email: '',
+      password: '',
       submit: null
     },
     validationSchema: Yup.object({
@@ -41,12 +44,17 @@ const Page = () => {
         .required('Password is required')
     }),
     onSubmit: async (values, helpers) => {
+
       try {
+
         await auth.signIn(values.email, values.password);
+        setIsSuccess(true);
+        setResponseMessage('Logged in successfully');
         router.push('/');
       } catch (err) {
+        console.log("error no good");
         helpers.setStatus({ success: false });
-        helpers.setErrors({ submit: err.message });
+        setResponseMessage(err.message);
         helpers.setSubmitting(false);
       }
     }
@@ -57,14 +65,6 @@ const Page = () => {
       setMethod(value);
     },
     []
-  );
-
-  const handleSkip = useCallback(
-    () => {
-      auth.skip();
-      router.push('/');
-    },
-    [auth, router]
   );
 
   return (
@@ -124,10 +124,6 @@ const Page = () => {
                 label="Email"
                 value="email"
               />
-              <Tab
-                label="Phone Number"
-                value="phoneNumber"
-              />
             </Tabs>
             {method === 'email' && (
               <form
@@ -158,9 +154,6 @@ const Page = () => {
                     value={formik.values.password}
                   />
                 </Stack>
-                <FormHelperText sx={{ mt: 1 }}>
-                  Optionally you can skip.
-                </FormHelperText>
                 {formik.errors.submit && (
                   <Typography
                     color="error"
@@ -168,6 +161,15 @@ const Page = () => {
                     variant="body2"
                   >
                     {formik.errors.submit}
+                  </Typography>
+                )}
+                {responseMessage && (
+                  <Typography
+                    color={isSuccess ? 'green' : 'red'}
+                    sx={{ mt: 3 }}
+                    variant="body2"
+                  >
+                    {responseMessage}
                   </Typography>
                 )}
                 <Button
@@ -179,23 +181,6 @@ const Page = () => {
                 >
                   Continue
                 </Button>
-                <Button
-                  fullWidth
-                  size="large"
-                  sx={{ mt: 3 }}
-                  onClick={handleSkip}
-                >
-                  Skip authentication
-                </Button>
-                <Alert
-                  color="primary"
-                  severity="info"
-                  sx={{ mt: 3 }}
-                >
-                  <div>
-                    You can use <b>demo@devias.io</b> and password <b>Password123!</b>
-                  </div>
-                </Alert>
               </form>
             )}
             {method === 'phoneNumber' && (

@@ -16,6 +16,7 @@ namespace StratusApp.Controllers
     {
         private readonly MongoDBService _mongoDatabase;
         private readonly AuthService _authService;
+        private readonly string userDosentExists = "User doesn't exists";
 
         public AuthController(MongoDBService mongoDatabase)
         {
@@ -35,20 +36,40 @@ namespace StratusApp.Controllers
                 secretKey
                 );
             
-            bool isUserExists = await _authService.IsUserExists(user);
-            if (isUserExists)
-            {
-                registerToStratusServiceResp.Message = "User name, email or password already exists";
-                return BadRequest(registerToStratusServiceResp);
-            }
-            else
+            string isUserExistsMessage = await _authService.IsUserExists(user);
+            if (isUserExistsMessage.Equals(userDosentExists))
             {
                 _authService.InsertUserToDB(user);
                 registerToStratusServiceResp.Data = user;
                 registerToStratusServiceResp.Message = "Registered successfully";
                 return Ok(registerToStratusServiceResp);
+
+            }
+            else
+            {
+                registerToStratusServiceResp.Message = isUserExistsMessage;
+                return BadRequest(registerToStratusServiceResp);
             }
         }
+        [HttpGet("LogInToStratusService")]
+        public async Task<ActionResult<StratusResponse<StratusUser>>> LogInToStratusService(string email, string password)
+        {
+            var logInToStratusServiceResp = new StratusResponse<StratusUser>();
+            if (await _authService.IsUserRegistered(email, password) == true)
+            {
+                var user = await _authService.GetUserFromDB(email); 
+                logInToStratusServiceResp.Data = user;
+                logInToStratusServiceResp.Message = "Logged in successfully";
+                return Ok(logInToStratusServiceResp);
+            }
+            else
+            {
+                logInToStratusServiceResp.Message = "Email or Password are incorrect, please try again";
+                return BadRequest(logInToStratusServiceResp);
+            }
+        }
+
+
         [HttpGet("GetDocumentByFilter")]
         public async Task<ActionResult<StratusResponse<StratusUser>>> GetDocumentByFilter(eCollectionName collectionType, string fieldName, string value)
         {
