@@ -2,7 +2,7 @@ import PropTypes from 'prop-types';
 import ComputerDesktopIcon from '@heroicons/react/24/solid/ComputerDesktopIcon';
 import DeviceTabletIcon from '@heroicons/react/24/solid/DeviceTabletIcon';
 import PhoneIcon from '@heroicons/react/24/solid/PhoneIcon';
-import CPUIcon from '@heroicons/react/24/solid/CpuChipIcon'; 
+import CPUIcon from '@heroicons/react/24/solid/CpuChipIcon';
 import {
   Box,
   Card,
@@ -92,7 +92,7 @@ export const OverviewCpuUtilization = (props) => {
 
   return (
     <Card sx={sx}>
-      <CardHeader title="Average CPU Utilization" />
+      <CardHeader title="Average CPU Utilization Last Month" />
       <CardContent>
         <Chart
           height={300}
@@ -110,6 +110,7 @@ export const OverviewCpuUtilization = (props) => {
         >
           {chartSeries.map((item, index) => {
             const label = labels[index];
+            const color = chartOptions.colors[index % chartOptions.colors.length];
 
             return (
               <Box
@@ -124,6 +125,7 @@ export const OverviewCpuUtilization = (props) => {
                 <Typography
                   sx={{ my: 1 }}
                   variant="h6"
+                  style={{ color }} // Add color prop to the label
                 >
                   {label}
                 </Typography>

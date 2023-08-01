@@ -14,6 +14,7 @@ namespace Utils.DTO
         [BsonElement("unit")]
         [BsonRepresentation(BsonType.String)]
         public eMemoryUnit Unit { get; set; }
+        public string AsString { get { return ToString(); } }
 
         public static Memory Parse(string memoryString)
         {

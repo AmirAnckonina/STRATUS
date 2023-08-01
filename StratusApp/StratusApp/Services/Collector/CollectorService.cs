@@ -104,14 +104,39 @@ namespace StratusApp.Services.Collector
 
             var promResp = await _prometheusClient.ExecutePromQLQuery(queryParams);
 
-            int currCpuIdx = 0;
+            int currCpuIdx = 1;
             foreach (PrometheusSingleResult cpuMetric in promResp.Data.Result)
             {
                 double result = double.Parse(cpuMetric.TimestampAndValue[1]);
                 cpusUtilizationDTOs.Add(new SingleCpuUtilizationDTO { CpuIdx = currCpuIdx++, UtilizationPercentage = result });
             }
 
+            if (cpusUtilizationDTOs.Count > 0)
+            {
+                SetUtilizationPercentageByVCpu(cpusUtilizationDTOs); 
+            }
+
             return cpusUtilizationDTOs;
+        }
+
+        private void SetUtilizationPercentageByVCpu(List<SingleCpuUtilizationDTO> cpusUtilizationDTOs)
+        {
+            int totalCpuCapacity = cpusUtilizationDTOs.Count * 100;
+            double totalCpuUsage = 0;
+
+            foreach(SingleCpuUtilizationDTO singleCpuUtilization in cpusUtilizationDTOs )
+            {
+                singleCpuUtilization.UtilizationPercentage = singleCpuUtilization.UtilizationPercentage / totalCpuCapacity * 100;
+                singleCpuUtilization.UtilizationPercentage = Math.Round(singleCpuUtilization.UtilizationPercentage, 3);
+                totalCpuUsage += singleCpuUtilization.UtilizationPercentage;
+            }
+
+            cpusUtilizationDTOs.Add(new SingleCpuUtilizationDTO()
+            {
+                CpuIdx = cpusUtilizationDTOs.Count + 1,
+                UtilizationPercentage = 100 - totalCpuUsage,
+                IsFreeSpaceValue = true,
+            });
         }
 
         public async Task<double> GetAvgFreeDiskSpaceInGB(string instance, string timeFilter)
