@@ -26,7 +26,7 @@ namespace StratusApp.Services.Collector
 
         public async Task<List<CpuUsageData>> GetAvgCpuUsageUtilizationOverTime(string instanceAddr, string timePeriodStr)
         {
-            List<CpuUsageData> cpuUsageDataList = new List<CpuUsageData>();
+            List<CpuUsageData> cpuUsageDataList; // = new List<CpuUsageData>();
             PrometheusQueryParams queryParams = new PrometheusQueryParams();
             QueryOverTimePeriod overallTimePeriod;
             QueryOverTimePeriod queryStep;
@@ -34,29 +34,7 @@ namespace StratusApp.Services.Collector
             DateTime startTime;
 
             overallTimePeriod = _collectorUtils.ParseTimePeriodStrToTimePeriodEnum(timePeriodStr);
-
-            //export to method inCollectorUtils.
-            switch (overallTimePeriod)
-            {
-                case QueryOverTimePeriod.Day:
-                    startTime = endTime.AddDays(-1);
-                    queryStep = QueryOverTimePeriod.Hour;
-                    break;
-
-                case QueryOverTimePeriod.Year:
-                    startTime = endTime.AddYears(-1);
-                    queryStep = QueryOverTimePeriod.Month;
-                    break;
-
-                case QueryOverTimePeriod.Month:
-                case QueryOverTimePeriod.None:
-                    startTime = endTime.AddMonths(-1);
-                    queryStep = QueryOverTimePeriod.Day;
-                    break;
-
-                default:
-                    throw new Exception("Query overall time isn't supported.");
-            }
+            (startTime, queryStep) = _collectorUtils.BuildTimeRangeQueryByTimePeriod(overallTimePeriod, endTime);
 
             // Fill queryParams
             queryParams.InstanceAddr = instanceAddr;
@@ -68,16 +46,8 @@ namespace StratusApp.Services.Collector
             queryParams.QueryStep = queryStep;
 
             var result = await _prometheusClient.ExecutePromQLQuery<EmptyMetricAndValuesList>(queryParams);
-
-            //ToDo: fill CpuUsageData, After we parse it correctly in promClient
-            foreach (List<string> tsAndVal in result.TimestampsAndValues)
-            {
-                cpuUsageDataList.Add(new CpuUsageData
-                {
-                    Date = tsAndVal[0],
-                    Usage = double.Parse(tsAndVal[1])
-                });
-            }
+            cpuUsageDataList = _collectorUtils.FillCpuUsageDataList(result.TimestampsAndValues);
+            
             return cpuUsageDataList;
 
         }
@@ -254,6 +224,64 @@ namespace StratusApp.Services.Collector
 
             double result = double.Parse(promResult.TimestampAndValue[1]);
             return result;
+        }
+
+        public async Task<double> GetAvgDiskSpaceUsageInGB(string instance, string timeFilter)
+        {
+            double avgDiskSpaceUsage;
+
+            PrometheusQueryParams queryParams = new PrometheusQueryParams()
+            {
+                InstanceAddr = instance,
+                OverTimeFilter = _collectorUtils.ParseTimePeriodStrToTimePeriodEnum(timeFilter),
+                QueryType = PrometheusQueryType.GetAvgDiskSpaceUsageInGB
+            };
+
+            var promResult = await _prometheusClient.ExecutePromQLQuery<EmptyMetricAndSingleValue>(queryParams);
+
+            avgDiskSpaceUsage = double.Parse(promResult.TimestampAndValue[1]);
+
+            return avgDiskSpaceUsage;
+        }
+
+        public async Task<double> GetAvgMemorySizeUsageInGB(string instance, string timeFilter)
+        {
+            double avgMemoryUsage;
+
+            PrometheusQueryParams queryParams = new PrometheusQueryParams()
+            {
+                InstanceAddr = instance,
+                OverTimeFilter = _collectorUtils.ParseTimePeriodStrToTimePeriodEnum(timeFilter),
+                QueryType = PrometheusQueryType.GetAvgMemorySizeUsageInGB
+            };
+
+            var promResult = await _prometheusClient.ExecutePromQLQuery<EmptyMetricAndSingleValue>(queryParams);
+
+            avgMemoryUsage = double.Parse(promResult.TimestampAndValue[1]);
+
+            return avgMemoryUsage;
+        }
+
+        public async Task<double> GetAvgDiskSpaceUsagePercentage(string instance, string timeFilter)
+        {
+            double averageDiskSpaceUsagePercentage;
+
+            double avgUsage = await GetAvgDiskSpaceUsageInGB(instance, timeFilter);
+            double totalSize = await GetTotalDiskSizeInGB(instance);
+
+            averageDiskSpaceUsagePercentage = (avgUsage / totalSize) * 100;
+            return averageDiskSpaceUsagePercentage;
+        }
+
+        public async Task<double> GetAvgMemorySizeUsagePercentage(string instance, string timeFilter)
+        {
+            double averageMemoryUsagePercentage;
+
+            double avgUsage = await GetAvgMemorySizeUsageInGB(instance, timeFilter);
+            double totalSize = await GetTotalMemorySizeInGB(instance);
+
+            averageMemoryUsagePercentage = (avgUsage / totalSize) * 100;
+            return averageMemoryUsagePercentage;
         }
     }
 }

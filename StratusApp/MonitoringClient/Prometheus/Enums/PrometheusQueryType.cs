@@ -16,6 +16,8 @@ namespace MonitoringClient.Prometheus.Enums
         GetAvgFreeDiskSpaceInGB,
         GetTotalMemorySizeInGB,
         GetAvgFreeMemorySizeInGB,
-        GetAvgCpuUsageUtilizationOverTime
+        GetAvgCpuUsageUtilizationOverTime,
+        GetAvgDiskSpaceUsageInGB,
+        GetAvgMemorySizeUsageInGB
     }
 }

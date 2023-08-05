@@ -1,4 +1,5 @@
-﻿using Utils.Enums;
+﻿using Utils.DTO;
+using Utils.Enums;
 
 namespace StratusApp.Services.Collector
 {
@@ -15,22 +16,50 @@ namespace StratusApp.Services.Collector
             return timePeriod;
         }
 
-        /*public QueryOverTimePeriod GetSingleQueryOverTimePeriod(QueryOverTimePeriod overallQueryTimePeriod)
+        public (DateTime, QueryOverTimePeriod) BuildTimeRangeQueryByTimePeriod(QueryOverTimePeriod overallTimePeriod, DateTime endTime)
         {
-            QueryOverTimePeriod singleOverTime;
+            DateTime startTime;
+            QueryOverTimePeriod queryStep;
 
+            switch (overallTimePeriod)
+            {
+                case QueryOverTimePeriod.Day:
+                    startTime = endTime.AddDays(-1);
+                    queryStep = QueryOverTimePeriod.Hour;
+                    break;
 
-            return singleOverTime;
+                case QueryOverTimePeriod.Year:
+                    startTime = endTime.AddYears(-1);
+                    queryStep = QueryOverTimePeriod.Month;
+                    break;
+
+                case QueryOverTimePeriod.Month:
+                case QueryOverTimePeriod.None:
+                    startTime = endTime.AddMonths(-1);
+                    queryStep = QueryOverTimePeriod.Day;
+                    break;
+
+                default:
+                    throw new Exception("Query overall time isn't supported.");
+            }
+
+            return (startTime, queryStep);
         }
 
-        public QueryTimeOffsetType GetTimeOffsetType(QueryOverTimePeriod overallQueryTimePeriod)
+        public List<CpuUsageData> FillCpuUsageDataList(List<List<string>>? timestampsAndValues)
         {
-            QueryTimeOffsetType timeOffsetType;
+            List<CpuUsageData> cpuUsageDataList = new List<CpuUsageData>();
 
+            foreach (List<string> tsAndVal in timestampsAndValues)
+            {
+                cpuUsageDataList.Add(new CpuUsageData
+                {
+                    Date = tsAndVal[0],
+                    Usage = double.Parse(tsAndVal[1])
+                });
+            }
 
-            return timeOffsetType;
-        }*/
-
-
+            return cpuUsageDataList;
+        }
     }
 }
