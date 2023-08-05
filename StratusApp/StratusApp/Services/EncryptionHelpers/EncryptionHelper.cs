@@ -1,10 +1,13 @@
-﻿using System.Security.Cryptography;
+﻿using System;
+using System.IO;
+using System.Security.Cryptography;
 
 namespace StratusApp.Services.EncryptionHelpers
 {
     public static class EncryptionHelper
     {
         private static byte[] encryptionKey = KeyGenerator.GetBytesFromBase64EncodedKey(""); // Replace with your secret encryption key.
+        private static byte[] fixedIV = KeyGenerator.GetBytesFromBase64EncodedKey(""); // Replace this with a fixed IV of your choice (16 bytes for AES).
 
         public static string Encrypt(string plainText)
         {
@@ -12,7 +15,7 @@ namespace StratusApp.Services.EncryptionHelpers
             using (Aes aesAlg = Aes.Create())
             {
                 aesAlg.Key = encryptionKey;
-                aesAlg.GenerateIV();
+                aesAlg.IV = fixedIV;
 
                 ICryptoTransform encryptor = aesAlg.CreateEncryptor(aesAlg.Key, aesAlg.IV);
                 using (var msEncrypt = new MemoryStream())
@@ -38,14 +41,10 @@ namespace StratusApp.Services.EncryptionHelpers
             using (Aes aesAlg = Aes.Create())
             {
                 aesAlg.Key = encryptionKey;
-                byte[] iv = new byte[aesAlg.BlockSize / 8];
-                byte[] encrypted = new byte[combined.Length - iv.Length];
-                Buffer.BlockCopy(combined, 0, iv, 0, iv.Length);
-                Buffer.BlockCopy(combined, iv.Length, encrypted, 0, encrypted.Length);
-                aesAlg.IV = iv;
+                aesAlg.IV = fixedIV;
 
                 ICryptoTransform decryptor = aesAlg.CreateDecryptor(aesAlg.Key, aesAlg.IV);
-                using (var msDecrypt = new MemoryStream(encrypted))
+                using (var msDecrypt = new MemoryStream(combined))
                 using (var csDecrypt = new CryptoStream(msDecrypt, decryptor, CryptoStreamMode.Read))
                 using (var srDecrypt = new StreamReader(csDecrypt))
                 {

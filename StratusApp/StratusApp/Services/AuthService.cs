@@ -18,34 +18,97 @@ namespace StratusApp.Services
             _mongoDatabase = mongoDatabase;
         }
 
-        public Task<bool> IsUserExists(StratusUser user)
+        internal Task<string> IsUserExists(StratusUser user)
         {
             bool isUserExists = false;
-            List<StratusUser> dbUsers = _mongoDatabase.GetCollectionAsList<StratusUser>(eCollectionName.Users).Result;
-            string hashedPassword = BCrypt.Net.BCrypt.HashPassword(user.Password);
+            try
+            {
+                var dbUsers = _mongoDatabase.GetCollectionAsList<StratusUser>(eCollectionName.Users).Result;
+                string hashedPassword = EncryptionHelpers.EncryptionHelper.Encrypt(user.Password);
+                if (dbUsers.Any(dbUser => dbUser.Username != null && dbUser.Username.Equals(user.Username)))
+                { 
+                    return Task.FromResult("Username already exists");
+                } 
+                else if( dbUsers.Any(dbUser => dbUser.Password.Equals(hashedPassword)))
+                {
+                    return Task.FromResult("Password already exists");
+                }
+                else if(dbUsers.Any(dbUser => dbUser.Email.Equals(user.Email))) 
+                {
+                    return Task.FromResult("Email already exists");
+                }
+                else
+                {
+                    return Task.FromResult("User doesn't exists");
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
 
-            if(dbUsers.Any(dbUser => dbUser.Username.Equals(user.Username)) || dbUsers.Any(dbUser => dbUser.Password.Equals(hashedPassword)) 
-                || dbUsers.Any(dbUser => dbUser.Email.Equals(user.Email)))
-            {
-                isUserExists = true;
-            }
-            else
-            {
-                isUserExists = false;
-            }
-            return Task.FromResult(isUserExists);
         }
-
+        public Task<bool> IsUserRegistered(string email, string password)
+        {
+            bool registered = false;
+            try
+            {
+                var dbUsers = _mongoDatabase.GetCollectionAsList<StratusUser>(eCollectionName.Users).Result;
+                string hashedPassword = EncryptionHelpers.EncryptionHelper.Encrypt(password);
+                if (dbUsers.Any(dbUser => dbUser.Email != null && dbUser.Email.Equals(email)) && dbUsers.Any(dbUser => dbUser.Password.Equals(hashedPassword)))
+                {
+                    registered = true;
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
+            return Task.FromResult(registered);
+        }
+        public void decryptAccessKey(StratusUser user)
+        {
+            user.AccessKey = EncryptionHelpers.EncryptionHelper.Decrypt(user.AccessKey);
+        }
+        public void decryptSecretKey(StratusUser user)
+        {
+            user.SecretKey = EncryptionHelpers.EncryptionHelper.Decrypt(user.SecretKey);
+        }
+        public void encryptPassword(StratusUser user)
+        {
+            user.Password = EncryptionHelpers.EncryptionHelper.Encrypt(user.Password);
+        }
+        public void encryptAccessKey(StratusUser user)
+        {
+            user.AccessKey = EncryptionHelpers.EncryptionHelper.Encrypt(user.AccessKey);
+        }
+        public void encryptSecretKey(StratusUser user)
+        {
+            user.SecretKey = EncryptionHelpers.EncryptionHelper.Encrypt(user.SecretKey);
+        }
         public void InsertUserToDB(StratusUser user)
         {
-            string hashedPassword = BCrypt.Net.BCrypt.HashPassword(user.Password);
-            string hashedAccessKey = EncryptionHelpers.EncryptionHelper.Encrypt(user.AccessKey);
-            string hashedSecretKey = EncryptionHelpers.EncryptionHelper.Encrypt(user.SecretKey);
+            //string hashedPassword = EncryptionHelpers.EncryptionHelper.Encrypt(user.Password);
+            //string hashedAccessKey = EncryptionHelpers.EncryptionHelper.Encrypt(user.AccessKey);
+            //string hashedSecretKey = EncryptionHelpers.EncryptionHelper.Encrypt(user.SecretKey);
 
-            user.Password = hashedPassword;
-            user.AccessKey = hashedAccessKey;
-            user.SecretKey = hashedSecretKey;
+            //check that the decryption works
+
+            encryptPassword(user);
+            encryptAccessKey(user);
+            encryptSecretKey(user);
             _mongoDatabase.InsertDocument<StratusUser>(eCollectionName.Users, user);
+        }
+
+        public async Task<StratusUser> GetUserFromDB(string email)
+        {
+            var dbUsers = await _mongoDatabase.GetCollectionAsList<StratusUser>(eCollectionName.Users);
+            var user = dbUsers.Find(dbUser => dbUser.Email.Equals(email));
+            decryptSecretKey(user);
+            decryptAccessKey(user);
+            return user; 
         }
     }
 }

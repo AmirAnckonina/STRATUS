@@ -2,14 +2,20 @@ import Head from 'next/head';
 import NextLink from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useFormik } from 'formik';
+import { useState } from 'react';
 import * as Yup from 'yup';
 import { Box, Button, Link, Stack, TextField, Typography } from '@mui/material';
 import { useAuth } from 'src/hooks/use-auth';
 import { Layout as AuthLayout } from 'src/layouts/auth/layout';
+import { tr } from 'date-fns/locale';
+import { set } from 'nprogress';
 
 const Page = () => {
   const router = useRouter();
   const auth = useAuth();
+  const [responseMessage, setResponseMessage] = useState(null);
+  const [isSuccess, setIsSuccess] = useState(false);
+
   const formik = useFormik({
     initialValues: {
       email: '',
@@ -44,11 +50,16 @@ const Page = () => {
     }),
     onSubmit: async (values, helpers) => {
       try {
-        await auth.signUp(values.email, values.name, values.password);
-        router.push('/');
+        await auth.signUp(values.email, values.name, values.password, values.accessKey, values.secretKey);
+        helpers.setStatus({ success: true });
+        setIsSuccess(true);
+        setResponseMessage('User created successfully');
+        router.push('/'); 
       } catch (err) {
+        // Handle other errors
+        console.log(err.message);
         helpers.setStatus({ success: false });
-        helpers.setErrors({ submit: err.message });
+        setResponseMessage(err.message);
         helpers.setSubmitting(false);
       }
     }
@@ -139,24 +150,24 @@ const Page = () => {
                   value={formik.values.password}
                 />
                 <TextField
-                  error={!!(formik.touched.name && formik.errors.accessKey)}
+                  error={!!(formik.touched.accessKey && formik.errors.accessKey)}
                   fullWidth
-                  helperText={formik.touched.name && formik.errors.accessKey}
-                  label="Accsess Key"
-                  name="Accsess Key"
+                  helperText={formik.touched.accessKey && formik.errors.accessKey}
+                  label="Access Key"
+                  name="accessKey"
                   onBlur={formik.handleBlur}
                   onChange={formik.handleChange}
-                  value={formik.values.name}
+                  value={formik.values.accessKey}
                 />
                 <TextField
-                  error={!!(formik.touched.name && formik.errors.secretKey)}
+                  error={!!(formik.touched.secretKey && formik.errors.secretKey)}
                   fullWidth
-                  helperText={formik.touched.name && formik.errors.secretKey}
+                  helperText={formik.touched.secretKey && formik.errors.secretKey}
                   label="Secret Key"
-                  name="Secret Key"
+                  name="secretKey"
                   onBlur={formik.handleBlur}
                   onChange={formik.handleChange}
-                  value={formik.values.name}
+                  value={formik.values.secretKey}
                 />
               </Stack>
               {formik.errors.submit && (
@@ -166,6 +177,15 @@ const Page = () => {
                   variant="body2"
                 >
                   {formik.errors.submit}
+                </Typography>
+              )}
+              {responseMessage && (
+                <Typography
+                  color={isSuccess ? 'green' :  'red' }
+                  sx={{ mt: 3 }}
+                  variant="body2"
+                >
+                  {responseMessage}
                 </Typography>
               )}
               <Button
