@@ -1,14 +1,14 @@
 ﻿using Newtonsoft.Json;
 using System.ComponentModel.DataAnnotations;
 
-namespace MonitoringClient.Prometheus.PrometheusModels.GeneralResponseModels
+namespace MonitoringClient.Prometheus.PrometheusModels.OldPrometheusModels_bkup
 {
     public class PrometheusTimestampAndValue
     {
-        [JsonProperty("")]
+        [JsonProperty(Order = 0)]
         public double? UnixTimeStamp { get; set; }
 
-        [JsonProperty()]
+        [JsonProperty(Order = 1)]
         public string? Value { get; set; }
     }
 }

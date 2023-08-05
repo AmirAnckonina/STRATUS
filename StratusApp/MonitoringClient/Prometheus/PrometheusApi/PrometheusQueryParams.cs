@@ -12,7 +12,7 @@ namespace MonitoringClient.Prometheus.PrometheusApi
 {
     public class PrometheusQueryParams
     {
-        // public PrometheusQueryParams() { }
+        // public PrometheusQueryParams() { } 
 
         public PrometheusExpressionQueryType ExpressionQuery { get; set; }
 

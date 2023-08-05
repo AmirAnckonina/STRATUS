@@ -12,6 +12,7 @@ namespace StratusApp.Services
     public class AuthService
     {
         private readonly MongoDBService _mongoDatabase;
+
         public AuthService(MongoDBService mongoDatabase)
         {
             _mongoDatabase = mongoDatabase;

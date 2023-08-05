@@ -43,15 +43,13 @@ namespace StratusApp.Controllers
         {
             var cpuUsageResponse = new StratusResponse<double>();
 
-            /// Should be modified to get the max and not the avarage!
-            /// Dummy dummy dummy
-            cpuUsageResponse.Data = await _collectorService.GetAvgCpuUsageUtilization(instance, timeFilter);
+            cpuUsageResponse.Data = await _collectorService.GetMaxCpuUsageUtilization(instance, timeFilter);
 
             return Ok(cpuUsageResponse);
         }
 
         [HttpGet("GetAvgCpuUtilizationByCpu")]
-        public async Task<ActionResult<StratusResponse<List<SingleCpuUtilizationDTO>>>> GetAvgCpuUtilizationByCpu(string instance, string timeFilter = "month")
+        public async Task<ActionResult<StratusResponse<List<SingleCpuUtilizationDTO>>>> GetAvgCpuUtilizationByCpu(string instance = "34.125.220.240", string timeFilter = "month")
         {
             try
             {
@@ -100,6 +98,40 @@ namespace StratusApp.Controllers
                 return BadRequest(ex.Message);
             }
         }
+        
+        [HttpGet("GetAvgDiskSpaceUsageInGB")]
+        public async Task<ActionResult<StratusResponse<double>>> GetAvgDiskSpaceUsageInGB(string instance, string timeFilter = "month")
+        {
+            try
+            {
+                var avgDiskSpaceUsageResponse = new StratusResponse<double>();
+
+                avgDiskSpaceUsageResponse.Data = await _collectorService.GetAvgDiskSpaceUsageInGB(instance, timeFilter);
+
+                return Ok(avgDiskSpaceUsageResponse);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpGet("GetAvgDiskSpaceUsagePercentage")]
+        public async Task<ActionResult<StratusResponse<double>>> GetAvgDiskSpaceUsagePercentage(string instance, string timeFilter = "month")
+        {
+            try
+            {
+                var avgDiskSpaceUsageResponse = new StratusResponse<double>();
+
+                avgDiskSpaceUsageResponse.Data = await _collectorService.GetAvgDiskSpaceUsagePercentage(instance, timeFilter);
+
+                return Ok(avgDiskSpaceUsageResponse);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
 
         [HttpGet("GetTotalMemorySizeInGB")]
         public async Task<ActionResult<StratusResponse<double>>> GetTotalMemorySizeInGB(string instance)
@@ -119,7 +151,6 @@ namespace StratusApp.Controllers
             }
         }
 
-        //todo : the timefilter structure from UI is : "month", "year", etc.. we should convert it as well.
         [HttpGet("GetAvgFreeMemorySizeInGB")]
         public async Task<ActionResult<StratusResponse<double>>> GetAvgFreeMemorySizeInGB(string instance, string timeFilter = "month")
         {
@@ -130,6 +161,40 @@ namespace StratusApp.Controllers
                 freeMemorySizeResponse.Data = await _collectorService.GetAvgFreeMemorySizeInGB(instance, timeFilter);
 
                 return Ok(freeMemorySizeResponse);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpGet("GetAvgMemorySizeUsageInGB")]
+        public async Task<ActionResult<StratusResponse<double>>> GetAvgMemorySizeUsageInGB(string instance, string timeFilter = "month")
+        {
+            try
+            {
+                var avgMemorySizeUsageResponse = new StratusResponse<double>();
+
+                avgMemorySizeUsageResponse.Data = await _collectorService.GetAvgMemorySizeUsageInGB(instance, timeFilter);
+
+                return Ok(avgMemorySizeUsageResponse);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpGet("GetAvgMemorySizeUsagePercentage")]
+        public async Task<ActionResult<StratusResponse<double>>> GetAvgMemorySizeUsagePercentage(string instance, string timeFilter = "month")
+        {
+            try
+            {
+                var avgDiskSpaceUsageResponse = new StratusResponse<double>();
+
+                avgDiskSpaceUsageResponse.Data = await _collectorService.GetAvgMemorySizeUsagePercentage(instance, timeFilter);
+
+                return Ok(avgDiskSpaceUsageResponse);
             }
             catch (Exception ex)
             {

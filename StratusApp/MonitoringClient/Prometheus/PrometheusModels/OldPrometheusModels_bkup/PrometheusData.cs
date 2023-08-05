@@ -1,5 +1,4 @@
-﻿using MonitoringClient.Prometheus.PrometheusModels.SingleResultModels;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,7 +6,7 @@ using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
-namespace MonitoringClient.Prometheus.PrometheusModels.GeneralResponseModels
+namespace MonitoringClient.Prometheus.PrometheusModels.OldPrometheusModels_bkup
 {
     public class PrometheusData
     {
@@ -15,7 +14,6 @@ namespace MonitoringClient.Prometheus.PrometheusModels.GeneralResponseModels
         public string ResultType { get; set; }
 
         [JsonProperty("result")]
-        public List<PrometheusSingleResult>? Result { get; set; }
-        //public List<PrometheusSingleResult>? Result { get; set; }
+        public List<PrometheusResult>? Result { get; set; }
     }
 }

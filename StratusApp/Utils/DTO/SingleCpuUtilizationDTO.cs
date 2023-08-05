@@ -8,7 +8,7 @@ namespace Utils.DTO
 {
     public class SingleCpuUtilizationDTO
     {
-        public int CpuIdx { get; set; }
+        public int CpuNo { get; set; }
 
         public double UtilizationPercentage { get; set; }
         public bool IsFreeSpaceValue { get; set; } = false;
@@ -16,7 +16,7 @@ namespace Utils.DTO
 
         public override string ToString()
         {
-            return IsFreeSpaceValue == true ? "Unused" : "CPU " + CpuIdx.ToString();
+            return IsFreeSpaceValue == true ? "Unused" : "CPU " + CpuNo.ToString();
         }
     }
 }

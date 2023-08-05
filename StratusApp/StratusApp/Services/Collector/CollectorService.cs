@@ -3,7 +3,7 @@ using MonitoringClient.Prometheus;
 using MonitoringClient.Prometheus.Enums;
 using MonitoringClient.Prometheus.PrometheusApi;
 using MonitoringClient.Prometheus.PrometheusModels;
-using MonitoringClient.Prometheus.PrometheusModels.GeneralResponseModels;
+using MonitoringClient.Prometheus.PrometheusModels.OldPrometheusModels_bkup;
 using MonitoringClient.Prometheus.PrometheusModels.SingleResultModels;
 using System;
 using System.Reflection;
@@ -26,7 +26,7 @@ namespace StratusApp.Services.Collector
 
         public async Task<List<CpuUsageData>> GetAvgCpuUsageUtilizationOverTime(string instanceAddr, string timePeriodStr)
         {
-            List<CpuUsageData> cpuUsageDataList = new List<CpuUsageData>();
+            List<CpuUsageData> cpuUsageDataList; // = new List<CpuUsageData>();
             PrometheusQueryParams queryParams = new PrometheusQueryParams();
             QueryOverTimePeriod overallTimePeriod;
             QueryOverTimePeriod queryStep;
@@ -34,29 +34,7 @@ namespace StratusApp.Services.Collector
             DateTime startTime;
 
             overallTimePeriod = _collectorUtils.ParseTimePeriodStrToTimePeriodEnum(timePeriodStr);
-
-            //export to method inCollectorUtils.
-            switch (overallTimePeriod)
-            {
-                case QueryOverTimePeriod.Day:
-                   startTime = endTime.AddDays(-1);
-                   queryStep = QueryOverTimePeriod.Hour;
-                   break;
-
-                case QueryOverTimePeriod.Year:
-                   startTime = endTime.AddYears(-1);
-                   queryStep = QueryOverTimePeriod.Month;
-                   break;
-
-                case QueryOverTimePeriod.Month:
-                case QueryOverTimePeriod.None:
-                    startTime = endTime.AddMonths(-1);
-                    queryStep = QueryOverTimePeriod.Day;
-                    break;
-
-                default:
-                    throw new Exception("Query overall time isn't supported.");
-            }
+            (startTime, queryStep) = _collectorUtils.BuildTimeRangeQueryByTimePeriod(overallTimePeriod, endTime);
 
             // Fill queryParams
             queryParams.InstanceAddr = instanceAddr;
@@ -67,8 +45,9 @@ namespace StratusApp.Services.Collector
             queryParams.EndTime = endTime;
             queryParams.QueryStep = queryStep;
 
-            var result = _prometheusClient.ExecutePromQLQuery(queryParams);
-
+            var result = await _prometheusClient.ExecutePromQLQuery<EmptyMetricAndValuesList>(queryParams);
+            cpuUsageDataList = _collectorUtils.FillCpuUsageDataList(result.TimestampsAndValues);
+            
             return cpuUsageDataList;
 
         }
@@ -84,11 +63,14 @@ namespace StratusApp.Services.Collector
                 QueryType = PrometheusQueryType.GetAvgCpuUsageUtilization
             };
 
-            var promResp = await _prometheusClient.ExecutePromQLQuery(queryParams);
 
-            double result = double.Parse(promResp.Data.Result.FirstOrDefault()?.TimestampAndValue[1]);
-            return result;
+            var promResult = 
+                await _prometheusClient.ExecutePromQLQuery<EmptyMetricAndSingleValue>(queryParams);
             
+
+            double result = double.Parse(promResult.TimestampAndValue[1]);
+            return result;
+
         }
 
         public async Task<List<SingleCpuUtilizationDTO>?> GetAvgCpuUtilizationByCpu(string instance, string timeFilter)
@@ -102,13 +84,19 @@ namespace StratusApp.Services.Collector
                 QueryType = PrometheusQueryType.GetAvgCpuUtilizationByCpu
             };
 
-            var promResp = await _prometheusClient.ExecutePromQLQuery(queryParams);
+            var promResult = 
+                await _prometheusClient.ExecutePromQLQuery<List<CpuMetricAndSingleValue>>(queryParams);
 
-            int currCpuIdx = 1;
-            foreach (PrometheusSingleResult cpuMetric in promResp.Data.Result)
+
+            foreach (CpuMetricAndSingleValue currCpu in promResult)
             {
-                double result = double.Parse(cpuMetric.TimestampAndValue[1]);
-                cpusUtilizationDTOs.Add(new SingleCpuUtilizationDTO { CpuIdx = currCpuIdx++, UtilizationPercentage = result });
+                int cpuIdx = int.Parse(currCpu.Metric.Cpu);
+                double cpuUtilizationPercentage = double.Parse(currCpu.TimestampsAndValues[1]);
+                cpusUtilizationDTOs.Add(new SingleCpuUtilizationDTO
+                {
+                    CpuNo = ++cpuIdx,
+                    UtilizationPercentage = cpuUtilizationPercentage
+                });
             }
 
             if (cpusUtilizationDTOs.Count > 0)
@@ -124,7 +112,7 @@ namespace StratusApp.Services.Collector
             int totalCpuCapacity = cpusUtilizationDTOs.Count * 100;
             double totalCpuUsage = 0;
 
-            foreach(SingleCpuUtilizationDTO singleCpuUtilization in cpusUtilizationDTOs )
+            foreach(SingleCpuUtilizationDTO singleCpuUtilization in cpusUtilizationDTOs)
             {
                 singleCpuUtilization.UtilizationPercentage = singleCpuUtilization.UtilizationPercentage / totalCpuCapacity * 100;
                 singleCpuUtilization.UtilizationPercentage = Math.Round(singleCpuUtilization.UtilizationPercentage, 3);
@@ -133,7 +121,7 @@ namespace StratusApp.Services.Collector
 
             cpusUtilizationDTOs.Add(new SingleCpuUtilizationDTO()
             {
-                CpuIdx = cpusUtilizationDTOs.Count + 1,
+                CpuNo = cpusUtilizationDTOs.Count + 1,
                 UtilizationPercentage = 100 - totalCpuUsage,
                 IsFreeSpaceValue = true,
             });
@@ -149,9 +137,10 @@ namespace StratusApp.Services.Collector
                 QueryType = PrometheusQueryType.GetAvgFreeDiskSpaceInGB
             };
 
-            var promResp = await _prometheusClient.ExecutePromQLQuery(queryParams);
+            var promResult = 
+                await _prometheusClient.ExecutePromQLQuery<EmptyMetricAndSingleValue>(queryParams);
 
-            double result = double.Parse(promResp.Data.Result.FirstOrDefault()?.TimestampAndValue[1]);
+            double result = double.Parse(promResult.TimestampAndValue[1]);
             return result;
         }
 
@@ -164,9 +153,10 @@ namespace StratusApp.Services.Collector
                 QueryType = PrometheusQueryType.GetAvgFreeMemorySizeInGB
             };
 
-            var promResp = await _prometheusClient.ExecutePromQLQuery(queryParams);
+            var promResult = 
+                await _prometheusClient.ExecutePromQLQuery<EmptyMetricAndSingleValue>(queryParams);
 
-            double result = double.Parse(promResp.Data.Result.FirstOrDefault()?.TimestampAndValue[1]);
+            double result = double.Parse(promResult.TimestampAndValue[1]);
             return result;
         }
 
@@ -182,7 +172,9 @@ namespace StratusApp.Services.Collector
                 InstanceAddr = instance
             };
 
-            var result = await _prometheusClient.ExecutePromQLQuery(queryParams);
+            var result = 
+                await _prometheusClient.ExecutePromQLQuery<EmptyMetricAndSingleValue>(queryParams);
+
             //return result.Data.Result[0].TimestampAndValue[0];
             return 0;
         }
@@ -195,8 +187,10 @@ namespace StratusApp.Services.Collector
                 QueryType = PrometheusQueryType.GetTotalDiskSizeInGB
             };
 
-            PrometheusResponse promResp = await _prometheusClient.ExecutePromQLQuery(queryParams);
-            double result = double.Parse(promResp.Data.Result.FirstOrDefault()?.TimestampAndValue[1]);
+            var promResult = 
+                await _prometheusClient.ExecutePromQLQuery<EmptyMetricAndSingleValue>(queryParams);
+
+            double result = double.Parse(promResult.TimestampAndValue[1]);
             return result;
         }
 
@@ -208,9 +202,86 @@ namespace StratusApp.Services.Collector
                 QueryType = PrometheusQueryType.GetTotalMemorySizeInGB
             };
 
-            PrometheusResponse promResp = await _prometheusClient.ExecutePromQLQuery(queryParams);
-            double result = double.Parse(promResp.Data.Result.FirstOrDefault()?.TimestampAndValue[1]);
+            var promResult = 
+                await _prometheusClient.ExecutePromQLQuery<EmptyMetricAndSingleValue>(queryParams);
+            double result = double.Parse(promResult.TimestampAndValue[1]);
             return result;
+        }
+
+        public async Task<double> GetMaxCpuUsageUtilization(string instance, string timeFilter)
+        {
+            double avgCpuUsageUtilization;
+
+            PrometheusQueryParams queryParams = new PrometheusQueryParams()
+            {
+                InstanceAddr = instance,
+                OverTimeFilter = _collectorUtils.ParseTimePeriodStrToTimePeriodEnum(timeFilter),
+                QueryType = PrometheusQueryType.GetMaxCpuUsageUtilization
+            };
+
+            var promResult =
+                await _prometheusClient.ExecutePromQLQuery<EmptyMetricAndSingleValue>(queryParams);
+
+            double result = double.Parse(promResult.TimestampAndValue[1]);
+            return result;
+        }
+
+        public async Task<double> GetAvgDiskSpaceUsageInGB(string instance, string timeFilter)
+        {
+            double avgDiskSpaceUsage;
+
+            PrometheusQueryParams queryParams = new PrometheusQueryParams()
+            {
+                InstanceAddr = instance,
+                OverTimeFilter = _collectorUtils.ParseTimePeriodStrToTimePeriodEnum(timeFilter),
+                QueryType = PrometheusQueryType.GetAvgDiskSpaceUsageInGB
+            };
+
+            var promResult = await _prometheusClient.ExecutePromQLQuery<EmptyMetricAndSingleValue>(queryParams);
+
+            avgDiskSpaceUsage = double.Parse(promResult.TimestampAndValue[1]);
+
+            return avgDiskSpaceUsage;
+        }
+
+        public async Task<double> GetAvgMemorySizeUsageInGB(string instance, string timeFilter)
+        {
+            double avgMemoryUsage;
+
+            PrometheusQueryParams queryParams = new PrometheusQueryParams()
+            {
+                InstanceAddr = instance,
+                OverTimeFilter = _collectorUtils.ParseTimePeriodStrToTimePeriodEnum(timeFilter),
+                QueryType = PrometheusQueryType.GetAvgMemorySizeUsageInGB
+            };
+
+            var promResult = await _prometheusClient.ExecutePromQLQuery<EmptyMetricAndSingleValue>(queryParams);
+
+            avgMemoryUsage = double.Parse(promResult.TimestampAndValue[1]);
+
+            return avgMemoryUsage;
+        }
+
+        public async Task<double> GetAvgDiskSpaceUsagePercentage(string instance, string timeFilter)
+        {
+            double averageDiskSpaceUsagePercentage;
+
+            double avgUsage = await GetAvgDiskSpaceUsageInGB(instance, timeFilter);
+            double totalSize = await GetTotalDiskSizeInGB(instance);
+
+            averageDiskSpaceUsagePercentage = (avgUsage / totalSize) * 100;
+            return averageDiskSpaceUsagePercentage;
+        }
+
+        public async Task<double> GetAvgMemorySizeUsagePercentage(string instance, string timeFilter)
+        {
+            double averageMemoryUsagePercentage;
+
+            double avgUsage = await GetAvgMemorySizeUsageInGB(instance, timeFilter);
+            double totalSize = await GetTotalMemorySizeInGB(instance);
+
+            averageMemoryUsagePercentage = (avgUsage / totalSize) * 100;
+            return averageMemoryUsagePercentage;
         }
     }
 }

@@ -6,13 +6,13 @@ using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
-namespace MonitoringClient.Prometheus.PrometheusModels.SingleResultModels
+namespace MonitoringClient.Prometheus.PrometheusModels.OldPrometheusModels_bkup
 {
-    public class PrometheusSingleResult
+    public class PrometheusResult
     {
         [JsonProperty("metric"), Newtonsoft.Json.JsonIgnore]
         public object? Metric { get; set; }
-        
+
         [JsonProperty("value")]
         public List<string>? TimestampAndValue { get; set; }
 

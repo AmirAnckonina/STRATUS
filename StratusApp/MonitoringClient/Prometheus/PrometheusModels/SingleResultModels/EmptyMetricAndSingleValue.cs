@@ -1,4 +1,5 @@
-﻿using MonitoringClient.Prometheus.PrometheusModels.MetricModels;
+﻿using MonitoringClient.Prometheus.PrometheusModels.OldPrometheusModels_bkup;
+using MonitoringClient.Prometheus.PrometheusModels.MetricModels;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -8,10 +9,10 @@ using System.Threading.Tasks;
 
 namespace MonitoringClient.Prometheus.PrometheusModels.SingleResultModels
 {
-    internal class VectorSingleResult
+    public class EmptyMetricAndSingleValue //: BasePrometheusResult
     {
-        [JsonProperty("metric"), Newtonsoft.Json.JsonIgnore]
-        public PrometheusMetric? Metric { get; set; }
+        [JsonProperty("metric")]
+        public EmptyMetric? Metric { get; set; }
 
         [JsonProperty("value")]
         public List<string>? TimestampAndValue { get; set; }

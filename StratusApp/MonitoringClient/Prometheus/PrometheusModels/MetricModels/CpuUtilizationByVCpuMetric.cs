@@ -3,13 +3,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace MonitoringClient.Prometheus.PrometheusModels.MetricModels
 {
-    public abstract class PrometheusMetric
+    public class CpuUtilizationByVCpuMetric
     {
-        //public object? MetricObj { get; set; } 
+        [JsonProperty("cpu")]
+        public string? Cpu { get; set; } 
     }
 }
