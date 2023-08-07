@@ -1,7 +1,11 @@
-﻿using Microsoft.AspNetCore.Builder;
+﻿using CloudApiClient.AwsServices.AwsUtils;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
+using Microsoft.AspNetCore.Session;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.OpenApi.Writers;
 using MongoDB.Driver;
 using StratusApp.Data;
@@ -25,6 +29,18 @@ namespace StratusApp
 
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddDistributedMemoryCache();
+            services.AddHttpContextAccessor();
+            services.AddSession(options =>
+            {
+                options.IdleTimeout = TimeSpan.FromMinutes(30); // Set the session timeout as desired
+                options.Cookie.HttpOnly = true;
+                options.Cookie.IsEssential = true;
+                options.Cookie.Name = "Stratus";
+                options.Cookie.SameSite = SameSiteMode.Lax;
+            });
+            services.AddTransient<EC2ClientFactory>();
+
             services.Configure<MyDatabaseSettings>(ConfigRoot.GetSection(nameof(MyDatabaseSettings)));
 
             services.AddSingleton<MyDatabaseSettings>(sp =>
@@ -62,6 +78,7 @@ namespace StratusApp
             services.AddSingleton<RecommendationsService>();
 
             //services.AddRazorPages();
+
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -77,7 +94,11 @@ namespace StratusApp
                 app.UseSwagger();
                 app.UseSwaggerUI();
             }
-
+            app.UseSession();
+            app.UseCookiePolicy(new CookiePolicyOptions
+            {
+                MinimumSameSitePolicy = SameSiteMode.Lax, Secure = CookieSecurePolicy.Always // You can set this according to your requirements
+            });
             app.UseHttpsRedirection();
             app.UseStaticFiles();
             app.UseRouting();

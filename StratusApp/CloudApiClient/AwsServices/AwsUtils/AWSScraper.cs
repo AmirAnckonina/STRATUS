@@ -24,7 +24,7 @@ namespace CloudApiClient.AwsServices.AwsUtils
         public AWSScraper()
         {
             _httpClient = new HttpClient();
-            _driver = new ChromeDriver();
+            //_driver = new ChromeDriver();
         }
 
         public async Task<List<AlternativeInstance>> ScrapeInstanceDetails()
