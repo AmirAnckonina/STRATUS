@@ -9,6 +9,7 @@ using CloudApiClient.AwsServices.AwsUtils;
 using StratusApp.Data;
 using Utils.DTO;
 using StratusApp.Services;
+using Utils.Enums;
 
 namespace StratusApp.Controllers
 {
@@ -125,6 +126,24 @@ namespace StratusApp.Controllers
             var instanceBasicDetailsResponse = new StratusResponse<List<AlternativeInstance>>();
 
             instanceBasicDetailsResponse.Data = await _awsService.ScrapeInstancesDetailsIntoDB();
+
+            return Ok(instanceBasicDetailsResponse);
+        }
+        [HttpGet("StoreAWSCredentialsInSession")]
+        public async Task<ActionResult<StratusResponse<bool>>> StoreAWSCredentialsInSession(string accessKey, string secretKey)
+        {
+            var instanceBasicDetailsResponse = new StratusResponse<bool>();
+
+            instanceBasicDetailsResponse.Data = _awsService.StoreAWSCredentialsInSession(accessKey, secretKey);
+
+            return Ok(instanceBasicDetailsResponse);
+        }
+        [HttpGet("GetAWSCredentialsFromSession")]
+        public async Task<ActionResult<StratusResponse<Dictionary<eAWSCredentials, string>>>> GetAWSCredentialsFromSession()
+        {
+            var instanceBasicDetailsResponse = new StratusResponse<Dictionary<eAWSCredentials, string>>();
+
+            instanceBasicDetailsResponse.Data = _awsService.GetAWSCredentialsFromSession();
 
             return Ok(instanceBasicDetailsResponse);
         }

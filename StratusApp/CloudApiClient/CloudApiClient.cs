@@ -8,6 +8,7 @@ using CloudApiClient.AwsServices;
 using Utils.DTO;
 using CloudApiClient.AwsServices.AwsUtils;
 using CloudApiClient.AwsServices.AwsUtils;
+using Utils.Enums;
 
 namespace CloudApiClient
 {
@@ -24,14 +25,14 @@ namespace CloudApiClient
 
         public RegionEndpoint Region { get => _region; set => _region = value; }
 
-        public CloudApiClient()
+        public CloudApiClient(EC2ClientFactory ec2ClientFactory)
         {
             //_credentials = new BasicAWSCredentials();
             _region = RegionEndpoint.USEast1;
             //_cloudWatchClient = new AmazonCloudWatchClient(_credentials, RegionEndpoint.USEast2);
             //_ec2Client = new AmazonEC2Client(_credentials, _region);
             _pricingService = new PricingService(_credentials);
-            _ec2Service = new EC2Service(_credentials, _region);
+            _ec2Service = new EC2Service(_credentials, _region, ec2ClientFactory);
             _cloudWatchService = new CloudWatchService(_credentials, _region);
             _costExplorerService = new CostExplorerService(_credentials, RegionEndpoint.USEast2);
             _awsScraper = new AWSScraper();
@@ -148,7 +149,14 @@ namespace CloudApiClient
         {
             return await _pricingService.GetOptionalVms(instanceFilters, maxResults, currentInstanceDetails);
         }
-
+        public bool StoreAWSCredentialsInSession(string accessKey, string secretKey)
+        {
+           return _ec2Service.StoreAWSCredentialsInSession(accessKey, secretKey);
+        }
+        public Dictionary<eAWSCredentials, string> GetAWSCredentialsFromSession()
+        {
+            return _ec2Service.GetAWSCredentialsFromSession();
+        }
         public async Task<string> GetInstanceOperatingSystem(string instanceId)
         {
             return await _ec2Service.GetInstanceOperatingSystem(instanceId);

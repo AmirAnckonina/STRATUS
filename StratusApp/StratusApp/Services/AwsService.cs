@@ -1,9 +1,11 @@
 using Amazon.CloudWatch.Model;
 using Amazon.EC2.Model;
+using CloudApiClient.AwsServices.AwsUtils;
 using StratusApp.Models;
 using StratusApp.Services.MongoDBServices;
 using System.Collections.Generic;
 using Utils.DTO;
+using Utils.Enums;
 using AwsClient = CloudApiClient.CloudApiClient;
 
 namespace StratusApp.Services
@@ -14,12 +16,19 @@ namespace StratusApp.Services
         private readonly AwsClient _cloudApiClient;
         private const string INSTANCES_COLLECTION = "Instances";
 
-        public AwsService(MongoDBService mongoDatabase)
+        public AwsService(MongoDBService mongoDatabase, EC2ClientFactory ec2ClientFactory)
         {
             _mongoDBService = mongoDatabase;
-            _cloudApiClient = new AwsClient();
+            _cloudApiClient = new AwsClient(ec2ClientFactory);
         }
-
+        internal bool StoreAWSCredentialsInSession(string accessKey, string secretKey)
+        {
+            return _cloudApiClient.StoreAWSCredentialsInSession(accessKey, secretKey);
+        }
+        internal Dictionary<eAWSCredentials, string> GetAWSCredentialsFromSession()
+        {
+            return _cloudApiClient.GetAWSCredentialsFromSession();
+        }
         internal async Task<double> GetCurrentInstanceVolumesUsage(string instanceId)
         {
             return await _cloudApiClient.GetCurrentInstanceVolumesUsage(instanceId);

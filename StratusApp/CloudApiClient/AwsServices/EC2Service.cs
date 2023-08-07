@@ -8,18 +8,32 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
+using Newtonsoft.Json;
+using System.Net.Sockets;
+using CloudApiClient.AwsServices.AwsUtils;
+using Utils.Enums;
 
 namespace CloudApiClient.AwsServices
 {
     public class EC2Service
     {
         private AmazonEC2Client _ec2Client;
+        private readonly EC2ClientFactory _ec2ClientFactory;
 
-        public EC2Service(AWSCredentials credentials, RegionEndpoint region)
-        { 
-            _ec2Client = new AmazonEC2Client(credentials, region);
+        public EC2Service(AWSCredentials credentials, RegionEndpoint region, EC2ClientFactory eC2ClientFactory)
+        {
+            _ec2Client = new AmazonEC2Client(credentials);
+            _ec2ClientFactory = eC2ClientFactory;
         }
-
+        public bool StoreAWSCredentialsInSession(string accessKey, string secretKey)
+        {
+            return _ec2ClientFactory.StoreAWSCredentialsInSession(accessKey, secretKey);
+        }
+        public Dictionary<eAWSCredentials, string> GetAWSCredentialsFromSession()
+        {
+            return _ec2ClientFactory.GetAWSCredentialsFromSession();
+        }
         public async Task<string> GetInstanceOperatingSystem(string instanceId)
         {
             var request = new DescribeInstancesRequest
