@@ -67,7 +67,7 @@ namespace CloudApiClient.AwsServices
             //    return 0;
             //}
 
-            // todo ==> need to check use coseExplorer api without bankrupt
+            // 
 
             Random random = new Random();
             return new Price() { Value = random.Next(10, 501), CurrencyType = Utils.Enums.eCurrencyType.Dollar };

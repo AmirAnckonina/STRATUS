@@ -27,7 +27,7 @@ namespace CloudApiClient
 
         public CloudApiClient(EC2ClientFactory ec2ClientFactory)
         {
-            //_credentials = new BasicAWSCredentials();
+            _credentials = new BasicAWSCredentials("", "");
             _region = RegionEndpoint.USEast1;
             //_cloudWatchClient = new AmazonCloudWatchClient(_credentials, RegionEndpoint.USEast2);
             //_ec2Client = new AmazonEC2Client(_credentials, _region);
@@ -67,11 +67,13 @@ namespace CloudApiClient
                             {
                                 OperatingSystem = instance.PlatformDetails,
                                 VCPU = instance.CpuOptions.CoreCount,
-                                Storage = new Utils.DTO.Storage()
+                                Memory = new Utils.DTO.Memory()
                                 { 
                                     Value = await GetInstanceTotalVolumesSize(instance.InstanceId),
                                     Unit = Utils.Enums.eMemoryUnit.GB
                                 },
+                                Storage = new Utils.DTO.Storage() { AsString = instance.RootDeviceType.Value.ToUpper() },
+
                             },
                             InstanceId = instance.InstanceId,
                             Type = instance.InstanceType.ToString(),
