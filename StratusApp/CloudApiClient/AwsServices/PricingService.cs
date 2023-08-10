@@ -52,16 +52,15 @@ namespace CloudApiClient.AwsServices
 
                     Product product = _pricingUtils.BuildProductFromPriceListString(rawPriceListItem);
                     PricePlan pricePlan = _pricingUtils.BuildPricePlanFromPriceListString(rawPriceListItem, product.Sku);
-                    //TODo: Add the current instance details to filter the potential instances list.
                     var singlePotentialInstance = new AwsInstanceDetails()
                     {
                         Specifications = new InstanceSpecifications()
                         {
-                            Storage = new Utils.DTO.Storage(),
+                            Storage = new Utils.DTO.Storage() {  AsString = product.Attributes.storage}, //TODO
                             OperatingSystem = product.Attributes.operatingSystem,
                             VCPU = int.Parse(product.Attributes.vcpu),
                             Memory = Memory.Parse(product.Attributes.memory),
-                            Price = new Price() { Value = (double)pricePlan.priceInUSD.Value, CurrencyType = Utils.Enums.eCurrencyType.Dollar, PeriodTime = Utils.Enums.ePeriodTime.Hour },
+                            Price = Price.Parse(pricePlan.description, Utils.Enums.ePeriodTime.Hour)//new Price() { Value = (double)pricePlan.priceInUSD.Value, CurrencyType = Utils.Enums.eCurrencyType.Dollar, PeriodTime = Utils.Enums.ePeriodTime.Hour },
                         },
                         Type = product.Attributes.instanceType,
                         InstanceId = product.Sku,

@@ -22,7 +22,7 @@ const Page = () => {
   const [machines, setMachines] = useState([]);
 
   useEffect(() => {
-    axios.get('https://localhost:7094/GetMoreFittedInstancesFromAWS?instanceId=i-03a4336e41141f20f')
+    axios.get('https://localhost:7094/GetRecommendationsInstances')
     .then(response => {
       const data = response.data.data;
       console.log("custom: ", data);
@@ -109,7 +109,7 @@ const endIndex = startIndex + 6;
           <CustomMachinesSearch />
           <Grid container spacing={3}>
               {machines.slice(startIndex, endIndex).map((machine) => (
-                <Grid xs={12} md={6} lg={4} key={machine?.id}>
+                <Grid xs={12} md={6} lg={4}>
                   {machine ? (
                     <CustomMachineCard machine={machine} />
                   ) : (

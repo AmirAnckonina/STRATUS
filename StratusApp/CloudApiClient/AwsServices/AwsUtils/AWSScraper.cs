@@ -138,7 +138,7 @@ namespace CloudApiClient.AwsServices.AwsUtils
                             Price = Price.Parse(pricePerHour, Utils.Enums.ePeriodTime.Hour),
                             VCPU = int.Parse(vCPU),
                             Memory = Memory.Parse(memory),
-                            Storage = new Storage() { }, //TODO
+                            Storage = new Storage() { AsString = storage }, //TODO
                             OperatingSystem = operatingSystemName,
                         },
                         InstanceType = instanceType,

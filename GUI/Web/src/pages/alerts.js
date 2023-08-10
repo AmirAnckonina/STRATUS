@@ -80,9 +80,9 @@ const Page = () => {
   const handleConfigFormOpen = () => {
     setConfigFormOpen(true);
     // Populate the form fields with previous configuration values
-    setCpuThreshold(prevCpuThreshold);
-    setMemoryThreshold(prevMemoryThreshold);
-    setDiskThreshold(prevDiskThreshold);
+    setCpuThreshold(prevCpuThreshold ? prevCpuThreshold : 70);
+    setMemoryThreshold(prevMemoryThreshold ? prevMemoryThreshold : 70);
+    setDiskThreshold(prevDiskThreshold ? prevDiskThreshold : 70);
     setIntervalPeriod(prevIntervalValue.period); // Set the interval period
     setIntervalPeriodValue(prevIntervalValue.value.toString()); // Set the interval value as a string
   };
