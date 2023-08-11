@@ -158,7 +158,7 @@ export const OverviewCpuGraph = (props) => {
 
 
   useEffect(() => {
-    axios.get('https://localhost:7094/GetUserInstanceCpuUsageDataOverTime?instanceId=' + selectedMachine + '&filterTime=' + filter)
+    axios.get('https://localhost:7094/GetAvgCpuUsageUtilizationOverTime?instance=' + selectedMachine + '&timeFilter=' + filter)
     .then(response => {
       const data = response.data.data;
       console.log('over time', data);
@@ -178,7 +178,7 @@ export const OverviewCpuGraph = (props) => {
     console.log('machine: ', selectedMachine);
     setFilter(newFilter);
 
-    axios.get('https://localhost:7094/GetUserInstanceCpuUsageDataOverTime?instanceId=' + selectedMachine + '&filterTime=' + newFilter)
+    axios.get('https://localhost:7094/GetAvgCpuUsageUtilizationOverTime?instance=' + selectedMachine + '&timeFilter=' + newFilter)
     .then(response => {
       const data = response.data.data;
       console.log('over time', data);
@@ -214,7 +214,7 @@ export const OverviewCpuGraph = (props) => {
             Sync
           </Button>
         )}
-        title="CPU Maximum Usage Over Time"
+        title="CPU Average Usage Over Time"
       />
       <CardContent>
       <FormControl component="fieldset">

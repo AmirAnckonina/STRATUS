@@ -31,17 +31,17 @@ namespace MonitoringClient.Prometheus.PrometheusApi
             switch (concreteResultType)
             {
                 case PrometheusConcreteResultType.EmptyMetricAndSingleValue:
-                    resultTokenStr = resultToken.FirstOrDefault().ToString();
+                    resultTokenStr = resultToken.FirstOrDefault()?.ToString();
                     baseConverter = new BasePrometheusResultConverter(PrometheusConcreteResultType.EmptyMetricAndSingleValue);
                     break;
 
                 case PrometheusConcreteResultType.EmptyMetricAndValuesList:
-                    resultTokenStr = resultToken.FirstOrDefault().ToString();
+                    resultTokenStr = resultToken.FirstOrDefault()?.ToString();
                     baseConverter = new BasePrometheusResultConverter(PrometheusConcreteResultType.EmptyMetricAndValuesList);
                     break;
 
                 case PrometheusConcreteResultType.ListOfCpuMetricAndSingleValue:
-                    resultTokenStr = resultToken.ToString();
+                    resultTokenStr = resultToken.FirstOrDefault()?.ToString();
                     baseConverter = new BasePrometheusResultConverter(PrometheusConcreteResultType.ListOfCpuMetricAndSingleValue);
                     break;
 
@@ -54,6 +54,7 @@ namespace MonitoringClient.Prometheus.PrometheusApi
             {
                 EmptyMetricAndSingleValueResult a = JsonConvert.DeserializeObject<EmptyMetricAndSingleValueResult>(resultTokenStr);
             }*/
+
 
             T? promResult = JsonConvert.DeserializeObject<T>(resultTokenStr, baseConverter);
 

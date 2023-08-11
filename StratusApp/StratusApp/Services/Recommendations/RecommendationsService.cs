@@ -38,7 +38,7 @@ namespace StratusApp.Services.Recommendations
                 // maybe get the usage property instead of send request to promethiues
                 double avgCpuUsageUtilization = _collectorService.GetAvgCpuUsageUtilization(instance.InstanceAddress, INTERVAL_FILTER).Result;
                 double avgCpuUsageUtilizationPercentage = avgCpuUsageUtilization / 100;
-                avgCpuUsageUtilizationPercentage = avgCpuUsageUtilizationPercentage == 0 ? 0 : avgCpuUsageUtilizationPercentage;
+                avgCpuUsageUtilizationPercentage = avgCpuUsageUtilizationPercentage == 0 ? instance.Specifications.VCPU : avgCpuUsageUtilizationPercentage;
 
                 return (int)Math.Ceiling(instance.Specifications.VCPU * avgCpuUsageUtilizationPercentage);
             };
@@ -51,7 +51,7 @@ namespace StratusApp.Services.Recommendations
                 // maybe get the usage property instead of send request to promethiues
                 double avgFreeMemorySizeInGB = _collectorService.GetAvgFreeMemorySizeInGB(instance.InstanceAddress, INTERVAL_FILTER).Result;
                 double avgFreeMemorySizeInGBPercentage = avgFreeMemorySizeInGB / 100;
-                avgFreeMemorySizeInGBPercentage = avgFreeMemorySizeInGBPercentage == 0 ? 0 : avgFreeMemorySizeInGBPercentage;
+                avgFreeMemorySizeInGBPercentage = avgFreeMemorySizeInGBPercentage == 0 ? instance.Specifications.Memory.Value : avgFreeMemorySizeInGBPercentage;
 
                 return Math.Ceiling(instance.Specifications.Memory.Value * avgFreeMemorySizeInGBPercentage);
             };
@@ -59,7 +59,7 @@ namespace StratusApp.Services.Recommendations
 
         public async Task<List<CustomInstances>> GetRecommendationsInstances()
         {
-            //get only user instances !
+            //TODO get only user instances !
             var userInstances = _mongoDatabase.GetCollectionAsList<AwsInstanceDetails>(eCollectionName.Instances).Result;
             List<CustomInstances> customInstances = new List<CustomInstances>();
 
