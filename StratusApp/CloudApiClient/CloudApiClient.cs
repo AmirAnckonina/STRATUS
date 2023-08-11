@@ -61,23 +61,30 @@ namespace CloudApiClient
                 {
                     if (instance != null) // filter out non-running instances if desired
                     {
+                        if (instance.PlatformDetails.Equals("Linux/UNIX"))
+                        {
+                            string[] parts = instance.PlatformDetails.Split('/');
+                             
+                            instance.PlatformDetails = parts[0];
+                        }
+                        
                         var vm = new AwsInstanceDetails
                         {
                             Specifications = new InstanceSpecifications()
                             {
                                 OperatingSystem = instance.PlatformDetails,
                                 VCPU = instance.CpuOptions.CoreCount,
-                                Memory = new Utils.DTO.Memory()
+                                Memory = new Memory()
                                 { 
                                     Value = await GetInstanceTotalVolumesSize(instance.InstanceId),
-                                    Unit = Utils.Enums.eMemoryUnit.GB
+                                    Unit = eMemoryUnit.GB
                                 },
                                 Storage = new Utils.DTO.Storage() { AsString = instance.RootDeviceType.Value.ToUpper() },
 
                             },
                             InstanceId = instance.InstanceId,
                             Type = instance.InstanceType.ToString(),
-                            InstanceAddress = instance.PrivateIpAddress.ToString(),
+                            InstanceAddress = instance.PublicIpAddress.ToString(),
                             //string.Join(", ", instance.BlockDeviceMappings.Select<InstanceBlockDeviceMapping, string>(bdm => $"{bdm.DeviceName}")).Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).ToList(),
                         };
 

@@ -23,8 +23,9 @@ namespace CloudApiClient.AwsServices
 
         public EC2Service(AWSCredentials credentials, RegionEndpoint region, EC2ClientFactory eC2ClientFactory)
         {
-            _ec2Client = new AmazonEC2Client(credentials);
+            _ec2Client = new AmazonEC2Client(credentials, region);
             _ec2ClientFactory = eC2ClientFactory;
+
         }
         public bool StoreAWSCredentialsInSession(string accessKey, string secretKey)
         {
