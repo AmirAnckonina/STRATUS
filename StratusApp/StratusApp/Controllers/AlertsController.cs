@@ -15,9 +15,10 @@ namespace StratusApp.Controllers
     {
         private readonly AlertsService _alertsService;
 
-        public AlertsController(AlertsService alertsService)
+        public AlertsController(AlertsService alertsService, EmailService emailService)
         {
             _alertsService = alertsService;
+            _alertsService.EmailService = emailService;
         }
 
         [HttpGet("GetAlerts")]

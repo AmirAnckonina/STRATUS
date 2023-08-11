@@ -19,5 +19,10 @@ namespace Utils.DTO
         public double PercentageUsage { get; set; }
 
         public AlertData() { }
+
+        public override string ToString()
+        {
+            return $"Machine: {MachineId}, Type: {Enum.GetName(typeof(eAlertType), Type)}, Creation Time: {CreationTime} Percent: {PercentageUsage}";
+        }
     }
 }

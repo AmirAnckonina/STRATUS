@@ -1,5 +1,6 @@
 ﻿using MongoDB.Bson;
 using MonitoringClient.Prometheus.PrometheusApi;
+using StratusApp.Services.Collector;
 using StratusApp.Services.MongoDBServices;
 using System.Collections.Generic;
 using System.Reflection.PortableExecutable;
@@ -11,13 +12,13 @@ namespace StratusApp.Services.Recommendations
     {
         private readonly MongoDBService _mongoDatabase;
         private readonly InstanceFilter _instanceFilters;
-        private readonly PrometheusClient _prometheusClient;
-        private const string INTERVAL_FILTER = "1m";
+        private readonly CollectorService _collectorService;
+        private const string INTERVAL_FILTER = "month";
 
-        public RecommendationsService(MongoDBService mongoDatabase)
+        public RecommendationsService(MongoDBService mongoDatabase, CollectorService collectorService)
         {
             _mongoDatabase = mongoDatabase;
-            _prometheusClient = new PrometheusClient();
+            _collectorService = collectorService;
             _instanceFilters = new InstanceFilter();
 
             InitValuesFilter();
@@ -35,8 +36,9 @@ namespace StratusApp.Services.Recommendations
             return (instance) =>
             {
                 // maybe get the usage property instead of send request to promethiues
-                double avgCpuUsageUtilization = 80;// _prometheusClient.GetAvgCpuUsageUtilization(instance.InstanceAddress, INTERVAL_FILTER).Result;
+                double avgCpuUsageUtilization = _collectorService.GetAvgCpuUsageUtilization(instance.InstanceAddress, INTERVAL_FILTER).Result;
                 double avgCpuUsageUtilizationPercentage = avgCpuUsageUtilization / 100;
+                avgCpuUsageUtilizationPercentage = avgCpuUsageUtilizationPercentage == 0 ? 0 : avgCpuUsageUtilizationPercentage;
 
                 return (int)Math.Ceiling(instance.Specifications.VCPU * avgCpuUsageUtilizationPercentage);
             };
@@ -47,8 +49,9 @@ namespace StratusApp.Services.Recommendations
             return (instance) =>
             {
                 // maybe get the usage property instead of send request to promethiues
-                double avgFreeMemorySizeInGB = 70;//_prometheusClient.GetAvgFreeMemorySizeInGB(instance.InstanceAddress, INTERVAL_FILTER).Result;
+                double avgFreeMemorySizeInGB = _collectorService.GetAvgFreeMemorySizeInGB(instance.InstanceAddress, INTERVAL_FILTER).Result;
                 double avgFreeMemorySizeInGBPercentage = avgFreeMemorySizeInGB / 100;
+                avgFreeMemorySizeInGBPercentage = avgFreeMemorySizeInGBPercentage == 0 ? 0 : avgFreeMemorySizeInGBPercentage;
 
                 return Math.Ceiling(instance.Specifications.Memory.Value * avgFreeMemorySizeInGBPercentage);
             };

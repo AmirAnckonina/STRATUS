@@ -52,9 +52,15 @@ namespace StratusApp.Services.Collector
 
             foreach (List<string> tsAndVal in timestampsAndValues)
             {
+                // Convert Unix timestamp to DateTime
+                DateTimeOffset dateTimeOffset = DateTimeOffset.FromUnixTimeSeconds(long.Parse(tsAndVal[0]));
+
+                // If you want to work with a DateTime object without the offset information
+                DateTime dateTime = dateTimeOffset.UtcDateTime;
+
                 cpuUsageDataList.Add(new CpuUsageData
                 {
-                    Date = tsAndVal[0],
+                    Date = dateTime.ToString(),
                     Usage = double.Parse(tsAndVal[1])
                 });
             }

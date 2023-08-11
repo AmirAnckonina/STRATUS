@@ -76,6 +76,7 @@ namespace StratusApp
             services.AddSingleton<IStratusService, StratusService>();
             services.AddSingleton<CollectorService>();
             services.AddSingleton<RecommendationsService>();
+            services.AddSingleton<EmailService>();
 
             //services.AddRazorPages();
 

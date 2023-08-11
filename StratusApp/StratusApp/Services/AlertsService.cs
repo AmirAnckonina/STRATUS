@@ -36,10 +36,11 @@ namespace StratusApp.Services
         private int _storagePercentageThreshold = 70;
         private double _intervalTimeToAlert = 1000 * 60;
 
-        private const string INTERVAL_FILTER = "1d";
+        private const string INTERVAL_FILTER = "day";
 
         private readonly List<AlertData> _alerts = new List<AlertData>();
 
+        public EmailService EmailService { get; internal set; }
 
         public AlertsService(MongoDBService mongoDatabase, CollectorService collectorService) 
         {
@@ -60,12 +61,11 @@ namespace StratusApp.Services
         internal async Task<List<AlertData>> GetAlertsCollection()
         {
             var result = new List<AlertData>();
+            //TODO get alerts ny user
             var alertsData =  _mongoDatabase.GetCollectionAsList<AlertData>(eCollectionName.Alerts).Result;            
 
             foreach (var alert in alertsData)
             {
-                //var alertDataToAdd = BsonSerializer.Deserialize<AlertData>(alert);
-
                 if (alert != null)
                 {
                     result.Add(alert);
@@ -87,10 +87,6 @@ namespace StratusApp.Services
 
         private void timer_Elapsed(object? sender, ElapsedEventArgs e)
         {
-            //TBD:
-            // send request to promethius
-            // processing the response
-            // update table with new data and delete records that machine id that was terminated
             string machineId = "34.125.220.240";
             //foreach user:
             //foreach user instance:
@@ -104,11 +100,20 @@ namespace StratusApp.Services
             DetectAndInsertLowUsage(machineId, avgFreeDiskSpaceInGB, eAlertType.STORAGE);
             DetectAndInsertLowUsage(machineId, avgFreeMemorySizeInGB, eAlertType.MEMORY);
 
+           
+            //Send mail to user
+            //EmailService.SendAlertsEmailAsync("omer2541996@gmail.com", _alerts);
+            //EmailService.SendAlertsEmailAsync("chen10.berger@gmail.com", _alerts);
+            //EmailService.SendAlertsEmailAsync("amir.anckonina@gmail.com", _alerts);
+            //EmailService.SendAlertsEmailAsync("hbinsky.mta@gmail.com", _alerts);
+
             InsertAlertsToDB();
         }
 
         private async void InsertAlertsToDB()
         {
+            //insert with user id
+            
             await _mongoDatabase.InsertMultipleDocuments(eCollectionName.AlertConfigurations, _alerts);
         }
 
@@ -159,6 +164,8 @@ namespace StratusApp.Services
 
         private async void InsertAlertsConfigurationsToDB(AlertsConfigurations alertsConfigurations)
         {
+            //insert for specific id
+            
             await _mongoDatabase.InsertDocument(eCollectionName.AlertConfigurations, alertsConfigurations);
         }
 
