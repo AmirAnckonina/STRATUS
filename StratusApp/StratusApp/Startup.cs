@@ -9,12 +9,12 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.OpenApi.Writers;
 using MongoDB.Driver;
 using StratusApp.Data;
-using StratusApp.Models.MongoDB;
 using StratusApp.Services;
 using StratusApp.Services.Collector;
 using StratusApp.Services.MongoDBServices;
 using StratusApp.Services.Recommendations;
 using System.Text.Json.Serialization;
+using StratusApp.Settings;
 
 namespace StratusApp
 {
@@ -41,10 +41,10 @@ namespace StratusApp
             });
             services.AddTransient<EC2ClientFactory>();
 
-            services.Configure<MyDatabaseSettings>(ConfigRoot.GetSection(nameof(MyDatabaseSettings)));
+            services.Configure<AppSettings>(ConfigRoot.GetSection(nameof(AppSettings)));
 
-            services.AddSingleton<MyDatabaseSettings>(sp =>
-              sp.GetRequiredService<IOptions<MyDatabaseSettings>>().Value);
+            services.AddSingleton<AppSettings>(sp => sp.GetRequiredService<IOptions<AppSettings>>().Value);
+
             services.AddControllers().AddJsonOptions(options =>
             {
                 options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;

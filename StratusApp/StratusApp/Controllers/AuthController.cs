@@ -8,6 +8,7 @@ using StratusApp.Services.MongoDBServices;
 using StratusApp.Services;
 using StratusApp.Services.EncryptionHelpers;
 using Utils.DTO;
+using StratusApp.Settings;
 
 namespace StratusApp.Controllers
 {
@@ -18,10 +19,10 @@ namespace StratusApp.Controllers
         private readonly AuthService _authService;
         private readonly string userDosentExists = "User doesn't exists";
 
-        public AuthController(MongoDBService mongoDatabase)
+        public AuthController(MongoDBService mongoDatabase, AppSettings appSettings)
         {
             _mongoDatabase = mongoDatabase;
-            _authService = new AuthService(mongoDatabase);
+            _authService = new AuthService(mongoDatabase, appSettings);
         }
 
         [HttpGet("RegisterToStratusService")]
