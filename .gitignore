@@ -9,8 +9,6 @@
 *.user
 *.userosscache
 *.sln.docstates
-# *.appsettings.json
-launchSettings.json
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
 
@@ -349,3 +347,7 @@ MigrationBackup/
 
 # Ionide (cross platform F# VS Code tools) working folder
 .ionide/
+
+# Settings
+/appsettings.json
+/launchSettings.json
