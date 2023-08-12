@@ -1,5 +1,4 @@
-﻿using StratusApp.Models.MongoDB;
-using MongoDB.Driver;
+﻿using MongoDB.Driver;
 using MongoDB.Bson;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -9,6 +8,7 @@ using MongoDB.Bson.Serialization;
 using Utils.DTO;
 using DTO;
 using OpenQA.Selenium;
+using StratusApp.Settings;
 
 namespace StratusApp.Services.MongoDBServices
 {
@@ -18,9 +18,9 @@ namespace StratusApp.Services.MongoDBServices
         private Dictionary<string, List<string>> _databasesAndCollections;
         private const string DB_NAME = "StratusDB";
 
-        public MongoDBService(MyDatabaseSettings mongoDbSettings) 
+        public MongoDBService(AppSettings appSettings) 
         {
-            _mongoClient = new MongoClient(mongoDbSettings.ConnectionString);
+            _mongoClient = new MongoClient(appSettings.MongoDBSettings.ConnectionString);
 
             RegisterToMapClasses();
          }

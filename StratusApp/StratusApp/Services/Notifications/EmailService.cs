@@ -3,24 +3,25 @@ using SendGrid.Helpers.Mail;
 using Microsoft.Extensions.Configuration;
 using System.Text;
 using Utils.DTO;
+using StratusApp.Settings;
 
 namespace StratusApp.Services;
 public class EmailService
 {
     private readonly IConfiguration _configuration;
     private const string STRATUS_EMAIL = "erez6356458@gmail.com";
+    private readonly string _apiKey;
 
-    public EmailService()
+    public EmailService(AppSettings appSettings)
     {
-
+        _apiKey = appSettings.EmailSettings.ApiKey;
     }
 
     public async Task SendAlertsEmailAsync(string toEmail, List<AlertData> alerts)
     {
         string subject = "STRATUS ALERT";
         
-        var apiKey = "";
-        var client = new SendGridClient(apiKey);
+        var client = new SendGridClient(_apiKey);
         var from = new EmailAddress(STRATUS_EMAIL, "Stratus");
         // TODO : get user email from DB
         var to = new EmailAddress(toEmail, "Example User");
