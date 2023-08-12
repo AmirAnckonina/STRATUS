@@ -349,5 +349,4 @@ MigrationBackup/
 .ionide/
 
 # Settings
-/appsettings.json
-/launchSettings.json
+/StratusApp/StratusApp/appsettings.json
