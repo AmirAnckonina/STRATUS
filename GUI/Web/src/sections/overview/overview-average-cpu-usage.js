@@ -30,7 +30,7 @@ export const OverviewAverageCpuUsage = (props) => {
               gutterBottom
               variant="overline"
             >
-              Average Usage
+              Average CPU Usage
             </Typography>
             <Typography variant="h4">
               {value}%
@@ -50,7 +50,7 @@ export const OverviewAverageCpuUsage = (props) => {
         </Stack>
         <Box sx={{ mt: 3 }}>
         <LinearProgress
-            value={value}
+            value={value === 'N/A' ? 0 : value}
             variant="determinate"
             sx={{
               '& .MuiLinearProgress-bar': {
@@ -58,7 +58,7 @@ export const OverviewAverageCpuUsage = (props) => {
               },
               '& .MuiLinearProgress-barColorPrimary': {
                 transition: 'none',
-                width: `${70}%`,
+                width: `${value}%`,
               },
             }}
           />

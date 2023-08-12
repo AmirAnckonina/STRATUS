@@ -31,6 +31,8 @@ namespace StratusApp.Controllers
         [HttpGet("GetAvgCpuUsageUtilization")]
         public async Task<ActionResult<StratusResponse<double>>> GetCpuUsageUtilization(string instance = "34.125.220.240", string timeFilter = "month")
         {
+            if (instance is null) return BadRequest();
+            
             var cpuUsageResponse = new StratusResponse<double>();
 
             cpuUsageResponse.Data = await _collectorService.GetAvgCpuUsageUtilization(instance, timeFilter);

@@ -1,15 +1,16 @@
 import PropTypes from 'prop-types';
 import CurrencyDollarIcon from '@heroicons/react/24/solid/CurrencyDollarIcon';
 import PlusIcon from '@heroicons/react/24/solid/PlusIcon';
-import { Avatar, Card, CardContent, Stack, SvgIcon, Typography } from '@mui/material';
+import { Avatar, Card, CardContent, Stack, SvgIcon, Typography, Box, LinearProgress } from '@mui/material';
 
-export const OverviewSumCpuUsage = (props) => {
+export const OverviewMemorySizeUsage = (props) => {
   const { value, sx } = props;
 
   return (
     <Card sx={sx}>
       <CardContent>
         <Stack
+          width="100%"
           alignItems="flex-start"
           direction="row"
           justifyContent="space-between"
@@ -20,10 +21,10 @@ export const OverviewSumCpuUsage = (props) => {
               color="text.secondary"
               variant="overline"
             >
-              Sum
+              Average Memory Usage
             </Typography>
             <Typography variant="h4">
-              {value}
+              {value}%
             </Typography>
           </Stack>
           <Avatar
@@ -38,12 +39,27 @@ export const OverviewSumCpuUsage = (props) => {
             </SvgIcon>
           </Avatar>
         </Stack>
+        <Box sx={{ mt: 3 }}>
+        <LinearProgress
+            value={value === 'N/A' ? 0 : value}
+            variant="determinate"
+            sx={{
+              '& .MuiLinearProgress-bar': {
+                backgroundColor: 'success.main',
+              },
+              '& .MuiLinearProgress-barColorPrimary': {
+                transition: 'none',
+                width: `${value}%`,
+              },
+            }}
+          />
+        </Box>
       </CardContent>
     </Card>
   );
 };
 
-OverviewSumCpuUsage.propTypes = {
+OverviewMemorySizeUsage.propTypes = {
   value: PropTypes.string,
   sx: PropTypes.object
 };

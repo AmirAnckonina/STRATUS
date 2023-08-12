@@ -43,7 +43,7 @@ export const OverviewLatestMachines = ({ onMachineSelect }) => {
 
   const handleMachineChange = (event, machine) => {
     if (event.target.checked) {
-      if(selectedMachine === null) { 
+      if(selectedMachine === null || machine.instanceAddress === selectedMachine) { 
           machine.isSelected = true;
           onMachineSelect(machine.instanceAddress);
           setSelectedMachine(machine.instanceAddress);
@@ -102,8 +102,11 @@ export const OverviewLatestMachines = ({ onMachineSelect }) => {
             <TableBody>
               {machines.map((data) => (
                 <TableRow
-                  hover
+                  
                   key={data.instanceAddress}
+                  sx={{
+                    backgroundColor: data.isSelected ? 'lightblue' : 'transparent',
+                  }}
                 >
                   <TableCell>
                   <Checkbox

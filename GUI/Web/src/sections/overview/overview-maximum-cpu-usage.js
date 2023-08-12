@@ -3,7 +3,7 @@ import ArrowDownIcon from '@heroicons/react/24/solid/ArrowDownIcon';
 import ArrowUpIcon from '@heroicons/react/24/solid/ArrowUpIcon';
 import ArrowUpRightIcon from '@heroicons/react/24/solid/ArrowUpRightIcon';
 import UsersIcon from '@heroicons/react/24/solid/UsersIcon';
-import { Avatar, Card, CardContent, Stack, SvgIcon, Typography } from '@mui/material';
+import { Avatar, Card, CardContent, Stack, SvgIcon, Typography, Box, LinearProgress} from '@mui/material';
 
 export const OverviewMaximumCpuUsage = (props) => {
   const { difference, positive = false, sx, value } = props;
@@ -12,6 +12,7 @@ export const OverviewMaximumCpuUsage = (props) => {
     <Card sx={sx}>
       <CardContent>
         <Stack
+          width="100%"
           alignItems="flex-start"
           direction="row"
           justifyContent="space-between"
@@ -22,10 +23,10 @@ export const OverviewMaximumCpuUsage = (props) => {
               color="text.secondary"
               variant="overline"
             >
-              Maximum Usage
+              Maximum CPU Usage
             </Typography>
             <Typography variant="h4">
-              {value}
+              {value}%
             </Typography>
           </Stack>
           <Avatar
@@ -40,36 +41,21 @@ export const OverviewMaximumCpuUsage = (props) => {
             </SvgIcon>
           </Avatar>
         </Stack>
-        {difference && (
-          <Stack
-            alignItems="center"
-            direction="row"
-            spacing={2}
-            sx={{ mt: 2 }}
-          >
-            <Stack
-              alignItems="center"
-              direction="row"
-              spacing={0.5}
-            >
-              <SvgIcon
-                color={positive ? 'success' : 'error'}
-                fontSize="small"
-              >
-              </SvgIcon>
-              <Typography
-                color={positive ? 'success.main' : 'error.main'}
-                variant="body2"
-              >
-              </Typography>
-            </Stack>
-            <Typography
-              color="text.secondary"
-              variant="caption"
-            >
-            </Typography>
-          </Stack>
-        )}
+          <Box sx={{ mt: 3 }}>
+        <LinearProgress
+            value={value === 'N/A' ? 0 : value}
+            variant="determinate"
+            sx={{
+              '& .MuiLinearProgress-bar': {
+                backgroundColor: 'success.main',
+              },
+              '& .MuiLinearProgress-barColorPrimary': {
+                transition: 'none',
+                width: `${value}%`,
+              },
+            }}
+          />
+        </Box>
       </CardContent>
     </Card>
   );
