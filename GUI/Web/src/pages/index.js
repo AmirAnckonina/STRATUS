@@ -2,13 +2,12 @@ import Head from 'next/head';
 import { subDays, subHours } from 'date-fns';
 import { Box, Container, Unstable_Grid2 as Grid } from '@mui/material';
 import { Layout as DashboardLayout } from 'src/layouts/dashboard/layout';
-import { OverviewMinimumCpuUsage } from 'src/sections/overview/overview-minimum-cpu-usage';
+import { OverviewAverageDiskUsage } from 'src/sections/overview/overview-average-disk-usage';
 import { OverviewLatestMachines } from 'src/sections/overview/overview-latest-machines';
-import { OverviewLatestProducts } from 'src/sections/overview/overview-latest-products';
 import { OverviewCpuGraph } from 'src/sections/overview/overview-cpu-graph';
 import { OverviewAverageCpuUsage } from 'src/sections/overview/overview-average-cpu-usage';
 import { OverviewMaximumCpuUsage } from 'src/sections/overview/overview-maximum-cpu-usage';
-import { OverviewSumCpuUsage } from 'src/sections/overview/overview-sum-cpu-usage';
+import { OverviewMemorySizeUsage } from 'src/sections/overview/overview-avergae-memory-usage';
 import { OverviewCpuUtilization } from 'src/sections/overview/overview-cpu-utilization';
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
@@ -23,6 +22,10 @@ const now = new Date();
 
 const Page = () => {
   const [statistics, setStatistics] = useState([]);
+  const [AvgCpuPercentage, setAvgCpu] = useState();
+  const [MaxCpuPercentage, setMaxCpu] = useState();
+  const [AvgDiskSpacePercentage, setAvgDiskSpace] = useState();
+  const [AvgMemorySizePercentage, setAvgMemorySize] = useState();
   const [machines, setMachine] = useState([]);
   const [selectedMachine, setSelectedMachine] = useState('');
   const [cpuUtilizations, setcpuUtilizations] = useState([]);
@@ -45,27 +48,35 @@ const Page = () => {
       .catch(error => console.error(error));
   }, []);
 
-  useEffect(() => {
-    axios.get('https://localhost:7094/GetInstanceCPUStatistics?instanceId=' + selectedMachine)
-      .then(response => {
-        const statistics = response.data.data.filter(machine => machine.instanceAddress === selectedMachine);
-        setStatistics(statistics[0]); // Use the first filtered machine
-      })
-      .catch(error => console.error(error));
-  }, [selectedMachine]);
-
   const handleMachineChange = (event) => {
-    console.log("chnged: ", event)
+    
     setSelectedMachine(event);
 
-    axios.get('https://localhost:7094/GetInstanceCPUStatistics?instanceId=' + selectedMachine)
+    axios.get('https://localhost:7094/GetAvgCpuUsageUtilization?instance=' + event)
       .then(response => {
-        const statistics = response.data.data.filter(machine => machine.instanceAddress === selectedMachine);
-        setStatistics(statistics[0]); // Use the first filtered machine
+        setAvgCpu(response.data.data); 
+      })
+      .catch(error => console.error(error));
+    
+    axios.get('https://localhost:7094/GetMaxCpuUsageUtilization?instance=' + event)
+      .then(response => {
+        setMaxCpu(response.data.data); 
+      })
+      .catch(error => console.error(error));
+    
+    axios.get('https://localhost:7094/GetAvgDiskSpaceUsagePercentage?instance=' + event)
+      .then(response => {
+        setAvgDiskSpace(response.data.data); 
+      })
+      .catch(error => console.error(error));
+    
+    axios.get('https://localhost:7094/GetAvgMemorySizeUsagePercentage?instance=' + event)
+      .then(response => {
+        setAvgMemorySize(response.data.data); 
       })
       .catch(error => console.error(error));
 
-    axios.get('https://localhost:7094/GetAvgCpuUtilizationByCpu?instance=' + selectedMachine)
+    axios.get('https://localhost:7094/GetAvgCpuUtilizationByCpu?instance=' + event)
       .then(response => {
         const data = response.data.data;
         setcpuUtilizations(data);
@@ -101,16 +112,15 @@ const Page = () => {
                 onMachineSelect={handleMachineChange}
               />
             </Grid>
+            <Grid container spacing={4}>
             <Grid
               xs={12}
               sm={6}
               lg={3}
             >
-              <OverviewMinimumCpuUsage
-                difference={12}
-                positive
-                sx={{ height: '100%' }}
-                value={statistics ? (statistics.minimum ? statistics.minimum.toFixed(2) : 0) : "N/A"}
+              <OverviewAverageCpuUsage
+                sx={{ height: '100%', witdh: '100%' }}
+                value={selectedMachine ? AvgCpuPercentage ? AvgCpuPercentage.toFixed(2) : "N/A" : "N/A"}
               />
             </Grid>
             <Grid
@@ -121,29 +131,32 @@ const Page = () => {
               <OverviewMaximumCpuUsage
                 difference={16}
                 positive={false}
-                sx={{ height: '100%' }}
-                value={statistics ? (statistics.maximum ? statistics.maximum.toFixed(2) : "N/A") : "N/A"}
+                sx={{ height: '100%', witdh: '100%'}}
+                value={selectedMachine ? MaxCpuPercentage ? MaxCpuPercentage.toFixed(2) : "N/A" : "N/A"}
               />
-            </Grid>
+            </Grid>      
             <Grid
               xs={12}
               sm={6}
               lg={3}
             >
-              <OverviewAverageCpuUsage
-                sx={{ height: '100%' }}
-                value={statistics ? (statistics.average ? statistics.average.toFixed(2) : "N/A") : "N/A"}
+              <OverviewAverageDiskUsage
+                difference={12}
+                positive
+                sx={{ height: '100%', witdh: '100%' }}
+                value={selectedMachine ? AvgDiskSpacePercentage ? AvgDiskSpacePercentage.toFixed(2) : "N/A" : "N/A"}
               />
-            </Grid>
+            </Grid>               
             <Grid
               xs={12}
               sm={6}
               lg={3}
             >
-              <OverviewSumCpuUsage
-                sx={{ height: '100%' }}
-                value={statistics ? (statistics.sum ? statistics.sum.toFixed(2) : "N/A") : "N/A"}
+              <OverviewMemorySizeUsage
+                sx={{ height: '100%', witdh: '100%' }}
+                value={selectedMachine ? AvgMemorySizePercentage ? AvgMemorySizePercentage.toFixed(2) : "N/A" : "N/A"}
               />
+            </Grid>
             </Grid>
             <Grid xs={12} lg={8}>
               {selectedMachine ? (
