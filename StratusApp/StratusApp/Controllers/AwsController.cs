@@ -10,6 +10,7 @@ using StratusApp.Data;
 using Utils.DTO;
 using StratusApp.Services;
 using Utils.Enums;
+using Amazon;
 
 namespace StratusApp.Controllers
 {
@@ -130,11 +131,11 @@ namespace StratusApp.Controllers
             return Ok(instanceBasicDetailsResponse);
         }
         [HttpGet("StoreAWSCredentialsInSession")]
-        public async Task<ActionResult<StratusResponse<bool>>> StoreAWSCredentialsInSession(string accessKey, string secretKey)
+        public async Task<ActionResult<StratusResponse<bool>>> StoreAWSCredentialsInSession(string accessKey, string secretKey, string region)
         {
             var instanceBasicDetailsResponse = new StratusResponse<bool>();
 
-            instanceBasicDetailsResponse.Data = _awsService.StoreAWSCredentialsInSession(accessKey, secretKey);
+            instanceBasicDetailsResponse.Data = _awsService.StoreAWSCredentialsInSession(accessKey, secretKey, RegionEndpoint.USEast1.SystemName);
 
             return Ok(instanceBasicDetailsResponse);
         }

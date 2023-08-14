@@ -8,6 +8,7 @@ using StratusApp.Services.MongoDBServices;
 using StratusApp.Services;
 using StratusApp.Services.EncryptionHelpers;
 using Utils.DTO;
+using CloudApiClient.AwsServices.AwsUtils;
 
 namespace StratusApp.Controllers
 {
@@ -16,12 +17,16 @@ namespace StratusApp.Controllers
     {
         private readonly MongoDBService _mongoDatabase;
         private readonly AuthService _authService;
+        private readonly EC2ClientFactory _ec2ClientFactory;
+        private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly string userDosentExists = "User doesn't exists";
 
-        public AuthController(MongoDBService mongoDatabase)
+        public AuthController(MongoDBService mongoDatabase, EC2ClientFactory eC2ClientFactory, IHttpContextAccessor httpContextAccessor, AuthService authService)
         {
             _mongoDatabase = mongoDatabase;
-            _authService = new AuthService(mongoDatabase);
+            _authService = authService;
+            _ec2ClientFactory = eC2ClientFactory;
+            _httpContextAccessor = httpContextAccessor;
         }
 
         [HttpGet("RegisterToStratusService")]
@@ -39,7 +44,10 @@ namespace StratusApp.Controllers
             string isUserExistsMessage = await _authService.IsUserExists(user);
             if (isUserExistsMessage.Equals(userDosentExists))
             {
+                //TODO: add region to the user
+                _ec2ClientFactory.StoreAWSCredentialsInSession(user.AccessKey, user.SecretKey, "us-east-1");
                 _authService.InsertUserToDB(user);
+                //_authService.StoreUserDBIdInSession(user, _httpContextAccessor);
                 registerToStratusServiceResp.Data = user;
                 registerToStratusServiceResp.Message = "Registered successfully";
                 return Ok(registerToStratusServiceResp);

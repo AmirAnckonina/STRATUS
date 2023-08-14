@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Amazon;
 
 namespace CloudApiClient.AwsServices.AwsUtils
 {
@@ -23,7 +24,7 @@ namespace CloudApiClient.AwsServices.AwsUtils
             _clients = new ConcurrentDictionary<string, AmazonEC2Client>();
             _credentials = new ConcurrentDictionary<string, Dictionary<eAWSCredentials, string>>();
         }
-        public bool StoreAWSCredentialsInSession(string accessKey, string secretKey)
+        public bool StoreAWSCredentialsInSession(string accessKey, string secretKey, string region)
         {
             try
             {
@@ -40,7 +41,8 @@ namespace CloudApiClient.AwsServices.AwsUtils
                     _credentials[sessionId] = new Dictionary<eAWSCredentials, string>
                     {
                         { eAWSCredentials.AccessKey, accessKey },
-                        { eAWSCredentials.SecretKey, secretKey }
+                        { eAWSCredentials.SecretKey, secretKey },
+                        { eAWSCredentials.Region, region }
                     };
                     return true;
                 }
@@ -69,10 +71,9 @@ namespace CloudApiClient.AwsServices.AwsUtils
         }
         public AmazonEC2Client GetAndCreateEC2ClientIfNotExist()
         {
-            var sessionId = _httpContextAccessor.HttpContext.Request.Cookies["Stratus"];
-
             lock (_clients)
             {
+                var sessionId = _httpContextAccessor.HttpContext.Request.Cookies["Stratus"];
                 // Check if the EC2Client is already stored for the user's session
                 if (_clients.TryGetValue(sessionId, out var existingClient))
                 {
@@ -82,8 +83,8 @@ namespace CloudApiClient.AwsServices.AwsUtils
                 {
                     // If EC2Client doesn't exist for the session, create a new one and store it
                     var credentials = new BasicAWSCredentials(GetAWSCredentialsFromSession()[eAWSCredentials.AccessKey], GetAWSCredentialsFromSession()[eAWSCredentials.SecretKey]);
-                    //var region = RegionEndpoint.USWest2; // Replace with your desired region
-                    var ec2Client = new AmazonEC2Client(credentials);
+                    var region = RegionEndpoint.GetBySystemName(GetAWSCredentialsFromSession()[eAWSCredentials.Region]); // Replace with your desired region
+                    var ec2Client = new AmazonEC2Client(credentials, region);
 
                     // Store the EC2Client in the dictionary with the user's session ID as the key
                     _clients[sessionId] = ec2Client;

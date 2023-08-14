@@ -158,9 +158,9 @@ namespace CloudApiClient
         {
             return await _pricingService.GetOptionalVms(instanceFilters, maxResults, currentInstanceDetails);
         }
-        public bool StoreAWSCredentialsInSession(string accessKey, string secretKey)
+        public bool StoreAWSCredentialsInSession(string accessKey, string secretKey, string region)
         {
-           return _ec2Service.StoreAWSCredentialsInSession(accessKey, secretKey);
+           return _ec2Service.StoreAWSCredentialsInSession(accessKey, secretKey, region);
         }
         public Dictionary<eAWSCredentials, string> GetAWSCredentialsFromSession()
         {

@@ -9,6 +9,7 @@ namespace Utils.Enums
     public enum eAWSCredentials
     {
         AccessKey,
-        SecretKey
+        SecretKey,
+        Region
     }
 }
