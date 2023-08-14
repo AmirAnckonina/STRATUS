@@ -4,16 +4,17 @@ import ArrowUpIcon from '@heroicons/react/24/solid/ArrowUpIcon';
 import CurrencyDollarIcon from '@heroicons/react/24/solid/CurrencyDollarIcon';
 import ArrowUpRightIcon from '@heroicons/react/24/solid/ArrowUpRightIcon';
 import ArrowDownLeftIcon from '@heroicons/react/24/solid/ArrowDownLeftIcon';
-import { Avatar, Card, CardContent, Stack, SvgIcon, Typography } from '@mui/material';
+import { Avatar, Card, CardContent, Stack, SvgIcon, Typography, LinearProgress, Box } from '@mui/material';
 import ArrowTopRightOnSquareIcon from '@heroicons/react/24/solid/ArrowTopRightOnSquareIcon';
 
-export const OverviewMinimumCpuUsage = (props) => {
+export const OverviewAverageDiskUsage = (props) => {
   const { difference, positive = false, sx, value } = props;
 
   return (
     <Card sx={sx}>
       <CardContent>
         <Stack
+          width="100%"
           alignItems="flex-start"
           direction="row"
           justifyContent="space-between"
@@ -24,10 +25,10 @@ export const OverviewMinimumCpuUsage = (props) => {
               color="text.secondary"
               variant="overline"
             >
-              Minimum Usage
+              Average Disk Space Usage 
             </Typography>
             <Typography variant="h4">
-              {value}
+              {value}%
             </Typography>
           </Stack>
           <Avatar
@@ -42,42 +43,27 @@ export const OverviewMinimumCpuUsage = (props) => {
             </SvgIcon>
           </Avatar>
         </Stack>
-        {difference && (
-          <Stack
-            alignItems="center"
-            direction="row"
-            spacing={2}
-            sx={{ mt: 2 }}
-          >
-            <Stack
-              alignItems="center"
-              direction="row"
-              spacing={0.5}
-            >
-              <SvgIcon
-                color={positive ? 'success' : 'error'}
-                fontSize="small"
-              >
-              </SvgIcon>
-              <Typography
-                color={positive ? 'success.main' : 'error.main'}
-                variant="body2"
-              >
-              </Typography>
-            </Stack>
-            <Typography
-              color="text.secondary"
-              variant="caption"
-            >
-            </Typography>
-          </Stack>
-        )}
+          <Box sx={{ mt: 3 }}>
+        <LinearProgress
+            value={value === 'N/A' ? 0 : value}
+            variant="determinate"
+            sx={{
+              '& .MuiLinearProgress-bar': {
+                backgroundColor: 'success.main',
+              },
+              '& .MuiLinearProgress-barColorPrimary': {
+                transition: 'none',
+                width: `${value}%`,
+              },
+            }}
+          />
+        </Box>
       </CardContent>
     </Card>
   );
 };
 
-OverviewMinimumCpuUsage.prototypes = {
+OverviewAverageDiskUsage.prototypes = {
   difference: PropTypes.number,
   positive: PropTypes.bool,
   sx: PropTypes.object,

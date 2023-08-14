@@ -46,7 +46,7 @@ namespace StratusApp.Services.Collector
             queryParams.QueryStep = queryStep;
 
             var result = await _prometheusClient.ExecutePromQLQuery<EmptyMetricAndValuesList>(queryParams);
-            cpuUsageDataList = _collectorUtils.FillCpuUsageDataList(result.TimestampsAndValues);
+            cpuUsageDataList = _collectorUtils.FillCpuUsageDataList(startTime, endTime, queryStep, result.TimestampsAndValues);
             
             return cpuUsageDataList;
 

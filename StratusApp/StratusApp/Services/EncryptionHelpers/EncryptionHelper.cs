@@ -1,4 +1,5 @@
-﻿using System;
+﻿using StratusApp.Settings;
+using System;
 using System.IO;
 using System.Security.Cryptography;
 
@@ -6,8 +7,8 @@ namespace StratusApp.Services.EncryptionHelpers
 {
     public static class EncryptionHelper
     {
-        private static byte[] encryptionKey = KeyGenerator.GetBytesFromBase64EncodedKey(""); // Replace with your secret encryption key.
-        private static byte[] fixedIV = KeyGenerator.GetBytesFromBase64EncodedKey(""); // Replace this with a fixed IV of your choice (16 bytes for AES).
+        private static byte[] encryptionKey;
+        private static byte[] fixedIV;
 
         public static string Encrypt(string plainText)
         {
@@ -51,6 +52,12 @@ namespace StratusApp.Services.EncryptionHelpers
                     return srDecrypt.ReadToEnd();
                 }
             }
+        }
+
+        internal static void SetSettings(EncryptionSettings encryptionSettings)
+        {
+            encryptionKey = KeyGenerator.GetBytesFromBase64EncodedKey(encryptionSettings.EncryptionKey);
+            fixedIV = KeyGenerator.GetBytesFromBase64EncodedKey(encryptionSettings.FixedIV);
         }
     }
 }

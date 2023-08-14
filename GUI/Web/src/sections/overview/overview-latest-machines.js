@@ -1,8 +1,8 @@
-import { format } from 'date-fns';
 import PropTypes from 'prop-types';
-import ArrowRightIcon from '@heroicons/react/24/solid/ArrowRightIcon';
+import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import React, { useEffect, useState } from 'react'; 
+import { Alert } from '@mui/material';
+import { Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
 
 import {
   Box,
@@ -10,44 +10,69 @@ import {
   Card,
   CardActions,
   CardHeader,
+  Checkbox,
   Divider,
   SvgIcon,
   Table,
   TableBody,
   TableCell,
   TableHead,
-  TableRow
+  TableRow,
 } from '@mui/material';
 import { Scrollbar } from 'src/components/scrollbar';
-import { SeverityPill } from 'src/components/severity-pill';
+import ArrowRightIcon from '@mui/icons-material/ArrowRight';
 
-const statusMap = {
-  pending: 'warning',
-  delivered: 'success',
-  refunded: 'error'
-};
+export const OverviewLatestMachines = ({ onMachineSelect }) => {
+  const [machines, setData] = useState([]);
+  const [selectedMachine, setSelectedMachine] = useState(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-export const OverviewLatestMachines = (props) => {
-  const { orders = [], sx } = props;
-  const [machines, setData] = useState([])
+
   useEffect(() => {
-  axios.get('https://localhost:7094/GetUserInstanceData')
-  .then(response => {
-    setData(response.data.data)
-    console.log("Response test", response.data.data);
-  })
-  .catch(error => console.error(error));
-  },[]);
+    axios.get('https://localhost:7094/GetUserInstanceData')
+      .then(response => {
+        const machinesWithSelection = response.data.data.map(machine => ({
+          ...machine,
+          isSelected: false,
+        }));
+        setData(machinesWithSelection);
+        console.log("Response test", machinesWithSelection);
+      })
+      .catch(error => console.error(error));
+  }, []);
 
+  const handleMachineChange = (event, machine) => {
+    if (event.target.checked) {
+      if(selectedMachine === null || machine.instanceAddress === selectedMachine) { 
+          machine.isSelected = true;
+          onMachineSelect(machine.instanceAddress);
+          setSelectedMachine(machine.instanceAddress);
+      }
+      else {
+        setIsDialogOpen(true);
+      }
+ 
+    } else {
+      if(machine.instanceAddress === selectedMachine) {
+        setSelectedMachine(null);
+        machine.isSelected = false;
+        onMachineSelect(null);
+      }
 
-  return (   
-    <Card sx={sx}>
+    }
+  };
+
+  return (
+    <Card>
       <CardHeader title="Latest Machines" />
       <Scrollbar sx={{ flexGrow: 1 }}>
         <Box sx={{ minWidth: 800 }}>
           <Table>
             <TableHead>
               <TableRow>
+                <TableCell>
+                  Select
+                </TableCell>
                 <TableCell sortDirection="desc">
                   Id
                 </TableCell>
@@ -67,42 +92,55 @@ export const OverviewLatestMachines = (props) => {
                   CPU
                 </TableCell>
                 <TableCell>
-                Total Storage Size
+                 Storage
+                </TableCell>
+                <TableCell>
+                 Memory
                 </TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
-              {machines.map((data) => {
+              {machines.map((data) => (
+                <TableRow
+                  
+                  key={data.instanceAddress}
+                  sx={{
+                    backgroundColor: data.isSelected ? 'lightblue' : 'transparent',
+                  }}
+                >
+                  <TableCell>
+                  <Checkbox
+                    checked={data.isSelected} // Use the isSelected field to determine if checkbox is checked
+                    onChange={(event) => handleMachineChange(event, data)}
+/>
 
-                return (
-                  <TableRow
-                    hover
-                    key={data.instanceId}
-                  >
-                     <TableCell>
-                      {data.instanceId}
-                    </TableCell>
-                    <TableCell>
-                      {data.instanceAddress}
-                    </TableCell>
-                    <TableCell>
-                      {data.type}
-                    </TableCell>
-                    <TableCell>
-                      {data.specifications.operatingSystem.toString()}
-                    </TableCell>
-                    <TableCell>
-                      {data.specifications.price.priceAsString.toString()}
-                    </TableCell>
-                    <TableCell>
-                      {data.specifications.vcpu.toString()}
-                    </TableCell>
-                    <TableCell>
-                      {data.specifications.storage.asString.toString()} GB
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
+                  </TableCell>
+                  <TableCell>
+                    {data.instanceId}
+                  </TableCell>
+                  <TableCell>
+                    {data.instanceAddress}
+                  </TableCell>
+                  <TableCell>
+                    {data.type}
+                  </TableCell>
+                  <TableCell>
+                    {data.specifications.operatingSystem.toString()}
+                  </TableCell>
+                  <TableCell>
+                    {data.specifications.price.priceAsString.toString()}
+                  </TableCell>
+                  <TableCell>
+                    {data.specifications.vcpu.toString()}
+                  </TableCell>
+                  <TableCell>
+                    {data.specifications.storage.asString.toString()} 
+                  </TableCell>
+                  <TableCell>
+                    {data.specifications.memory.asString.toString()} 
+                  </TableCell>
+                </TableRow>
+              ))}
             </TableBody>
           </Table>
         </Box>
@@ -122,12 +160,28 @@ export const OverviewLatestMachines = (props) => {
           View all
         </Button>
       </CardActions>
+      <Dialog open={isDialogOpen} onClose={() => setIsDialogOpen(false)}>
+  <DialogTitle>
+    <Box display="flex" alignItems="center">
+      <Alert severity="error" sx={{ marginRight: '8px' }} />
+      Validation Error
+    </Box>
+  </DialogTitle>
+  <DialogContent>
+    <DialogContentText>
+      At most one instance can be selected!
+    </DialogContentText>
+  </DialogContent>
+  <DialogActions>
+    <Button onClick={() => setIsDialogOpen(false)}>OK</Button>
+  </DialogActions>
+</Dialog>
+
+
     </Card>
   );
 };
 
 OverviewLatestMachines.propTypes = {
-  orders: PropTypes.array,
-  sx: PropTypes.object
+  onMachineSelect: PropTypes.func.isRequired,
 };
-

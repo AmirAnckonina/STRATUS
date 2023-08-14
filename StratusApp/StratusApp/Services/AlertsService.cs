@@ -62,7 +62,7 @@ namespace StratusApp.Services
         {
             var result = new List<AlertData>();
             //TODO get alerts ny user
-            var alertsData =  _mongoDatabase.GetCollectionAsList<AlertData>(eCollectionName.Alerts).Result;            
+            var alertsData =  _mongoDatabase.GetCollectionAsList<AlertData>(eCollectionName.Alerts).Result;
 
             foreach (var alert in alertsData)
             {
@@ -87,20 +87,21 @@ namespace StratusApp.Services
 
         private void timer_Elapsed(object? sender, ElapsedEventArgs e)
         {
-            string machineId = "34.125.220.240";
             //foreach user:
-            //foreach user instance:
-
-            double avgCpuUsageUtilization = _collectorService.GetAvgCpuUsageUtilization(machineId, INTERVAL_FILTER).Result;
-            double avgFreeDiskSpaceInGB = _collectorService.GetAvgFreeDiskSpaceInGB(machineId, INTERVAL_FILTER).Result;
-            double avgFreeMemorySizeInGB = _collectorService.GetAvgFreeMemorySizeInGB(machineId, INTERVAL_FILTER).Result;
-
             _alerts.Clear();
-            DetectAndInsertLowUsage(machineId, avgCpuUsageUtilization, eAlertType.CPU);
-            DetectAndInsertLowUsage(machineId, avgFreeDiskSpaceInGB, eAlertType.STORAGE);
-            DetectAndInsertLowUsage(machineId, avgFreeMemorySizeInGB, eAlertType.MEMORY);
+            var instances = _mongoDatabase.GetCollectionAsList<AwsInstanceDetails>(eCollectionName.Instances).Result;
 
-           
+            foreach (var instance in instances)
+            {
+                double avgCpuUsageUtilization = _collectorService.GetAvgCpuUsageUtilization(instance.InstanceAddress, INTERVAL_FILTER).Result;
+                double avgFreeDiskSpaceInGB = _collectorService.GetAvgFreeDiskSpaceInGB(instance.InstanceAddress, INTERVAL_FILTER).Result;
+                double avgFreeMemorySizeInGB = _collectorService.GetAvgFreeMemorySizeInGB(instance.InstanceAddress, INTERVAL_FILTER).Result;
+
+                DetectAndInsertLowUsage(instance.InstanceAddress, avgCpuUsageUtilization, eAlertType.CPU);
+                DetectAndInsertLowUsage(instance.InstanceAddress, avgFreeDiskSpaceInGB, eAlertType.STORAGE);
+                DetectAndInsertLowUsage(instance.InstanceAddress, avgFreeMemorySizeInGB, eAlertType.MEMORY);
+            }
+
             //Send mail to user
             //EmailService.SendAlertsEmailAsync("omer2541996@gmail.com", _alerts);
             //EmailService.SendAlertsEmailAsync("chen10.berger@gmail.com", _alerts);

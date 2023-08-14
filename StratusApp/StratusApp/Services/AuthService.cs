@@ -6,6 +6,7 @@ using BCrypt.Net;
 using System;
 using System.Security.Cryptography;
 using System.Text;
+using StratusApp.Settings;
 
 namespace StratusApp.Services
 {
@@ -13,9 +14,10 @@ namespace StratusApp.Services
     {
         private readonly MongoDBService _mongoDatabase;
 
-        public AuthService(MongoDBService mongoDatabase)
+        public AuthService(MongoDBService mongoDatabase, AppSettings appSettings)
         {
             _mongoDatabase = mongoDatabase;
+            EncryptionHelpers.EncryptionHelper.SetSettings(appSettings.EncryptionSettings);
         }
 
         internal Task<string> IsUserExists(StratusUser user)
