@@ -21,9 +21,9 @@ namespace StratusApp.Services
             _mongoDBService = mongoDatabase;
             _cloudApiClient = new AwsClient(ec2ClientFactory);
         }
-        internal bool StoreAWSCredentialsInSession(string accessKey, string secretKey)
+        internal bool StoreAWSCredentialsInSession(string accessKey, string secretKey, string region)
         {
-            return _cloudApiClient.StoreAWSCredentialsInSession(accessKey, secretKey);
+            return _cloudApiClient.StoreAWSCredentialsInSession(accessKey, secretKey, region);
         }
         internal Dictionary<eAWSCredentials, string> GetAWSCredentialsFromSession()
         {
@@ -141,11 +141,20 @@ namespace StratusApp.Services
         private void InsertAlternativeInstancesToDB(List<AlternativeInstance> instances)
         {
             var DBAlternativeinstances = _mongoDBService.GetCollectionAsList<AlternativeInstance>(eCollectionName.AlternativeInstances).Result;
+            //try
+            //{
+            //    _mongoDBService.InsertMultipleDocuments<AlternativeInstance>(eCollectionName.AlternativeInstances, instances);
+            //}
+            //catch (Exception e)
+            //{
+            //    Console.WriteLine(e.Message);
+            //}
             foreach (AlternativeInstance instance in instances)
             {
                 if (!IsAlternativeInstanceExistsInDB(instance, DBAlternativeinstances))
                 {
                     _mongoDBService.InsertDocument<AlternativeInstance>(eCollectionName.AlternativeInstances, instance);
+            
                 }
             }
         }

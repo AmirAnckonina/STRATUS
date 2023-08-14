@@ -18,18 +18,18 @@ namespace CloudApiClient.AwsServices
 {
     public class EC2Service
     {
-        private AmazonEC2Client _ec2Client;
+        //private AmazonEC2Client _ec2Client;
         private readonly EC2ClientFactory _ec2ClientFactory;
 
         public EC2Service(AWSCredentials credentials, RegionEndpoint region, EC2ClientFactory eC2ClientFactory)
         {
-            _ec2Client = new AmazonEC2Client(credentials, region);
+            //_ec2Client = new AmazonEC2Client(credentials, region);
             _ec2ClientFactory = eC2ClientFactory;
 
         }
-        public bool StoreAWSCredentialsInSession(string accessKey, string secretKey)
+        public bool StoreAWSCredentialsInSession(string accessKey, string secretKey, string region)
         {
-            return _ec2ClientFactory.StoreAWSCredentialsInSession(accessKey, secretKey);
+            return _ec2ClientFactory.StoreAWSCredentialsInSession(accessKey, secretKey, region);
         }
         public Dictionary<eAWSCredentials, string> GetAWSCredentialsFromSession()
         {
@@ -42,7 +42,7 @@ namespace CloudApiClient.AwsServices
                 InstanceIds = new List<string> { instanceId }
             };
 
-            var response = await _ec2Client.DescribeInstancesAsync(request);
+            var response = await _ec2ClientFactory.GetAndCreateEC2ClientIfNotExist().DescribeInstancesAsync(request);
 
             // The below line should be changed to retrieve our instance platform.
             //var instance = response.Reservations.SelectMany(r => r.Instances).FirstOrDefault();
@@ -62,14 +62,14 @@ namespace CloudApiClient.AwsServices
             {
                 Filters = { new EC2Model.Filter { Name = "attachment.instance-id", Values = { instanceId } } }
             };
-            DescribeVolumesResponse descVolumeResponse = await _ec2Client.DescribeVolumesAsync(descVolumeRequest);
+            DescribeVolumesResponse descVolumeResponse = await _ec2ClientFactory.GetAndCreateEC2ClientIfNotExist().DescribeVolumesAsync(descVolumeRequest);
 
             return descVolumeResponse.Volumes;
         }
 
         public async Task<DescribeInstancesResponse> DescribeInstancesAsync()
         {
-            return await _ec2Client.DescribeInstancesAsync(new DescribeInstancesRequest());
+            return await _ec2ClientFactory.GetAndCreateEC2ClientIfNotExist().DescribeInstancesAsync(new DescribeInstancesRequest());
         }
 
         public async Task<List<Instance>> GetInstances()

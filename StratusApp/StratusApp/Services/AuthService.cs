@@ -112,5 +112,12 @@ namespace StratusApp.Services
             decryptAccessKey(user);
             return user; 
         }
+
+        internal async void StoreUserDBIdInSession(StratusUser user, IHttpContextAccessor _httpContextAccessor)
+        {
+            var dbUsers = await _mongoDatabase.GetCollectionAsList<StratusUser>(eCollectionName.Users);
+            var userDBId = dbUsers.Find(dbUser => dbUser.Email.Equals(user.Username)).Id;
+
+        }
     }
 }

@@ -33,7 +33,7 @@ namespace StratusApp
             services.AddHttpContextAccessor();
             services.AddSession(options =>
             {
-                options.IdleTimeout = TimeSpan.FromMinutes(30); // Set the session timeout as desired
+                options.IdleTimeout = TimeSpan.FromMinutes(60); // Set the session timeout as desired
                 options.Cookie.HttpOnly = true;
                 options.Cookie.IsEssential = true;
                 options.Cookie.Name = "Stratus";
@@ -70,6 +70,7 @@ namespace StratusApp
             services.AddSwaggerGen();
 
             // Add MongoDB connection
+            services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             services.AddSingleton<MongoDBService>();
             services.AddSingleton<AlertsService>();
             services.AddSingleton<AwsService>();
@@ -77,6 +78,7 @@ namespace StratusApp
             services.AddSingleton<CollectorService>();
             services.AddSingleton<RecommendationsService>();
             services.AddSingleton<EmailService>();
+            services.AddSingleton<AuthService>();
 
             //services.AddRazorPages();
 
@@ -98,14 +100,15 @@ namespace StratusApp
             app.UseSession();
             app.UseCookiePolicy(new CookiePolicyOptions
             {
-                MinimumSameSitePolicy = SameSiteMode.Lax, Secure = CookieSecurePolicy.Always // You can set this according to your requirements
+                MinimumSameSitePolicy = SameSiteMode.Lax, Secure = CookieSecurePolicy.SameAsRequest// You can set this according to your requirements
+
             });
             app.UseHttpsRedirection();
             app.UseStaticFiles();
             app.UseRouting();
             app.UseCors();
-            //app.UseCors("AllowAnyOrigin");
             app.UseAuthorization();
+            //app.UseCors("AllowAnyOrigin");
             app.UseEndpoints(endPoints => endPoints.MapControllers());
             //app.Run();
         }
