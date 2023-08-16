@@ -4,7 +4,6 @@ using MongoDB.Bson;
 using OpenQA.Selenium;
 using StratusApp.Data;
 using StratusApp.Models;
-using StratusApp.Models.MongoDB;
 using StratusApp.Models.Responses;
 using StratusApp.Services.MongoDBServices;
 using System.Reflection.PortableExecutable;
@@ -82,7 +81,7 @@ namespace StratusApp.Services
             _timer = new System.Timers.Timer();
             _timer.Interval = interval; // should be confiugre by the user
             _timer.Elapsed += timer_Elapsed;
-            _timer.Start();
+            //_timer.Start();
         }
 
         private void timer_Elapsed(object? sender, ElapsedEventArgs e)
