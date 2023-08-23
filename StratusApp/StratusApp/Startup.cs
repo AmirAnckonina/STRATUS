@@ -33,13 +33,14 @@ namespace StratusApp
             services.AddHttpContextAccessor();
             services.AddSession(options =>
             {
-                options.IdleTimeout = TimeSpan.FromMinutes(60); // Set the session timeout as desired
-                options.Cookie.HttpOnly = true;
+                options.IdleTimeout = TimeSpan.FromHours(3); // Set the session timeout as desired
+                options.Cookie.HttpOnly = false;
                 options.Cookie.IsEssential = true;
-                options.Cookie.Name = "Stratus";
-                options.Cookie.SameSite = SameSiteMode.Lax;
+                //options.Cookie.Name = "userDBEmail";
+                options.Cookie.SameSite = SameSiteMode.None;
+                options.Cookie.SecurePolicy = CookieSecurePolicy.None;
             });
-            services.AddTransient<EC2ClientFactory>();
+            
 
             services.Configure<AppSettings>(ConfigRoot.GetSection(nameof(AppSettings)));
 
@@ -70,6 +71,7 @@ namespace StratusApp
             services.AddSwaggerGen();
 
             // Add MongoDB connection
+            services.AddSingleton<EC2ClientFactory>();
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             services.AddSingleton<MongoDBService>();
             services.AddSingleton<AlertsService>();
@@ -97,12 +99,14 @@ namespace StratusApp
                 app.UseSwagger();
                 app.UseSwaggerUI();
             }
-            app.UseSession();
-            app.UseCookiePolicy(new CookiePolicyOptions
+            app.Use(async (context, next) =>
             {
-                MinimumSameSitePolicy = SameSiteMode.Lax, Secure = CookieSecurePolicy.SameAsRequest// You can set this according to your requirements
-
+                context.Response.Headers.Add("Referrer-Policy", "strict-origin-when-cross-origin");
+                await next();
             });
+
+            app.UseSession();
+            app.UseCookiePolicy();
             app.UseHttpsRedirection();
             app.UseStaticFiles();
             app.UseRouting();

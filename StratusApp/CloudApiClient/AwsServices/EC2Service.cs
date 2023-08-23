@@ -29,7 +29,7 @@ namespace CloudApiClient.AwsServices
         }
         public bool StoreAWSCredentialsInSession(string accessKey, string secretKey, string region)
         {
-            return _ec2ClientFactory.StoreAWSCredentialsInSession(accessKey, secretKey, region);
+            return _ec2ClientFactory.StoreAWSCredentialsInSession("test@gmail.com", accessKey, secretKey, region);
         }
         public Dictionary<eAWSCredentials, string> GetAWSCredentialsFromSession()
         {
@@ -41,7 +41,7 @@ namespace CloudApiClient.AwsServices
             {
                 InstanceIds = new List<string> { instanceId }
             };
-
+            
             var response = await _ec2ClientFactory.GetAndCreateEC2ClientIfNotExist().DescribeInstancesAsync(request);
 
             // The below line should be changed to retrieve our instance platform.

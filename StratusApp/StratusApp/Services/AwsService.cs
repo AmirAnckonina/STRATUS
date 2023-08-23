@@ -79,6 +79,7 @@ namespace StratusApp.Services
         {
             //Get DB instances here to prevent redundant DB calls
             var dBInstances = _mongoDBService.GetCollectionAsList<AwsInstanceDetails>(eCollectionName.Instances).Result;
+            //TODO: add user id to the instance base on the session
             foreach (AwsInstanceDetails instance in instances)
             {
                 if(!IsInstanceExistsInDB(instance, dBInstances))
@@ -95,7 +96,7 @@ namespace StratusApp.Services
             foreach(AwsInstanceDetails instanceDetails in dBInstances)
             {
                
-                if(instanceDetails != null && instanceDetails.InstanceId.Equals(instance.InstanceId) && instanceDetails.InstanceAddress.Equals(instance.InstanceAddress))
+                if(instanceDetails != null && instanceDetails.InstanceId.Equals(instance.InstanceId) || instanceDetails.InstanceAddress.Equals(instance.InstanceAddress))
                 {
                     result = true;
                     break;

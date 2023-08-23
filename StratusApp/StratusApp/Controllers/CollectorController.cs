@@ -44,7 +44,7 @@ namespace StratusApp.Controllers
         public async Task<ActionResult<StratusResponse<double>>> GetMaxCpuUsageUtilization(string instance = "34.125.220.240", string timeFilter = "month")
         {
             var cpuUsageResponse = new StratusResponse<double>();
-
+            
             cpuUsageResponse.Data = await _collectorService.GetMaxCpuUsageUtilization(instance, timeFilter);
 
             return Ok(cpuUsageResponse);
@@ -55,8 +55,9 @@ namespace StratusApp.Controllers
         {
             try
             {
+                var id = Request.Headers.Cookie;
                 var freeMemorySizeResponse = new StratusResponse<List<SingleCpuUtilizationDTO>>();
-
+                var email = HttpContext.Request.Cookies["userDBEmail"];
                 freeMemorySizeResponse.Data = await _collectorService.GetAvgCpuUtilizationByCpu(instance, timeFilter);
 
                 return Ok(freeMemorySizeResponse);

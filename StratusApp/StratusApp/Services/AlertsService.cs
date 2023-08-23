@@ -26,6 +26,7 @@ namespace StratusApp.Services
     public class AlertsService
     {
         private readonly MongoDBService _mongoDatabase;
+        private readonly IHttpContextAccessor _httpContextAccessor;
         //private readonly PrometheusClient _prometheusClient;
         private readonly CollectorService _collectorService;
         private System.Timers.Timer _timer;
@@ -41,9 +42,10 @@ namespace StratusApp.Services
 
         public EmailService EmailService { get; internal set; }
 
-        public AlertsService(MongoDBService mongoDatabase, CollectorService collectorService) 
+        public AlertsService(MongoDBService mongoDatabase, CollectorService collectorService, IHttpContextAccessor httpContextAccessor) 
         {
             _mongoDatabase = mongoDatabase;
+            _httpContextAccessor = httpContextAccessor;
             //_prometheusClient = new PrometheusClient();
             _collectorService = collectorService;
 
@@ -60,7 +62,7 @@ namespace StratusApp.Services
         internal async Task<List<AlertData>> GetAlertsCollection()
         {
             var result = new List<AlertData>();
-            //TODO get alerts ny user
+            //TODO get alerts by user using cookies
             var alertsData =  _mongoDatabase.GetCollectionAsList<AlertData>(eCollectionName.Alerts).Result;
 
             foreach (var alert in alertsData)

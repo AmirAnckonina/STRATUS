@@ -18,13 +18,16 @@ namespace Utils.DTO
         public string AccessKey { get; set; }
         [BsonElement("secretKey")]
         public string SecretKey { get; set; }
-        public StratusUser(string username, string email, string password, string accessKey, string secretKey)
+        [BsonElement("region")]
+        public string Region { get; set; }
+        public StratusUser(string username, string email, string password, string accessKey, string secretKey, string region)
         {
             Username = username;
             Email = email;
             Password = password;
             AccessKey = accessKey;
             SecretKey = secretKey;
+            Region = region;
         }
     }
 }

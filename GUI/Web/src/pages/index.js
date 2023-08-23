@@ -19,7 +19,7 @@ import {
 } from '@mui/material';
 
 const now = new Date();
-
+axios.defaults.withCredentials = true;
 const Page = () => {
   const [statistics, setStatistics] = useState([]);
   const [AvgCpuPercentage, setAvgCpu] = useState();
@@ -31,16 +31,26 @@ const Page = () => {
   const [cpuUtilizations, setcpuUtilizations] = useState([]);
 
   useEffect(() => {
+    console.log(document.cookie);
+    console.log("hi");
     axios.get('https://localhost:7094/GetUserInstanceData')
       .then(response => {
-        const data = response.data.data;
-        setMachine(data);
+        if (!response.data) {
+          throw new Error('Data not received');
+        }
+        const fetchedData = response.data.data;
+        setMachine(fetchedData);
       })
-      .catch(error => console.error(error));
+      .catch(error => {
+        console.error('Axios error:', error);
+      });
   }, []);
 
   useEffect(() => {
-    axios.get('https://localhost:7094/GetAvgCpuUtilizationByCpu?instance=' + selectedMachine)
+    
+    axios.get('https://localhost:7094/GetAvgCpuUtilizationByCpu?instance=' + selectedMachine, {
+      withCredentials: true // Include cookies in the request
+    })
       .then(response => {
         const data = response.data.data;
         setcpuUtilizations(data);
@@ -52,31 +62,41 @@ const Page = () => {
     
     setSelectedMachine(event);
 
-    axios.get('https://localhost:7094/GetAvgCpuUsageUtilization?instance=' + event)
+    axios.get('https://localhost:7094/GetAvgCpuUsageUtilization?instance=' + event, {
+      withCredentials: true // Include cookies in the request
+    })
       .then(response => {
         setAvgCpu(response.data.data); 
       })
       .catch(error => console.error(error));
     
-    axios.get('https://localhost:7094/GetMaxCpuUsageUtilization?instance=' + event)
+    axios.get('https://localhost:7094/GetMaxCpuUsageUtilization?instance=' + event, {
+      withCredentials: true // Include cookies in the request
+    })
       .then(response => {
         setMaxCpu(response.data.data); 
       })
       .catch(error => console.error(error));
     
-    axios.get('https://localhost:7094/GetAvgDiskSpaceUsagePercentage?instance=' + event)
+    axios.get('https://localhost:7094/GetAvgDiskSpaceUsagePercentage?instance=' + event, {
+      withCredentials: true // Include cookies in the request
+    })
       .then(response => {
         setAvgDiskSpace(response.data.data); 
       })
       .catch(error => console.error(error));
     
-    axios.get('https://localhost:7094/GetAvgMemorySizeUsagePercentage?instance=' + event)
+    axios.get('https://localhost:7094/GetAvgMemorySizeUsagePercentage?instance=' + event, {
+      withCredentials: true // Include cookies in the request
+    })
       .then(response => {
         setAvgMemorySize(response.data.data); 
       })
       .catch(error => console.error(error));
 
-    axios.get('https://localhost:7094/GetAvgCpuUtilizationByCpu?instance=' + event)
+    axios.get('https://localhost:7094/GetAvgCpuUtilizationByCpu?instance=' + event, {
+      withCredentials: true// Include cookies in the request
+    })
       .then(response => {
         const data = response.data.data;
         setcpuUtilizations(data);

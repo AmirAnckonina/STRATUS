@@ -13,11 +13,12 @@ namespace StratusApp.Services
     public class AuthService
     {
         private readonly MongoDBService _mongoDatabase;
-
-        public AuthService(MongoDBService mongoDatabase, AppSettings appSettings)
+        private readonly IHttpContextAccessor _httpContextAccessor;
+        public AuthService(MongoDBService mongoDatabase, AppSettings appSettings, IHttpContextAccessor httpContextAccessor)
         {
             _mongoDatabase = mongoDatabase;
             EncryptionHelpers.EncryptionHelper.SetSettings(appSettings.EncryptionSettings);
+            _httpContextAccessor = httpContextAccessor;
         }
 
         internal Task<string> IsUserExists(StratusUser user)
@@ -92,16 +93,14 @@ namespace StratusApp.Services
         }
         public void InsertUserToDB(StratusUser user)
         {
-            //string hashedPassword = EncryptionHelpers.EncryptionHelper.Encrypt(user.Password);
-            //string hashedAccessKey = EncryptionHelpers.EncryptionHelper.Encrypt(user.AccessKey);
-            //string hashedSecretKey = EncryptionHelpers.EncryptionHelper.Encrypt(user.SecretKey);
-
             //check that the decryption works
 
             encryptPassword(user);
             encryptAccessKey(user);
             encryptSecretKey(user);
             _mongoDatabase.InsertDocument<StratusUser>(eCollectionName.Users, user);
+            decryptAccessKey(user);
+            decryptSecretKey(user);
         }
 
         public async Task<StratusUser> GetUserFromDB(string email)
@@ -113,11 +112,20 @@ namespace StratusApp.Services
             return user; 
         }
 
-        internal async void StoreUserDBIdInSession(StratusUser user, IHttpContextAccessor _httpContextAccessor)
+        internal async Task<string> StoreUserDBEmailInSession(StratusUser user)
         {
             var dbUsers = await _mongoDatabase.GetCollectionAsList<StratusUser>(eCollectionName.Users);
-            var userDBId = dbUsers.Find(dbUser => dbUser.Email.Equals(user.Username)).Id;
-
+            try
+            {
+                //var userDBEmail = dbUsers.Find(dbUser => dbUser.Email.Equals(user.Email)).Email;
+                _httpContextAccessor.HttpContext.Session.SetString("Stratus", user.Email);
+                return user.Email;
+            }
+            catch(Exception e)
+            {
+                Console.WriteLine(e);
+            }
+            return null;
         }
     }
 }
