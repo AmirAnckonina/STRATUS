@@ -23,6 +23,7 @@
     "@mui/lab": "5.0.0-alpha.120",
     "@mui/material": "^5.13.3",
     "@mui/system": "5.11.9",
+    "@mui/x-data-grid": "^6.11.1",
     "@mui/x-date-pickers": "5.0.19",
     "apexcharts": "3.37.0",
     "axios": "^1.4.0",

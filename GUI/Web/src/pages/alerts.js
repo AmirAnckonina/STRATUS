@@ -46,13 +46,6 @@ const Page = () => {
 
   const [Alerts, setAlerts] = useState([]);
 
-  const AlertsIds = useMemo(() => {
-    return Alerts.map((Alert) => Alert.id);
-  }, [Alerts]);
-
-  const AlertsSelection = useSelection(AlertsIds);
-  const paginatedAlerts = useAlerts(Alerts, page, rowsPerPage);
-
   useEffect(() => {
     // Fetch data using Axios when the component mounts
     axios
@@ -64,18 +57,7 @@ const Page = () => {
       .catch((error) => {
         console.error('Error fetching data:', error);
       });
-  }, []);
-
-  const handlePageChange = useCallback((event, value) => {
-    console.log("pages ", event);
-    setPage(event);
-  }, []);
-
-  const handleRowsPerPageChange = useCallback((event) => {
-    console.log("pages ", event);
-    setRowsPerPage(parseInt(event, 10));
-  }, []);
-  
+  }, []);  
 
   const handleConfigFormOpen = () => {
     setConfigFormOpen(true);
@@ -173,32 +155,7 @@ const Page = () => {
                 <Typography variant="h4">
                   Alerts
                 </Typography>
-                <Stack
-                  alignItems="center"
-                  direction="row"
-                  spacing={1}
-                >
-                  <Button
-                    color="inherit"
-                    startIcon={(
-                      <SvgIcon fontSize="small">
-                        <ArrowUpOnSquareIcon />
-                      </SvgIcon>
-                    )}
-                  >
-                    Import
-                  </Button>
-                  <Button
-                    color="inherit"
-                    startIcon={(
-                      <SvgIcon fontSize="small">
-                        <ArrowDownOnSquareIcon />
-                      </SvgIcon>
-                    )}
-                  >
-                    Export
-                  </Button>
-                </Stack>
+               
               </Stack>
               <div>
                 <Button
@@ -216,17 +173,7 @@ const Page = () => {
             </Stack>
             <AlertsSearch />
             <AlertsTable
-              count={Alerts.length} // Use the total length of Alerts for count
-              items={paginatedAlerts} // Use the paginatedAlerts here
-              onDeselectAll={AlertsSelection.handleDeselectAll}
-              onDeselectOne={AlertsSelection.handleDeselectOne}
-              onPageChange={handlePageChange}
-              onRowsPerPageChange={handleRowsPerPageChange}
-              onSelectAll={AlertsSelection.handleSelectAll}
-              onSelectOne={AlertsSelection.handleSelectOne}
-              page={page}
-              rowsPerPage={rowsPerPage}
-              selected={AlertsSelection.selected}
+              items={Alerts} // Use the paginatedAlerts here
             />
           </Stack>
         </Container>
