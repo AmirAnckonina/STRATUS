@@ -51,48 +51,54 @@ namespace CloudApiClient
         // Split it according to the services!!! 
         public async Task<List<AwsInstanceDetails>> GetInstanceFormalData()
         {
+            
             var vms = new List<AwsInstanceDetails>();
-
-            DescribeInstancesResponse descInstancesResponse = await _ec2Service.DescribeInstancesAsync();
-
-            foreach (var reservation in descInstancesResponse.Reservations)
+            try
             {
-                foreach (var instance in reservation.Instances)
+                DescribeInstancesResponse descInstancesResponse = await _ec2Service.DescribeInstancesAsync();
+
+                foreach (var reservation in descInstancesResponse.Reservations)
                 {
-                    if (instance != null) // filter out non-running instances if desired
+                    foreach (var instance in reservation.Instances)
                     {
-                        if (instance.PlatformDetails.Equals("Linux/UNIX"))
+                        if (instance != null) // filter out non-running instances if desired
                         {
-                            string[] parts = instance.PlatformDetails.Split('/');
-                             
-                            instance.PlatformDetails = parts[0];
-                        }
-                        
-                        var vm = new AwsInstanceDetails
-                        {
-                            Specifications = new InstanceSpecifications()
+                            if (instance.PlatformDetails.Equals("Linux/UNIX"))
                             {
-                                OperatingSystem = instance.PlatformDetails,
-                                VCPU = instance.CpuOptions.CoreCount,
-                                Memory = new Memory()
-                                { 
-                                    Value = await GetInstanceTotalVolumesSize(instance.InstanceId),
-                                    Unit = eMemoryUnit.GB
+                                string[] parts = instance.PlatformDetails.Split('/');
+
+                                instance.PlatformDetails = parts[0];
+                            }
+
+                            var vm = new AwsInstanceDetails
+                            {
+                                Specifications = new InstanceSpecifications()
+                                {
+                                    OperatingSystem = instance.PlatformDetails,
+                                    VCPU = instance.CpuOptions.CoreCount,
+                                    Memory = new Memory()
+                                    {
+                                        Value = await GetInstanceTotalVolumesSize(instance.InstanceId),
+                                        Unit = eMemoryUnit.GB
+                                    },
+                                    Storage = new Utils.DTO.Storage() { AsString = instance.RootDeviceType.Value.ToUpper() },
+
                                 },
-                                Storage = new Utils.DTO.Storage() { AsString = instance.RootDeviceType.Value.ToUpper() },
+                                InstanceId = instance.InstanceId,
+                                Type = instance.InstanceType.ToString(),
+                                InstanceAddress = instance.PublicIpAddress?.ToString(),
+                                //string.Join(", ", instance.BlockDeviceMappings.Select<InstanceBlockDeviceMapping, string>(bdm => $"{bdm.DeviceName}")).Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).ToList(),
+                            };
 
-                            },
-                            InstanceId = instance.InstanceId,
-                            Type = instance.InstanceType.ToString(),
-                            InstanceAddress = instance.PublicIpAddress.ToString(),
-                            //string.Join(", ", instance.BlockDeviceMappings.Select<InstanceBlockDeviceMapping, string>(bdm => $"{bdm.DeviceName}")).Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).ToList(),
-                        };
-
-                        vms.Add(vm);
+                            vms.Add(vm);
+                        }
                     }
                 }
             }
-
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
             return vms;
         }
 
@@ -160,7 +166,7 @@ namespace CloudApiClient
         }
         public bool StoreAWSCredentialsInSession(string accessKey, string secretKey, string region)
         {
-           return _ec2Service.StoreAWSCredentialsInSession(accessKey, secretKey, region);
+            return _ec2Service.StoreAWSCredentialsInSession(accessKey, secretKey, region);
         }
         public Dictionary<eAWSCredentials, string> GetAWSCredentialsFromSession()
         {

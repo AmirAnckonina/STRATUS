@@ -19,10 +19,12 @@ namespace StratusApp.Controllers
     public class AwsController : Controller
     {
         private readonly AwsService _awsService;
+        private readonly IHttpContextAccessor _httpContextAccessor;
         
-        public AwsController(AwsService awsService) 
+        public AwsController(AwsService awsService, IHttpContextAccessor httpContextAccessor) 
         {
             _awsService = awsService;
+            _httpContextAccessor = httpContextAccessor;
         }
 
         [HttpGet("GetUserInstanceData")]
@@ -39,7 +41,6 @@ namespace StratusApp.Controllers
         public async Task<ActionResult<StratusResponse<List<Datapoint>>>> GetInstanceCPUStatistics(string instanceId)
         {
             var userInstanceDataStartusResp = new StratusResponse<List<Datapoint>>();
-
             userInstanceDataStartusResp.Data = await _awsService.GetInstanceCPUStatistics(instanceId);
 
             return Ok(userInstanceDataStartusResp);
@@ -49,7 +50,6 @@ namespace StratusApp.Controllers
         public async Task<ActionResult<StratusResponse<List<CpuUsageData>>>> GetUserAwsInstanceCpuUsageDataOverTime(string instanceId, string filterTime = "Month")
         {
             var userInstanceCpuUsageDataOverTimeStartusResp = new StratusResponse<List<CpuUsageData>>();
-
             userInstanceCpuUsageDataOverTimeStartusResp.Data = await _awsService.GetInstanceCpuUsageOverTime(instanceId, filterTime);
 
             return Ok(userInstanceCpuUsageDataOverTimeStartusResp);
@@ -135,7 +135,7 @@ namespace StratusApp.Controllers
         {
             var instanceBasicDetailsResponse = new StratusResponse<bool>();
 
-            instanceBasicDetailsResponse.Data = _awsService.StoreAWSCredentialsInSession(accessKey, secretKey, RegionEndpoint.USEast1.SystemName);
+            instanceBasicDetailsResponse.Data = _awsService.StoreAWSCredentialsInSession(accessKey, secretKey, region);
 
             return Ok(instanceBasicDetailsResponse);
         }

@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useReducer, useRef } from 'react';
 import PropTypes from 'prop-types';
+//import Cookies from 'js-cookie';
 import { drawerClasses } from '@mui/material';
 
 const HANDLERS = {
@@ -133,7 +134,7 @@ export const AuthProvider = (props) => {
       password: password,
       email: email,
     });
-    const response = await fetch(`https://localhost:7094/LogInToStratusService?${queryParams}`);
+    const response = await fetch(`https://localhost:7094/LogInToStratusService?${queryParams}`, {credentials:'include'});
     const data = await response.json();
     console.log(data.message);
     //
@@ -145,6 +146,8 @@ export const AuthProvider = (props) => {
     } 
     try {
       window.sessionStorage.setItem('authenticated', 'true');
+      Cookies.set('userDBEmail', email);
+    
     } catch (err) {
       console.error(err);
     }
@@ -162,17 +165,19 @@ export const AuthProvider = (props) => {
     });
   };
 
-  const signUp = async (email, name, password, accessKey, secretKey) => {
+  const signUp = async (email, name, password, accessKey, secretKey, selectedRegion) => {
     const queryParams = new URLSearchParams({
       username: name,
       password: password,
       email: email,
       accessKey: accessKey,
       secretKey: secretKey,
+      region: selectedRegion
     });
 
     // Send the HTTP GET request
-    const response = await fetch(`https://localhost:7094/RegisterToStratusService?${queryParams}`);
+    console.log(document.cookie);
+    const response = await fetch(`https://localhost:7094/RegisterToStratusService?${queryParams}`, {credentials:'include'});
     const data = await response.json();
     if (response.ok === false){
       console.log(data.message);
@@ -181,7 +186,9 @@ export const AuthProvider = (props) => {
     }
          
     try {
+
       window.sessionStorage.setItem('authenticated', 'true');
+      //Cookies.set('userDBEmail', email);
     } 
     catch (err) 
     {

@@ -10,6 +10,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Amazon;
 
+
 namespace CloudApiClient.AwsServices.AwsUtils
 {
     public class EC2ClientFactory
@@ -24,20 +25,20 @@ namespace CloudApiClient.AwsServices.AwsUtils
             _clients = new ConcurrentDictionary<string, AmazonEC2Client>();
             _credentials = new ConcurrentDictionary<string, Dictionary<eAWSCredentials, string>>();
         }
-        public bool StoreAWSCredentialsInSession(string accessKey, string secretKey, string region)
+        public bool StoreAWSCredentialsInSession(string email, string accessKey, string secretKey, string region)
         {
             try
             {
                 lock (_credentials)
                 {
-                    var sessionId = _httpContextAccessor.HttpContext.Session.Id;
+                    var sessionId = email;
                     // Store the session ID in a cookie
-                    _httpContextAccessor.HttpContext.Response.Cookies.Append("Stratus", sessionId, new CookieOptions
-                    {
-                        HttpOnly = true, // Optional: Ensures the cookie is not accessible from JavaScript
-                        SameSite = SameSiteMode.Lax, // Adjust this according to your requirements
-                                                     // Other cookie options as needed
-                    });
+                    //_httpContextAccessor.HttpContext.Response.Cookies.Append("Stratus", sessionId, new CookieOptions
+                    //{
+                    //    HttpOnly = true, // Optional: Ensures the cookie is not accessible from JavaScript
+                    //    SameSite = SameSiteMode.Lax, // Adjust this according to your requirements
+                    //                                 // Other cookie options as needed
+                    //});
                     _credentials[sessionId] = new Dictionary<eAWSCredentials, string>
                     {
                         { eAWSCredentials.AccessKey, accessKey },

@@ -10,6 +10,7 @@ using StratusApp.Services.EncryptionHelpers;
 using Utils.DTO;
 using CloudApiClient.AwsServices.AwsUtils;
 using StratusApp.Settings;
+using Microsoft.Extensions.Options;
 
 
 namespace StratusApp.Controllers
@@ -32,7 +33,7 @@ namespace StratusApp.Controllers
         }
 
         [HttpGet("RegisterToStratusService")]
-        public async Task<ActionResult<StratusResponse<StratusUser>>> RegisterToStratusService(string username, string email, string password, string accessKey,string secretKey)
+        public async Task<ActionResult<StratusResponse<StratusUser>>> RegisterToStratusService(string username, string email, string password, string accessKey,string secretKey, string region)
         {
             var registerToStratusServiceResp = new StratusResponse<StratusUser>();
             StratusUser user = new StratusUser(
@@ -40,18 +41,29 @@ namespace StratusApp.Controllers
                 email,
                 password,
                 accessKey,
-                secretKey
+                secretKey,
+                region
                 );
             
             string isUserExistsMessage = await _authService.IsUserExists(user);
             if (isUserExistsMessage.Equals(userDosentExists))
             {
                 //TODO: add region to the user
-                _ec2ClientFactory.StoreAWSCredentialsInSession(user.AccessKey, user.SecretKey, "us-east-1");
                 _authService.InsertUserToDB(user);
                 //_authService.StoreUserDBIdInSession(user, _httpContextAccessor);
                 registerToStratusServiceResp.Data = user;
                 registerToStratusServiceResp.Message = "Registered successfully";
+                string userSession = await _authService.StoreUserDBEmailInSession(user);
+                _ec2ClientFactory.StoreAWSCredentialsInSession(user.Email, user.AccessKey, user.SecretKey, user.Region);
+                Response.Cookies.Append("Stratus", userSession, new CookieOptions
+                {
+                     // Set the session timeout as desired
+                    HttpOnly = false,
+                    IsEssential = true,
+                //options.Cookie.Name = "userDBEmail";
+                SameSite = SameSiteMode.None,
+                Secure = true
+            });
                 return Ok(registerToStratusServiceResp);
 
             }
@@ -70,6 +82,17 @@ namespace StratusApp.Controllers
                 var user = await _authService.GetUserFromDB(email); 
                 logInToStratusServiceResp.Data = user;
                 logInToStratusServiceResp.Message = "Logged in successfully";
+                string userSession = await _authService.StoreUserDBEmailInSession(user);
+                _ec2ClientFactory.StoreAWSCredentialsInSession(user.Email, user.AccessKey, user.SecretKey, user.Region);
+                Response.Cookies.Append("Stratus", userSession, new CookieOptions
+                {
+                    // Set the session timeout as desired
+                    HttpOnly = false,
+                    IsEssential = true,
+                    //options.Cookie.Name = "userDBEmail";
+                    SameSite = SameSiteMode.None,
+                    Secure = true
+                });
                 return Ok(logInToStratusServiceResp);
             }
             else

@@ -47,7 +47,6 @@ const Page = () => {
       password: '',
       accessKey: '',
       secretKey: '',
-      awsRegion: '',
       submit: null
     },
     validationSchema: Yup.object({
@@ -75,7 +74,7 @@ const Page = () => {
     }),
     onSubmit: async (values, helpers) => {
       try {
-        await auth.signUp(values.email, values.name, values.password, values.accessKey, values.secretKey, values.awsRegion);
+        await auth.signUp(values.email, values.name, values.password, values.accessKey, values.secretKey, selectedRegion);
         helpers.setStatus({ success: true });
         setIsSuccess(true);
         setResponseMessage('User created successfully');
