@@ -21,7 +21,7 @@ namespace StratusApp.Controllers
         public async Task<ActionResult<List<CustomInstances>>> GetMoreFittedInstancesFromAWS()
         {
             var instancesListResponse = new StratusResponse<List<CustomInstances>>();
-            instancesListResponse.Data = await _recommendationsService.GetRecommendationsInstances();
+            instancesListResponse.Data = await _recommendationsService.GetInstancesRecommendation();
 
             return Ok(instancesListResponse);
         }

@@ -13,13 +13,15 @@ namespace StratusApp.Services.Recommendations
         private readonly MongoDBService _mongoDatabase;
         private readonly InstanceFilter _instanceFilters;
         private readonly CollectorService _collectorService;
+        private readonly IHttpContextAccessor _httpContextAccessor;
         private const string INTERVAL_FILTER = "month";
 
-        public RecommendationsService(MongoDBService mongoDatabase, CollectorService collectorService)
+        public RecommendationsService(MongoDBService mongoDatabase, CollectorService collectorService, IHttpContextAccessor httpContextAccessor)
         {
             _mongoDatabase = mongoDatabase;
             _collectorService = collectorService;
             _instanceFilters = new InstanceFilter();
+            _httpContextAccessor = httpContextAccessor;
 
             InitValuesFilter();
         }
@@ -57,24 +59,33 @@ namespace StratusApp.Services.Recommendations
             };
         }
 
-        public async Task<List<CustomInstances>> GetRecommendationsInstances()
+        public async Task<List<CustomInstances>> GetInstancesRecommendation()
         {
             //TODO get only user instances !
-            var userInstances = _mongoDatabase.GetCollectionAsList<AwsInstanceDetails>(eCollectionName.Instances).Result;
+            string userEmail = _httpContextAccessor.HttpContext.Request.Cookies["Stratus"];
+            var user = _mongoDatabase.GetDocuments<StratusUser>(eCollectionName.Users, (StratusUser user) => user.Email.Equals(userEmail)).Result.FirstOrDefault();
+            var userInstances = _mongoDatabase.GetDocuments<AwsInstanceDetails>(eCollectionName.Instances, (AwsInstanceDetails userInstances) => userInstances.UserId == user.Id).Result;
             List<CustomInstances> customInstances = new List<CustomInstances>();
 
             foreach (var userInstance in userInstances)
             {
-                var optionalInstances = _mongoDatabase.GetDocuments(eCollectionName.AlternativeInstances, _instanceFilters.Filter(userInstance)).Result;
-
-                if(userInstance.Specifications.Storage == null) userInstance.Specifications.Storage = new Storage(); // Delete after db change storage val
-                
-                foreach (var instance in optionalInstances)
+                try
                 {
-                    if (instance.Region == "US East (N. Virginia)" && instance.InstanceType == userInstance.Type) continue; //TODO change to user region
+                    var optionalInstances = _mongoDatabase.GetDocuments(eCollectionName.AlternativeInstances, _instanceFilters.Filter(userInstance)).Result;
 
-                    customInstances.Add(new CustomInstances(userInstance, instance));
+                    if (userInstance.Specifications.Storage == null) userInstance.Specifications.Storage = new Storage(); // Delete after db change storage val
+
+                    foreach (var instance in optionalInstances)
+                    {
+                        if (instance.Region == user.Region && instance.InstanceType == userInstance.Type) continue; //TODO change to user region
+
+                        customInstances.Add(new CustomInstances(userInstance, instance));
+                    }
                 }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e.Message);
+                }   
             }
 
             return customInstances;
