@@ -54,7 +54,6 @@ namespace StratusApp
                 options.JsonSerializerOptions.Converters.Add(enumConverter);
             });
 
-
             services.AddCors(options =>
             {
                 options.AddPolicy("AllowAnyOrigin", builder =>
