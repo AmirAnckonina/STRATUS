@@ -20,21 +20,28 @@ using MonitoringClient.Prometheus;
 using MonitoringClient.Prometheus.PrometheusApi;
 using Utils.Enums;
 using StratusApp.Services.Collector;
+using System.Collections.Concurrent;
 
 namespace StratusApp.Services
 {
     public class AlertsService
     {
+        private const int defaultCpuPercentageThreshold = 70;
+        private const int defaultMemoryPercentageThreshold = 70;
+        private const int defaultStoragePercentageThreshold = 70;
+        private const double defaultIntervalTimeToAlert = 1000 * 60;
+
         private readonly MongoDBService _mongoDatabase;
         private readonly IHttpContextAccessor _httpContextAccessor;
         //private readonly PrometheusClient _prometheusClient;
+        private readonly ConcurrentDictionary<string, System.Timers.Timer> _timers; 
         private readonly CollectorService _collectorService;
         private System.Timers.Timer _timer;
         private readonly Dictionary<eAlertType, int> _alertTypesConverter;
-        private int _cpuPercentageThreshold = 70;
-        private int _memoryPercentageThreshold = 70;
-        private int _storagePercentageThreshold = 70;
-        private double _intervalTimeToAlert = 1000 * 60;
+        private readonly ConcurrentDictionary<string, int> _cpuPercentageThreshold;
+        private readonly ConcurrentDictionary<string, int> _memoryPercentageThreshold;
+        private readonly ConcurrentDictionary<string, int> _storagePercentageThreshold;
+        private readonly ConcurrentDictionary<string, double> _intervalTimeToAlert;
 
         private const string INTERVAL_FILTER = "day";
 
@@ -48,17 +55,28 @@ namespace StratusApp.Services
             _httpContextAccessor = httpContextAccessor;
             //_prometheusClient = new PrometheusClient();
             _collectorService = collectorService;
+            _timers = new ConcurrentDictionary<string, System.Timers.Timer>();
 
             _alertTypesConverter = new Dictionary<eAlertType, int>()
             {
-                [eAlertType.CPU] = _cpuPercentageThreshold,
-                [eAlertType.STORAGE] = _storagePercentageThreshold,
-                [eAlertType.MEMORY] = _memoryPercentageThreshold,
+                [eAlertType.CPU] = defaultCpuPercentageThreshold,
+                [eAlertType.STORAGE] = defaultStoragePercentageThreshold,
+                [eAlertType.MEMORY] = defaultMemoryPercentageThreshold,
             };
 
-            InitTimer(_intervalTimeToAlert);
+            InitTimer(defaultIntervalTimeToAlert);
         }
-
+        private void InitTimerByUserSession(double interval)
+        {
+            string userSession = _httpContextAccessor.HttpContext.Request.Cookies["Stratus"];
+            if (userSession != null)
+            {
+                _timers[userSession] = new System.Timers.Timer();
+                _timers[userSession].Interval = interval; // should be confiugre by the user
+                _timers[userSession].Elapsed += timer_Elapsed;
+                _timers[userSession].Start();
+            }
+        }
         internal async Task<List<AlertData>> GetAlertsCollection()
         {
             var result = new List<AlertData>();
@@ -157,11 +175,12 @@ namespace StratusApp.Services
 
         private void SetThresholdValues(AlertsConfigurations alertsConfigurations)
         {
-            _cpuPercentageThreshold = alertsConfigurations.CpuThreshold;
-            _memoryPercentageThreshold = alertsConfigurations.MemoryThreshold;
-            _storagePercentageThreshold = alertsConfigurations.DiskThreshold;
-            _intervalTimeToAlert = alertsConfigurations.IntervalTimeMilisec;
-            _timer.Interval = _intervalTimeToAlert;
+            string userSession = _httpContextAccessor.HttpContext.Request.Cookies["Stratus"];
+            _cpuPercentageThreshold[userSession] = alertsConfigurations.CpuThreshold;
+            _memoryPercentageThreshold[userSession] = alertsConfigurations.MemoryThreshold;
+            _storagePercentageThreshold[userSession] = alertsConfigurations.DiskThreshold;
+            _intervalTimeToAlert[userSession] = alertsConfigurations.IntervalTimeMilisec;
+            _timers[userSession].Interval = defaultIntervalTimeToAlert;
         }
 
         private async void InsertAlertsConfigurationsToDB(AlertsConfigurations alertsConfigurations)
