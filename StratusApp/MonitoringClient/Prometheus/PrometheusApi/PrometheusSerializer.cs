@@ -41,7 +41,7 @@ namespace MonitoringClient.Prometheus.PrometheusApi
                     break;
 
                 case PrometheusConcreteResultType.ListOfCpuMetricAndSingleValue:
-                    resultTokenStr = resultToken.FirstOrDefault()?.ToString();
+                    resultTokenStr = resultToken.ToString();
                     baseConverter = new BasePrometheusResultConverter(PrometheusConcreteResultType.ListOfCpuMetricAndSingleValue);
                     break;
 
