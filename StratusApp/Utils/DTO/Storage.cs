@@ -14,7 +14,7 @@ namespace Utils.DTO
         [BsonElement("unit")]
         [BsonRepresentation(BsonType.String)]
         public eSizeUnit Unit { get; set; }
-        public string AsString { get; set; /*{ return ToString(); } */} = string.Empty;
+        public string AsString { get { return ToString(); } }
 
         public Storage() 
         {

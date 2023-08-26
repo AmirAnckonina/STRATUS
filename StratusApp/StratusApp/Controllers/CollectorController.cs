@@ -214,8 +214,8 @@ namespace StratusApp.Controllers
             {
                 var getAllUserResourcesDetailsResponse = new StratusResponse<List<AwsInstanceDetails>>();
                 string userEmail = _contextAccessor.HttpContext.Request.Cookies["Stratus"];
-                
-                List<AwsInstanceDetails> userInstancesDetails = await _collectorService.GetAllUserResourcesDetails(userEmail);
+
+                getAllUserResourcesDetailsResponse.Data = await _collectorService.GetAllUserResourcesDetails(userEmail);
 
                 return Ok(getAllUserResourcesDetailsResponse);
             }
