@@ -295,7 +295,7 @@ namespace StratusApp.Services.Collector
             return averageMemoryUsagePercentage;
         }
 
-        public async Task<List<AwsInstanceDetails>> GetAllUserResourcesDetails(string userEmail)
+        public async Task<List<AwsInstanceDetails>> RefreshAllUserResourcesDetails(string userEmail)
         {
             /**
              * get Type (t2.micro)
@@ -309,31 +309,31 @@ namespace StratusApp.Services.Collector
              */
 
             // Collect all user instances - by userEmail
-       /*     var instances = _mongoDBService.GetDocuments<AwsInstanceDetails>(eCollectionName.Instances,
-                (AwsInstanceDetails insDetails) => insDetails.UserEmail == userEmail
-                );*/
+            //var instances = await _mongoDBService.GetDocuments<AwsInstanceDetails>(eCollectionName.Instances,
+            //    (AwsInstanceDetails insDetails) => insDetails.UserEmail == userEmail);
 
             // Aws Side : Filling InstanceId, InstanceAddr, Type, Price - currently No
             List<AwsInstanceDetails> instanceDetailsList = await _awsService.GetBasicAwsInstancesDetails();
+            instanceDetailsList[0].InstanceAddress = "34.125.220.240";
 
-           
             // Complete procedure by getting the right specs from Prometheus
             foreach (AwsInstanceDetails singleInstanceDetails in instanceDetailsList)
             {
-                string instaceAddr = singleInstanceDetails.InstanceAddress;
+                string instaceAddr = "34.125.220.240";// singleInstanceDetails.InstanceAddress;
 
                 //OS
                 singleInstanceDetails.Specifications.OperatingSystem = "Linux";
 
                 // Memory
                 double totalMemSize = await GetTotalMemorySizeInGB(instaceAddr);
-                Memory memory = new Memory(totalMemSize, eSizeUnit.GB);
+                Memory memory = new Memory(Math.Round(totalMemSize, 3), eSizeUnit.GB);
                 singleInstanceDetails.Specifications.Memory = memory;
 
                 // Storage
                 double totalStorageSize = await GetTotalDiskSizeInGB(instaceAddr);
-                Storage storage = new Storage(totalStorageSize, eSizeUnit.GB);
+                Storage storage = new Storage(Math.Round(totalStorageSize, 3), eSizeUnit.GB);
                 singleInstanceDetails.Specifications.Storage = storage;
+                singleInstanceDetails.Specifications.Storage.AsString = singleInstanceDetails.Specifications.Storage.ToString();
 
                 // vCpu
                 int numOfVCpus = await GetNumberOfvCPU(instaceAddr);
@@ -343,7 +343,15 @@ namespace StratusApp.Services.Collector
             // Update DB with all the data collected.
             _awsService.InsertUserInstancesToDB(instanceDetailsList);
 
+
             return instanceDetailsList;
+        }
+
+        internal async Task<List<AwsInstanceDetails>?> GetAllUserResourcesDetails(string userEmail)
+        {
+            var results = await _mongoDBService.GetDocuments<AwsInstanceDetails>(eCollectionName.Instances, (inst) => inst.UserEmail == userEmail);
+
+            return results;
         }
     }
 }

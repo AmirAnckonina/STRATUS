@@ -33,7 +33,7 @@ const Page = () => {
   useEffect(() => {
     console.log(document.cookie);
     console.log("hi");
-    axios.get('https://localhost:7094/GetUserInstanceData')
+    axios.get('https://localhost:7094/GetAllUserResourcesDetails')
       .then(response => {
         if (!response.data) {
           throw new Error('Data not received');

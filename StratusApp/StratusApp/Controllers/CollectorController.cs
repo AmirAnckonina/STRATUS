@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using MonitoringClient;
 using StratusApp.Models.Responses;
 using StratusApp.Services.Collector;
+using System.Collections.Generic;
 using Utils.DTO;
 
 namespace StratusApp.Controllers
@@ -17,7 +18,7 @@ namespace StratusApp.Controllers
         public CollectorController(CollectorService collectorService, IHttpContextAccessor contextAccessor)
         {
             _collectorService = collectorService;
-            _contextAccessor = contextAccessor; 
+            _contextAccessor = contextAccessor;
         }
 
         [HttpGet("GetNumberOfvCPU")]
@@ -34,7 +35,7 @@ namespace StratusApp.Controllers
         public async Task<ActionResult<StratusResponse<double>>> GetCpuUsageUtilization(string instance = "34.125.220.240", string timeFilter = "month")
         {
             if (instance is null) return BadRequest();
-            
+
             var cpuUsageResponse = new StratusResponse<double>();
 
             cpuUsageResponse.Data = await _collectorService.GetAvgCpuUsageUtilization(instance, timeFilter);
@@ -46,7 +47,7 @@ namespace StratusApp.Controllers
         public async Task<ActionResult<StratusResponse<double>>> GetMaxCpuUsageUtilization(string instance = "34.125.220.240", string timeFilter = "month")
         {
             var cpuUsageResponse = new StratusResponse<double>();
-            
+
             cpuUsageResponse.Data = await _collectorService.GetMaxCpuUsageUtilization(instance, timeFilter);
 
             return Ok(cpuUsageResponse);
@@ -103,7 +104,7 @@ namespace StratusApp.Controllers
                 return BadRequest(ex.Message);
             }
         }
-        
+
         [HttpGet("GetAvgDiskSpaceUsageInGB")]
         public async Task<ActionResult<StratusResponse<double>>> GetAvgDiskSpaceUsageInGB(string instance, string timeFilter = "month")
         {
@@ -207,25 +208,44 @@ namespace StratusApp.Controllers
             }
         }
 
+        [HttpPatch("RefreshAllUserResourcesDetails")]
+        public async Task<ActionResult<StratusResponse<string>>> RefreshAllUserResourcesDetails()
+        {
+            try
+            {
+                string userEmail = _contextAccessor.HttpContext.Request.Cookies["Stratus"];
+
+                var instances = await _collectorService.RefreshAllUserResourcesDetails(userEmail);
+                if (instances != null)
+                {
+                    return Ok();
+                }
+                else throw new Exception();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new StratusResponse<string>(false, ex.Message));
+            }
+        }
+
         [HttpGet("GetAllUserResourcesDetails")]
         public async Task<ActionResult<StratusResponse<List<AwsInstanceDetails>>>> GetAllUserResourcesDetails()
         {
             try
             {
-                var getAllUserResourcesDetailsResponse = new StratusResponse<List<AwsInstanceDetails>>();
                 string userEmail = _contextAccessor.HttpContext.Request.Cookies["Stratus"];
-                
-                List<AwsInstanceDetails> userInstancesDetails = await _collectorService.GetAllUserResourcesDetails(userEmail);
+                var instances = new StratusResponse<List<AwsInstanceDetails>>();
 
-                return Ok(getAllUserResourcesDetailsResponse);
+                instances.Data = await _collectorService.GetAllUserResourcesDetails(userEmail);
+
+                return Ok(instances);
             }
             catch (Exception ex)
             {
-                return BadRequest( 
-                    new StratusResponse<List<AwsInstanceDetails>>(false, ex.Message)
-                    );
+                return BadRequest(new StratusResponse<string>(false, ex.Message));
             }
         }
+
 
         [HttpGet("GetAvgCpuUsageUtilizationOverTime")]
         public async Task<ActionResult<StratusResponse<List<CpuUsageData>>>> GetAvgCpuUsageUtilizationOverTime(string instance = "34.125.220.240", string timeFilter = "month")

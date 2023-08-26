@@ -53,7 +53,7 @@ namespace StratusApp.Controllers
             }            
         }
 
-        [HttpHead("RegisterToAlerts")]
+        [HttpPatch("RegisterToAlerts")]
         public async Task<ActionResult<StratusResponse<string>>> RegisterToAlerts()
         {
             await _alertsService.RegisterToAlerts();
