@@ -309,18 +309,17 @@ namespace StratusApp.Services.Collector
              */
 
             // Collect all user instances - by userEmail
-       /*     var instances = _mongoDBService.GetDocuments<AwsInstanceDetails>(eCollectionName.Instances,
-                (AwsInstanceDetails insDetails) => insDetails.UserEmail == userEmail
-                );*/
+            //var instances = await _mongoDBService.GetDocuments<AwsInstanceDetails>(eCollectionName.Instances,
+            //    (AwsInstanceDetails insDetails) => insDetails.UserEmail == userEmail);
 
             // Aws Side : Filling InstanceId, InstanceAddr, Type, Price - currently No
             List<AwsInstanceDetails> instanceDetailsList = await _awsService.GetBasicAwsInstancesDetails();
+            instanceDetailsList[0].InstanceAddress = "34.125.220.240";
 
-           
             // Complete procedure by getting the right specs from Prometheus
             foreach (AwsInstanceDetails singleInstanceDetails in instanceDetailsList)
             {
-                string instaceAddr = singleInstanceDetails.InstanceAddress;
+                string instaceAddr = "34.125.220.240";// singleInstanceDetails.InstanceAddress;
 
                 //OS
                 singleInstanceDetails.Specifications.OperatingSystem = "Linux";
@@ -342,6 +341,7 @@ namespace StratusApp.Services.Collector
 
             // Update DB with all the data collected.
             _awsService.InsertUserInstancesToDB(instanceDetailsList);
+
 
             return instanceDetailsList;
         }

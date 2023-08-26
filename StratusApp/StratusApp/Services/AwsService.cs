@@ -96,6 +96,7 @@ namespace StratusApp.Services
             {
                 if(!IsInstanceExistsInDB(instance, dBInstances))
                 {
+                    instance.UserEmail = GetUserSession();
                     _mongoDBService.InsertDocument<AwsInstanceDetails>(eCollectionName.Instances, instance);
                 }
             }

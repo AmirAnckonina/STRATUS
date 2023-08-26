@@ -29,7 +29,7 @@ export const OverviewLatestMachines = ({ onMachineSelect }) => {
 
 
   useEffect(() => {
-    axios.get('https://localhost:7094/GetUserInstanceData')
+    axios.get('https://localhost:7094/GetAllUserResourcesDetails')
       .then(response => {
         const machinesWithSelection = response.data.data.map(machine => ({
           ...machine,

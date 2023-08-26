@@ -133,7 +133,7 @@ export const OverviewCpuUtilization = (props) => {
                   color="text.secondary"
                   variant="subtitle2"
                 >
-                  {item}%
+                  {item.toFixed(2)}%
                 </Typography>
               </Box>
             );
