@@ -19,16 +19,13 @@ export const AuthGuard = (props) => {
       if (!router.isReady) {
         return;
       }
-
       // Prevent from calling twice in development mode with React.StrictMode enabled
       if (ignore.current) {
         return;
       }
-
       ignore.current = true;
 
       if (!isAuthenticated) {
-        console.log('Not authenticated, redirecting');
         router
           .replace({
             pathname: '/auth/login',

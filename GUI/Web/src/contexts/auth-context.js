@@ -1,8 +1,8 @@
 import { createContext, useContext, useEffect, useReducer, useRef } from 'react';
 import PropTypes from 'prop-types';
-//import Cookies from 'js-cookie';
 import { drawerClasses } from '@mui/material';
 import axios from 'axios';
+axios.defaults.withCredentials = true;
 
 const HANDLERS = {
   INITIALIZE: 'INITIALIZE',
@@ -49,7 +49,7 @@ const handlers = {
     return {
       ...state,
       isAuthenticated: false,
-      user: null
+      user: null,
     };
   }
 };
@@ -155,7 +155,7 @@ export const AuthProvider = (props) => {
 
     const user = {
       id: response.id,
-      avatar: '/assets/avatars/avatar-anika-visser.png',
+      //avatar: '/assets/avatars/avatar-anika-visser.png',
       name: response.name,
       email: email
     };
@@ -217,10 +217,21 @@ export const AuthProvider = (props) => {
     });
   };
 
-  const signOut = () => {
-    dispatch({
-      type: HANDLERS.SIGN_OUT
-    });
+  const signOut = async () => {
+    try {
+      // Call the logout endpoint on the server
+      await axios.get('https://localhost:7094/LogOutFromStratusService', { credentials: 'include' });
+  
+      // Delete the "Stratus" cookie from the web browser
+      document.cookie = 'Stratus=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+      window.sessionStorage.setItem('authenticated', 'false');
+      // Dispatch the SIGN_OUT action to update the Redux store
+      dispatch({
+        type: HANDLERS.SIGN_OUT
+      });
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   return (

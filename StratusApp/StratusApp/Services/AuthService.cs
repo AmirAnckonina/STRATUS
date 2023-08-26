@@ -127,5 +127,10 @@ namespace StratusApp.Services
             }
             return null;
         }
+
+        internal void LogOutFromStratusService()
+        {
+            _httpContextAccessor.HttpContext.Session.Remove("Stratus");
+        }
     }
 }
