@@ -4,10 +4,16 @@ import {
   Box,
   Card,
   TextField,
+  CardContent,
+  Typography,
+  Grid,
+  Cell,
 } from '@mui/material';
 import { Scrollbar } from 'src/components/scrollbar';
 import { DataGrid, GridToolbar } from '@mui/x-data-grid';
 import SyncIcon from '@mui/icons-material/Sync'
+import clsx from 'clsx';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
 
 const CustomNumberIntervalFilter = (props) => {
   const { item, applyValue, focusElementRef = null } = props;
@@ -82,13 +88,13 @@ const CustomNumberIntervalFilter = (props) => {
   );
 };
 
-
 export const AlertsTable = (props) => {
   const { items } = props;
 
   const sequentialItems = items.map((item, index) => ({
     ...item,
     id: index + 1,
+    percentageUsage: item.percentageUsage.toFixed(3),
   }));
   useEffect(() => {
     console.log('Items:', items);
@@ -102,10 +108,21 @@ export const AlertsTable = (props) => {
       flex: 1,      
       type: 'singleSelect',
       valueOptions: ['CPU', 'MEMORY', 'STORAGE'],
+      cellClassName: (params) => {
+        if (params.value == null) {
+          return '';
+        }
+  
+        return clsx('super-app', {
+          cpu: params.value === 'CPU',
+          storage: params.value === 'STORAGE',
+          memory: params.value === 'MEMORY',
+        });
+      },
     },
     {
       field: 'creationTime',
-      headerName: 'Creation alert time',
+      headerName: 'Alert creation time',
       flex: 1,
       type: 'date',
       valueFormatter: (params) => {
@@ -153,21 +170,117 @@ export const AlertsTable = (props) => {
     },
   ];
 
+  const calculateAverageUsage = (type) => {
+    const typeItems = sequentialItems.filter(item => item.type === type);
+    if (typeItems.length === 0) {
+      return 0;
+    }
+    const totalUsage = typeItems.reduce((sum, item) => sum + parseFloat(item.percentageUsage), 0);
+    return (totalUsage / typeItems.length).toFixed(3);
+  };
+
+
+  const dataForBarChart = [
+    { name: 'CPU', value: sequentialItems.filter(item => item.type === 'CPU').length, color: '#1a3e72' },
+    { name: 'MEMORY', value: sequentialItems.filter(item => item.type === 'MEMORY').length, color: 'lightblue' },
+    { name: 'STORAGE', value: sequentialItems.filter(item => item.type === 'STORAGE').length, color: '#1a3e72' },
+  ];
+
+  const dataForPercentageBarChart = [
+    { name: 'CPU', value: calculateAverageUsage('CPU'), color: '#1a3e72' },
+    { name: 'MEMORY', value: calculateAverageUsage('MEMORY'), color: 'lightblue' },
+    { name: 'STORAGE', value: calculateAverageUsage('STORAGE'), color: '#1a3e72' },
+  ];
+
+ 
   return (
     <Card>
-      <Scrollbar>
-        <div style={{ height: 400, width: '100%' }}>
-          <DataGrid
-            rows={sequentialItems}
-            columns={columns}
-            checkboxSelection
-            slots={{ toolbar: GridToolbar }}
-          />
-        </div>
-      </Scrollbar>
+      <CardContent>
+        <Grid container spacing={2}>
+          <Grid item xs={12}>
+            <Box
+              sx={{
+                height: 550,
+                width: '100%',
+                '& .super-app.cpu': {
+                  backgroundColor: 'rgba(224, 183, 60, 0.55)',
+                  color: '#1a3e72',
+                  fontWeight: '600',
+                },
+                '& .super-app.storage': {
+                  backgroundColor: 'rgba(157, 255, 118, 0.49)',
+                  color: '#1a3e72',
+                  fontWeight: '600',
+                },
+                '& .super-app.memory': {
+                  backgroundColor: 'lightblue',
+                  color: '#1a3e72',
+                  fontWeight: '600',
+                },
+              }}
+            >
+              <Scrollbar>
+                <div style={{ height: 500, width: '100%' }}>
+                  <DataGrid
+                    rows={sequentialItems}
+                    columns={columns}
+                    checkboxSelection
+                    slots={{ toolbar: GridToolbar }}
+                  />
+                </div>
+              </Scrollbar>
+            </Box>
+          </Grid>
+          <Grid item xs={12}>
+            <Box>
+            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                {/* Bar Chart for Count */}
+                <div style={{ flex: 1 }}>
+                  <Typography variant="h6" gutterBottom>
+                    Type Count
+                  </Typography>
+                  <BarChart width={400} height={300} data={dataForBarChart}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="name" />
+                    <YAxis />
+                    <Tooltip />
+                    <Legend />
+                    <Bar dataKey="value" fill="#1a3e72">
+                      {dataForBarChart.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </div>
+
+                {/* Bar Chart for Average Usage Percentage */}
+                <div style={{ flex: 1 }}>
+                  <Typography variant="h6" gutterBottom>
+                    Average Usage By Type
+                  </Typography>
+                  <BarChart width={400} height={300} data={dataForPercentageBarChart}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="name" />
+                    <YAxis />
+                    <Tooltip />
+                    <Legend />
+                    <Bar dataKey="value" fill="rgba(224, 183, 60, 0.55)">
+                      {dataForPercentageBarChart.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </div>
+              </div>
+            </Box>
+          </Grid>
+        </Grid>
+      </CardContent>
     </Card>
   );
 };
+
+
 
 AlertsTable.propTypes = {
   count: PropTypes.number,

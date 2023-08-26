@@ -95,7 +95,7 @@ namespace StratusApp.Services
             foreach(AwsInstanceDetails instanceDetails in dBInstances)
             {
                
-                if(instanceDetails != null && instanceDetails.InstanceId.Equals(instance.InstanceId) && instanceDetails.InstanceAddress.Equals(instance.InstanceAddress))
+                if(instanceDetails != null && instanceDetails.InstanceId.Equals(instance.InstanceId) || instanceDetails.InstanceAddress.Equals(instance.InstanceAddress))
                 {
                     result = true;
                     break;
