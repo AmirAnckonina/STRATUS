@@ -23,14 +23,15 @@ namespace StratusApp.Services.Collector
         private readonly CollectorUtils _collectorUtils;
         private readonly MongoDBService _mongoDBService;
         private readonly AwsService _awsService;
-        //private readonly AwsClient _awsClient;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public CollectorService(MongoDBService mongoDBService, EC2ClientFactory ec2ClientFactory)
+        public CollectorService(MongoDBService mongoDBService, EC2ClientFactory ec2ClientFactory, IHttpContextAccessor httpContextAccessor)
         {
             this._mongoDBService = mongoDBService; 
             _prometheusClient = new PrometheusClient();
             _collectorUtils = new CollectorUtils();
-            _awsService = new AwsService(mongoDBService, ec2ClientFactory);
+            _httpContextAccessor = httpContextAccessor;
+            _awsService = new AwsService(mongoDBService, ec2ClientFactory, _httpContextAccessor);
         }
 
         public async Task<List<CpuUsageData>> GetAvgCpuUsageUtilizationOverTime(string instanceAddr, string timePeriodStr)
