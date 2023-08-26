@@ -18,12 +18,12 @@ namespace CloudApiClient.AwsServices
 {
     public class EC2Service
     {
-        private AmazonEC2Client _ec2Client;
+        //private AmazonEC2Client _ec2Client;
         private readonly EC2ClientFactory _ec2ClientFactory;
 
         public EC2Service(AWSCredentials credentials, RegionEndpoint region, EC2ClientFactory eC2ClientFactory)
         {
-            _ec2Client = new AmazonEC2Client(credentials, region);
+            //_ec2Client = new AmazonEC2Client(credentials, region);
             _ec2ClientFactory = eC2ClientFactory;
 
         }
@@ -62,14 +62,14 @@ namespace CloudApiClient.AwsServices
             {
                 Filters = { new EC2Model.Filter { Name = "attachment.instance-id", Values = { instanceId } } }
             };
-            DescribeVolumesResponse descVolumeResponse = await _ec2Client.DescribeVolumesAsync(descVolumeRequest);
+            DescribeVolumesResponse descVolumeResponse = await _ec2ClientFactory.GetAndCreateEC2ClientIfNotExist().DescribeVolumesAsync(descVolumeRequest);
 
             return descVolumeResponse.Volumes;
         }
 
         public async Task<DescribeInstancesResponse> DescribeInstancesAsync()
         {
-            return await _ec2Client.DescribeInstancesAsync(new DescribeInstancesRequest());
+            return await _ec2ClientFactory.GetAndCreateEC2ClientIfNotExist().DescribeInstancesAsync(new DescribeInstancesRequest());
         }
 
         public async Task<List<Instance>> GetInstances()
