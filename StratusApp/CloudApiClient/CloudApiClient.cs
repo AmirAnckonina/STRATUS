@@ -79,7 +79,7 @@ namespace CloudApiClient
                                     Memory = new Memory()
                                     {
                                         Value = await GetInstanceTotalVolumesSize(instance.InstanceId),
-                                        Unit = eMemoryUnit.GB
+                                        Unit = eSizeUnit.GB
                                     },
                                     Storage = new Utils.DTO.Storage() { AsString = instance.RootDeviceType.Value.ToUpper() },
 

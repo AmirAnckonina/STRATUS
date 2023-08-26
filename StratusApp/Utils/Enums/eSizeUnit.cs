@@ -4,7 +4,7 @@ using MongoDB.Bson;
 
 namespace Utils.Enums
 {
-    public enum eMemoryUnit
+    public enum eSizeUnit
     {
         KB,
         MB,
@@ -12,3 +12,4 @@ namespace Utils.Enums
         TB,
     }
 }
+

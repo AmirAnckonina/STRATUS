@@ -21,6 +21,7 @@ namespace StratusApp.Services
             _mongoDBService = mongoDatabase;
             _cloudApiClient = new AwsClient(ec2ClientFactory);
         }
+
         internal bool StoreAWSCredentialsInSession(string accessKey, string secretKey, string region)
         {
             return _cloudApiClient.StoreAWSCredentialsInSession(accessKey, secretKey, region);
@@ -49,17 +50,17 @@ namespace StratusApp.Services
             return await _cloudApiClient.GetInstanceCpuUsageOverTime(instanceId, filterTime);
         }
 
-        internal async Task<List<AwsInstanceDetails>> GetInstanceFormalData()
+        internal async Task<List<AwsInstanceDetails>> GetBasicAwsInstancesDetails()
         {
             var instances = await _cloudApiClient.GetInstanceFormalData();
 
             SetPriceFromToInstances(instances);
-            InsertUserInstancesToDB(instances);
+            //InsertUserInstancesToDB(instances);
             
             return instances;
         }
 
-        private void SetPriceFromToInstances(List<AwsInstanceDetails> instances)
+        internal void SetPriceFromToInstances(List<AwsInstanceDetails> instances)
         {
             foreach (var instance in instances)     
             {
@@ -75,7 +76,7 @@ namespace StratusApp.Services
             }
         }
 
-        private void InsertUserInstancesToDB(List<AwsInstanceDetails> instances)
+        internal void InsertUserInstancesToDB(List<AwsInstanceDetails> instances)
         {
             //Get DB instances here to prevent redundant DB calls
             var dBInstances = _mongoDBService.GetCollectionAsList<AwsInstanceDetails>(eCollectionName.Instances).Result;

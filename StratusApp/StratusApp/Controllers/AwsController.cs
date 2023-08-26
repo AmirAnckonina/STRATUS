@@ -32,7 +32,7 @@ namespace StratusApp.Controllers
         {
             var userInstanceDataStartusResp = new StratusResponse<List<AwsInstanceDetails>>();
 
-            userInstanceDataStartusResp.Data = await _awsService.GetInstanceFormalData();
+            userInstanceDataStartusResp.Data = await _awsService.GetBasicAwsInstancesDetails();
 
             return Ok(userInstanceDataStartusResp);
         }

@@ -12,10 +12,12 @@ namespace StratusApp.Controllers
     public class CollectorController : Controller
     {
         private readonly CollectorService _collectorService;
+        private readonly IHttpContextAccessor _contextAccessor;
 
-        public CollectorController(CollectorService collectorService)
+        public CollectorController(CollectorService collectorService, IHttpContextAccessor contextAccessor)
         {
             _collectorService = collectorService;
+            _contextAccessor = contextAccessor; 
         }
 
         [HttpGet("GetNumberOfvCPU")]
@@ -206,29 +208,22 @@ namespace StratusApp.Controllers
         }
 
         [HttpGet("GetAllUserResourcesDetails")]
-        public async Task<ActionResult<StratusResponse<List<InstanceDetailsDTO>>>> GetAllUserResourcesDetails(string userEmail)
+        public async Task<ActionResult<StratusResponse<List<AwsInstanceDetails>>>> GetAllUserResourcesDetails()
         {
             try
             {
-                var getAllUserResourcesDetailsResponse = new StratusResponse<List<InstanceDetailsDTO>>();
-                List<InstanceDetailsDTO> userInstancesDetails = new List<InstanceDetailsDTO>();
-
-                List<string> userInstacesAddresses = new List<string>();
-                //List<string> userInstaces = _dbClient.GetAllUserResourcesDetails(userEmail);
-
-                foreach (string instanceAddr in userInstacesAddresses)
-                {
-                    // For InstanceId = "x.x.x.x" we need to build single UserInstanceDetailsDTO and add it to the resultList.
-                    InstanceDetailsDTO singleInstanceDetails = await _collectorService.GetInstanceSpecifications(instanceAddr);
-                    userInstancesDetails.Add(singleInstanceDetails);
-                }
-
+                var getAllUserResourcesDetailsResponse = new StratusResponse<List<AwsInstanceDetails>>();
+                string userEmail = _contextAccessor.HttpContext.Request.Cookies["Stratus"];
+                
+                List<AwsInstanceDetails> userInstancesDetails = await _collectorService.GetAllUserResourcesDetails(userEmail);
 
                 return Ok(getAllUserResourcesDetailsResponse);
             }
             catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+                return BadRequest( 
+                    new StratusResponse<List<AwsInstanceDetails>>(false, ex.Message)
+                    );
             }
         }
 
@@ -246,7 +241,10 @@ namespace StratusApp.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+                
+                return BadRequest(
+                    new StratusResponse<List<CpuUsageData>>(false ,ex.Message)
+                    );
             }
         }     
 

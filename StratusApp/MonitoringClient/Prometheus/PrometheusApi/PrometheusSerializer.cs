@@ -12,6 +12,7 @@ using System.Linq;
 using System.Text;
 using System.Text.Json.Nodes;
 using System.Threading.Tasks;
+using MonitoringClient.Prometheus.Exceptions;
 
 namespace MonitoringClient.Prometheus.PrometheusApi
 {
@@ -21,7 +22,7 @@ namespace MonitoringClient.Prometheus.PrometheusApi
 
         public T DeserializeRawResponse<T>(PrometheusQueryType queryType, string respContent)
         {
-            BasePrometheusResultConverter baseConverter;
+            //BasePrometheusResultConverter baseConverter;
             string resultTokenStr;
             JObject rawJObj = JObject.Parse(respContent);
             JToken resultToken = rawJObj["data"]?["result"];
@@ -31,34 +32,38 @@ namespace MonitoringClient.Prometheus.PrometheusApi
             switch (concreteResultType)
             {
                 case PrometheusConcreteResultType.EmptyMetricAndSingleValue:
-                    resultTokenStr = resultToken.FirstOrDefault()?.ToString();
-                    baseConverter = new BasePrometheusResultConverter(PrometheusConcreteResultType.EmptyMetricAndSingleValue);
+                    resultTokenStr = resultToken?.FirstOrDefault()?.ToString();
+                    //baseConverter = new BasePrometheusResultConverter(PrometheusConcreteResultType.EmptyMetricAndSingleValue);
                     break;
 
                 case PrometheusConcreteResultType.EmptyMetricAndValuesList:
-                    resultTokenStr = resultToken.FirstOrDefault()?.ToString();
-                    baseConverter = new BasePrometheusResultConverter(PrometheusConcreteResultType.EmptyMetricAndValuesList);
+                    resultTokenStr = resultToken?.FirstOrDefault()?.ToString();
+                    //baseConverter = new BasePrometheusResultConverter(PrometheusConcreteResultType.EmptyMetricAndValuesList);
                     break;
 
                 case PrometheusConcreteResultType.ListOfCpuMetricAndSingleValue:
-                    resultTokenStr = resultToken.ToString();
-                    baseConverter = new BasePrometheusResultConverter(PrometheusConcreteResultType.ListOfCpuMetricAndSingleValue);
+                    resultTokenStr = resultToken?.ToString();
+                    //baseConverter = new BasePrometheusResultConverter(PrometheusConcreteResultType.ListOfCpuMetricAndSingleValue);
                     break;
 
                 default:    
-                    throw new Exception(); 
+                    throw new PrometheusClientException("Unsupported result for the requested query."); 
 
             }
-            /// For testing.
+        
 /*            if (typeof(T) == typeof(EmptyMetricAndSingleValueResult))
             {
                 EmptyMetricAndSingleValueResult a = JsonConvert.DeserializeObject<EmptyMetricAndSingleValueResult>(resultTokenStr);
             }*/
 
-
-            T? promResult = JsonConvert.DeserializeObject<T>(resultTokenStr, baseConverter);
-
-            return promResult;
+            if (resultTokenStr != null)
+            {
+                return JsonConvert.DeserializeObject<T>(resultTokenStr); //, baseConverter);
+            }
+            else
+            {
+                throw new PrometheusClientException("there's no data to present, probably the query result is empty.");
+            }
 
         }
 
@@ -72,6 +77,7 @@ namespace MonitoringClient.Prometheus.PrometheusApi
 
 
                 case PrometheusQueryType.GetAvgCpuUtilizationByCpu:
+                case PrometheusQueryType.GetNumberOfvCPU:
                     return PrometheusConcreteResultType.ListOfCpuMetricAndSingleValue;
 
                 default:

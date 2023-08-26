@@ -13,12 +13,22 @@ namespace Utils.DTO
         public double Value { get; set; }
         [BsonElement("unit")]
         [BsonRepresentation(BsonType.String)]
-        public eMemoryUnit Unit { get; set; }
+        public eSizeUnit Unit { get; set; }
         public string AsString { get; set; /*{ return ToString(); } */} = string.Empty;
-        
+
+        public Storage() 
+        {
+        }
+
+        public Storage(double value, eSizeUnit unit)
+        {
+            Value = value;
+            Unit = unit;
+        }
+
         public override string ToString()
         {
-            return Value.ToString() + " " + Enum.GetName(typeof(eMemoryUnit), Unit);
+            return Value.ToString() + " " + Enum.GetName(typeof(eSizeUnit), Unit);
         }
     }
 }
