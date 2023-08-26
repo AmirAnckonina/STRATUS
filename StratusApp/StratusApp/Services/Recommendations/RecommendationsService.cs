@@ -64,7 +64,7 @@ namespace StratusApp.Services.Recommendations
             //TODO get only user instances !
             string userEmail = _httpContextAccessor.HttpContext.Request.Cookies["Stratus"];
             var user = _mongoDatabase.GetDocuments<StratusUser>(eCollectionName.Users, (StratusUser user) => user.Email.Equals(userEmail)).Result.FirstOrDefault();
-            var userInstances = _mongoDatabase.GetDocuments<AwsInstanceDetails>(eCollectionName.Instances, (AwsInstanceDetails userInstances) => userInstances.UserEmail == user.Email).Result;
+            var userInstances = _mongoDatabase.GetDocuments<AwsInstanceDetails>(eCollectionName.Instances, (AwsInstanceDetails userInstances) => userInstances.UserId == user.Id).Result;
             List<CustomInstances> customInstances = new List<CustomInstances>();
 
             foreach (var userInstance in userInstances)

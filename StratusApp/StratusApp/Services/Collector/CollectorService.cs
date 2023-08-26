@@ -1,15 +1,19 @@
-﻿using MonitoringClient;
+﻿using Amazon.Auth.AccessControlPolicy.ActionIdentifiers;
+using CloudApiClient.AwsServices.AwsUtils;
+using MonitoringClient;
 using MonitoringClient.Prometheus;
 using MonitoringClient.Prometheus.Enums;
 using MonitoringClient.Prometheus.PrometheusApi;
 using MonitoringClient.Prometheus.PrometheusModels;
 using MonitoringClient.Prometheus.PrometheusModels.OldPrometheusModels_bkup;
 using MonitoringClient.Prometheus.PrometheusModels.SingleResultModels;
+using StratusApp.Services.MongoDBServices;
 using System;
 using System.Reflection;
 using Utils.DTO;
 using Utils.Enums;
 using static Amazon.EC2.Util.VPCUtilities;
+using AwsClient = CloudApiClient.CloudApiClient;
 
 namespace StratusApp.Services.Collector
 {
@@ -17,11 +21,16 @@ namespace StratusApp.Services.Collector
     {
         private readonly PrometheusClient _prometheusClient;
         private readonly CollectorUtils _collectorUtils;
+        private readonly MongoDBService _mongoDBService;
+        private readonly AwsService _awsService;
+        //private readonly AwsClient _awsClient;
 
-        public CollectorService()
+        public CollectorService(MongoDBService mongoDBService, EC2ClientFactory ec2ClientFactory)
         {
+            this._mongoDBService = mongoDBService; 
             _prometheusClient = new PrometheusClient();
             _collectorUtils = new CollectorUtils();
+            _awsService = new AwsService(mongoDBService, ec2ClientFactory);
         }
 
         public async Task<List<CpuUsageData>> GetAvgCpuUsageUtilizationOverTime(string instanceAddr, string timePeriodStr)
@@ -169,14 +178,15 @@ namespace StratusApp.Services.Collector
         {
             PrometheusQueryParams queryParams = new PrometheusQueryParams()
             {
-                InstanceAddr = instance
+                InstanceAddr = instance,
+                QueryType = PrometheusQueryType.GetNumberOfvCPU
+                
             };
 
             var result = 
-                await _prometheusClient.ExecutePromQLQuery<EmptyMetricAndSingleValue>(queryParams);
+                await _prometheusClient.ExecutePromQLQuery<List<CpuMetricAndSingleValue>>(queryParams);
 
-            //return result.Data.Result[0].TimestampAndValue[0];
-            return 0;
+            return result.Count;
         }
 
         public async Task<double> GetTotalDiskSizeInGB(string instance)
@@ -282,6 +292,57 @@ namespace StratusApp.Services.Collector
 
             averageMemoryUsagePercentage = (avgUsage / totalSize) * 100;
             return averageMemoryUsagePercentage;
+        }
+
+        public async Task<List<AwsInstanceDetails>> GetAllUserResourcesDetails(string userEmail)
+        {
+            /**
+             * get Type (t2.micro)
+             * get OS
+             * get Price
+             * get CPU
+             * get Storage
+             * get Memory
+             * 
+             *
+             */
+
+            // Collect all user instances - by userEmail
+       /*     var instances = _mongoDBService.GetDocuments<AwsInstanceDetails>(eCollectionName.Instances,
+                (AwsInstanceDetails insDetails) => insDetails.UserEmail == userEmail
+                );*/
+
+            // Aws Side : Filling InstanceId, InstanceAddr, Type, Price - currently No
+            List<AwsInstanceDetails> instanceDetailsList = await _awsService.GetBasicAwsInstancesDetails();
+
+           
+            // Complete procedure by getting the right specs from Prometheus
+            foreach (AwsInstanceDetails singleInstanceDetails in instanceDetailsList)
+            {
+                string instaceAddr = singleInstanceDetails.InstanceAddress;
+
+                //OS
+                singleInstanceDetails.Specifications.OperatingSystem = "Linux";
+
+                // Memory
+                double totalMemSize = await GetTotalMemorySizeInGB(instaceAddr);
+                Memory memory = new Memory(totalMemSize, eSizeUnit.GB);
+                singleInstanceDetails.Specifications.Memory = memory;
+
+                // Storage
+                double totalStorageSize = await GetTotalDiskSizeInGB(instaceAddr);
+                Storage storage = new Storage(totalStorageSize, eSizeUnit.GB);
+                singleInstanceDetails.Specifications.Storage = storage;
+
+                // vCpu
+                int numOfVCpus = await GetNumberOfvCPU(instaceAddr);
+                singleInstanceDetails.Specifications.VCPU = numOfVCpus;
+            }
+
+            // Update DB with all the data collected.
+            _awsService.InsertUserInstancesToDB(instanceDetailsList);
+
+            return instanceDetailsList;
         }
     }
 }
