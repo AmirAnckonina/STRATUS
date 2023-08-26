@@ -145,10 +145,19 @@ export const AuthProvider = (props) => {
     if (response.ok === false){
       throw new Error('Please check your email and password');
     } 
+
     try {
-      window.sessionStorage.setItem('authenticated', 'true');
-      Cookies.set('userDBEmail', email);
+      const response = axios.patch(`https://localhost:7094/RefreshAllUserResourcesDetails`);
+  
+        if (response.ok === false){
+          console.log(data.message);
     
+          throw new Error(data.message);
+        }   
+        
+      window.sessionStorage.setItem('authenticated', 'true');
+      Cookies.set('userDBEmail', email);      
+
     } catch (err) {
       console.error(err);
     }
@@ -191,9 +200,17 @@ export const AuthProvider = (props) => {
       window.sessionStorage.setItem('authenticated', 'true');
       //Cookies.set('userDBEmail', email);
 
-      const response = axios.head(`https://localhost:7094/RegisterToAlerts`);
-      const data = await response.json();
+      const response = axios.patch(`https://localhost:7094/RegisterToAlerts`);
+ 
       if (response.ok === false){
+        console.log(data.message);
+  
+        throw new Error(data.message);
+      }
+
+      const response2 = axios.patch(`https://localhost:7094/RefreshAllUserResourcesDetails`);
+
+      if (response2.ok === false){
         console.log(data.message);
   
         throw new Error(data.message);

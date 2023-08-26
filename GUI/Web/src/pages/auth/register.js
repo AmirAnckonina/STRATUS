@@ -4,13 +4,14 @@ import { useRouter } from 'next/navigation';
 import { useFormik } from 'formik';
 import { useState } from 'react';
 import * as Yup from 'yup';
-import { Box, Button, Link, Stack, TextField, Typography,Select, MenuItem } from '@mui/material';
+import { Box, Button, Link, Stack, TextField, Typography,Select, MenuItem, FormControlLabel, Radio } from '@mui/material';
 import { useAuth } from 'src/hooks/use-auth';
 import { Layout as AuthLayout } from 'src/layouts/auth/layout';
 import { tr } from 'date-fns/locale';
 import { set } from 'nprogress';
 
 const Page = () => {
+  const [selectedProvider, setSelectedProvider] = useState('AWS'); // Default selection
   const router = useRouter();
   const auth = useAuth();
   const [responseMessage, setResponseMessage] = useState(null);
@@ -161,7 +162,7 @@ const Page = () => {
                   onChange={formik.handleChange}
                   type="email"
                   value={formik.values.email}
-                />
+                />                 
                 <TextField
                   error={!!(formik.touched.password && formik.errors.password)}
                   fullWidth
@@ -173,6 +174,21 @@ const Page = () => {
                   type="password"
                   value={formik.values.password}
                 />
+                <Typography variant="h6">Select Cloud Provider:</Typography>
+                <Stack direction="row" spacing={2}>
+                  {['AWS', 'AZURE', 'GCP', 'IBM', 'ORACLE'].map(provider => (
+                    <FormControlLabel
+                      key={provider}
+                      control={<Radio />}
+                      label={provider}
+                      value={provider}
+                      checked={selectedProvider === provider}
+                      onChange={() => setSelectedProvider(provider)}
+                    />
+                  ))}
+                </Stack>
+                {selectedProvider === 'AWS' ? (
+                  <>
                 <TextField
                   error={!!(formik.touched.accessKey && formik.errors.accessKey)}
                   fullWidth
@@ -209,7 +225,11 @@ const Page = () => {
                       {region.label}
                     </MenuItem>
                   ))}           
-                </Select>
+                </Select> 
+                </>
+                ) : (
+                  <Typography variant="body2">Coming Soon...</Typography>
+                )}          
               </Stack>
               {formik.errors.submit && (
                 <Typography
@@ -235,6 +255,7 @@ const Page = () => {
                 sx={{ mt: 3 }}
                 type="submit"
                 variant="contained"
+                disabled={selectedProvider !== 'AWS'}
               >
                 Continue
               </Button>
