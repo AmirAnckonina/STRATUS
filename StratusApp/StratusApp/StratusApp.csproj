@@ -7,6 +7,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Services\Alerts\**" />
+    <Content Remove="Services\Alerts\**" />
+    <EmbeddedResource Remove="Services\Alerts\**" />
+    <None Remove="Services\Alerts\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
     <PackageReference Include="Microsoft.AspNetCore.Session" Version="2.2.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="7.0.9">
@@ -31,7 +38,6 @@
 
   <ItemGroup>
     <Folder Include="Models\MongoDB\" />
-    <Folder Include="Services\Alerts\" />
   </ItemGroup>
 
 </Project>

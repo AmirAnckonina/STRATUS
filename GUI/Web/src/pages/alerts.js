@@ -11,6 +11,7 @@ import { AlertsTable } from 'src/sections/alert/alert-table';
 import { AlertsSearch } from 'src/sections/alert/alert-search';
 import { applyPagination } from 'src/utils/apply-pagination';
 import axios from 'axios';
+axios.defaults.withCredentials = true;
 
 const now = new Date();
 

@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useReducer, useRef } from 'react'
 import PropTypes from 'prop-types';
 //import Cookies from 'js-cookie';
 import { drawerClasses } from '@mui/material';
+import axios from 'axios';
 
 const HANDLERS = {
   INITIALIZE: 'INITIALIZE',
@@ -189,6 +190,14 @@ export const AuthProvider = (props) => {
 
       window.sessionStorage.setItem('authenticated', 'true');
       //Cookies.set('userDBEmail', email);
+
+      const response = axios.head(`https://localhost:7094/RegisterToAlerts`);
+      const data = await response.json();
+      if (response.ok === false){
+        console.log(data.message);
+  
+        throw new Error(data.message);
+      }
     } 
     catch (err) 
     {
