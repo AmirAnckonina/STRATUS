@@ -1,6 +1,7 @@
 using Amazon.CloudWatch.Model;
 using Amazon.EC2.Model;
 using CloudApiClient.AwsServices.AwsUtils;
+using MongoDB.Driver;
 using StratusApp.Models;
 using StratusApp.Services.MongoDBServices;
 using System.Collections.Generic;
@@ -94,11 +95,14 @@ namespace StratusApp.Services
             //TODO: add user id to the instance base on the session
             foreach (AwsInstanceDetails instance in instances)
             {
-                if(!IsInstanceExistsInDB(instance, dBInstances))
+                instance.UserEmail = GetUserSession();
+
+                if (IsInstanceExistsInDB(instance, dBInstances))
                 {
-                    instance.UserEmail = GetUserSession();
-                    _mongoDBService.InsertDocument<AwsInstanceDetails>(eCollectionName.Instances, instance);
+                    _mongoDBService.DeleteDocument<AwsInstanceDetails>(eCollectionName.Instances, (inst) => inst.InstanceAddress == instance.InstanceAddress);
                 }
+
+                _mongoDBService.InsertDocument<AwsInstanceDetails>(eCollectionName.Instances, instance);
             }
         }
 

@@ -46,7 +46,7 @@ namespace Utils.DTO
 
         public override string ToString()
         {
-            return Value.ToString() + " " + Enum.GetName(typeof(eSizeUnit), Unit);
+            return Math.Round(Value,3).ToString() + " " + Enum.GetName(typeof(eSizeUnit), Unit);
         }
     }
 }

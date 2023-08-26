@@ -55,11 +55,7 @@ export const OverviewAverageCpuUsage = (props) => {
             sx={{
               '& .MuiLinearProgress-bar': {
                 backgroundColor: 'success.main',
-              },
-              '& .MuiLinearProgress-barColorPrimary': {
-                transition: 'none',
-                width: `${value}%`,
-              },
+              }
             }}
           />
         </Box>
