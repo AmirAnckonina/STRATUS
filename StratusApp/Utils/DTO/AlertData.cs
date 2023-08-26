@@ -8,7 +8,9 @@ namespace Utils.DTO
     public class AlertData
     {
         [BsonId]
-        public ObjectId Id { get; set; }
+        public ObjectId ObjectId { get; set; }
+        [BsonElement("email")]
+        public string Email { get; set; }
         [BsonElement("machineId")]
         public string MachineId { get; set; }
         [BsonElement("type")]

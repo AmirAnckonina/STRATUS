@@ -15,8 +15,8 @@ namespace Utils.DTO
         [BsonId]
         public ObjectId ObjectId { get; set; }
 
-        [BsonElement("userId")]
-        public ObjectId UserId { get; set; }
+        [BsonElement("Email")]
+        public string UserEmail { get; set; }
 
         [BsonElement("IP")]
         public string InstanceAddress { get; set; }

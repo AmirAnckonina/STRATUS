@@ -15,6 +15,7 @@ using StratusApp.Services.MongoDBServices;
 using StratusApp.Services.Recommendations;
 using System.Text.Json.Serialization;
 using StratusApp.Settings;
+using StratusApp.Services.AlertsService;
 
 namespace StratusApp
 {
