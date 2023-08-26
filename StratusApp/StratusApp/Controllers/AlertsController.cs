@@ -7,6 +7,7 @@ using MonitoringClient;
 using Utils.DTO;
 using StratusApp.Services;
 using DTO;
+using StratusApp.Services.AlertsService;
 
 namespace StratusApp.Controllers
 {
@@ -50,6 +51,14 @@ namespace StratusApp.Controllers
             {
                 return BadRequest();
             }            
+        }
+
+        [HttpHead("RegisterToAlerts")]
+        public async Task<ActionResult<StratusResponse<string>>> RegisterToAlerts()
+        {
+            await _alertsService.RegisterToAlerts();
+
+            return Ok();
         }
     }
 }

@@ -14,12 +14,15 @@ namespace StratusApp.Services
     {
         private readonly MongoDBService _mongoDBService;
         private readonly AwsClient _cloudApiClient;
+        private IHttpContextAccessor _httpContextAccessor;
         private const string INSTANCES_COLLECTION = "Instances";
 
-        public AwsService(MongoDBService mongoDatabase, EC2ClientFactory ec2ClientFactory)
+        public AwsService(MongoDBService mongoDatabase, EC2ClientFactory ec2ClientFactory, IHttpContextAccessor httpContextAccessor)
         {
             _mongoDBService = mongoDatabase;
             _cloudApiClient = new AwsClient(ec2ClientFactory);
+            _httpContextAccessor = httpContextAccessor;
+
         }
 
         internal bool StoreAWSCredentialsInSession(string accessKey, string secretKey, string region)
@@ -73,8 +76,16 @@ namespace StratusApp.Services
                 {
                     instance.Specifications.Price = filteredInstances.ElementAt(0).Specifications.Price;
                 }
+
+                instance.UserEmail = GetUserSession();
             }
         }
+
+        private string GetUserSession()
+        {
+            return _httpContextAccessor.HttpContext.Request.Cookies["Stratus"];
+        }
+
 
         internal void InsertUserInstancesToDB(List<AwsInstanceDetails> instances)
         {

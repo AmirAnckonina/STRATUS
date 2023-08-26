@@ -10,7 +10,7 @@ namespace Utils.DTO
     public class Storage
     {
         [BsonElement("value")]
-        public double Value { get; set; }
+        public double Value { get; set; } 
         [BsonElement("unit")]
         [BsonRepresentation(BsonType.String)]
         public eSizeUnit Unit { get; set; }
