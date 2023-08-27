@@ -9,6 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Amazon;
+using Utils.Utils;
 
 
 namespace CloudApiClient.AwsServices.AwsUtils
@@ -56,7 +57,7 @@ namespace CloudApiClient.AwsServices.AwsUtils
         }
         public Dictionary<eAWSCredentials, string> GetAWSCredentialsFromSession()
         {
-            var sessionId = _httpContextAccessor.HttpContext.Request.Cookies["Stratus"];
+            var sessionId = SessionUtils.GetSessionId(_httpContextAccessor);
 
             lock (_credentials)
             {
@@ -74,7 +75,7 @@ namespace CloudApiClient.AwsServices.AwsUtils
         {
             lock (_clients)
             {
-                var sessionId = _httpContextAccessor.HttpContext.Request.Cookies["Stratus"];
+                var sessionId = SessionUtils.GetSessionId(_httpContextAccessor);
                 // Check if the EC2Client is already stored for the user's session
                 if (_clients.TryGetValue(sessionId, out var existingClient))
                 {
@@ -96,3 +97,4 @@ namespace CloudApiClient.AwsServices.AwsUtils
         }
     }
 }
+      

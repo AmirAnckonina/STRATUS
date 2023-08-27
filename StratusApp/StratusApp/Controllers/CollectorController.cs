@@ -6,6 +6,7 @@ using StratusApp.Models.Responses;
 using StratusApp.Services.Collector;
 using System.Collections.Generic;
 using Utils.DTO;
+using Utils.Utils;
 
 namespace StratusApp.Controllers
 {
@@ -13,12 +14,12 @@ namespace StratusApp.Controllers
     public class CollectorController : Controller
     {
         private readonly CollectorService _collectorService;
-        private readonly IHttpContextAccessor _contextAccessor;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
         public CollectorController(CollectorService collectorService, IHttpContextAccessor contextAccessor)
         {
             _collectorService = collectorService;
-            _contextAccessor = contextAccessor;
+            _httpContextAccessor = contextAccessor;
         }
 
         [HttpGet("GetNumberOfvCPU")]
@@ -213,7 +214,7 @@ namespace StratusApp.Controllers
         {
             try
             {
-                string userEmail = _contextAccessor.HttpContext.Request.Cookies["Stratus"];
+                string userEmail = SessionUtils.GetSessionId(_httpContextAccessor);
 
                 var instances = await _collectorService.RefreshAllUserResourcesDetails(userEmail);
                 if (instances != null)
@@ -233,7 +234,7 @@ namespace StratusApp.Controllers
         {
             try
             {
-                string userEmail = _contextAccessor.HttpContext.Request.Cookies["Stratus"];
+                string userEmail = SessionUtils.GetSessionId(_httpContextAccessor);
                 var instances = new StratusResponse<List<AwsInstanceDetails>>();
 
                 instances.Data = await _collectorService.GetAllUserResourcesDetails(userEmail);

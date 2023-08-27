@@ -44,7 +44,7 @@ const Page = () => {
       .catch(error => {
         console.error('Axios error:', error);
       });
-  }, []);
+  }, []); 
 
   /*useEffect(() => {
     

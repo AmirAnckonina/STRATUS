@@ -7,6 +7,7 @@ using StratusApp.Services.MongoDBServices;
 using System.Collections.Generic;
 using Utils.DTO;
 using Utils.Enums;
+using Utils.Utils;
 using AwsClient = CloudApiClient.CloudApiClient;
 
 namespace StratusApp.Services
@@ -84,11 +85,11 @@ namespace StratusApp.Services
 
         private string GetUserSession()
         {
-            return _httpContextAccessor.HttpContext.Request.Cookies["Stratus"];
+            return SessionUtils.GetSessionId(_httpContextAccessor);
         }
 
 
-        internal void InsertUserInstancesToDB(List<AwsInstanceDetails> instances)
+        internal async void InsertUserInstancesToDB(List<AwsInstanceDetails> instances)
         {
             //Get DB instances here to prevent redundant DB calls
             var dBInstances = _mongoDBService.GetCollectionAsList<AwsInstanceDetails>(eCollectionName.Instances).Result;
@@ -99,10 +100,10 @@ namespace StratusApp.Services
 
                 if (IsInstanceExistsInDB(instance, dBInstances))
                 {
-                    _mongoDBService.DeleteDocument<AwsInstanceDetails>(eCollectionName.Instances, (inst) => inst.InstanceAddress == instance.InstanceAddress);
+                    await _mongoDBService.DeleteDocument<AwsInstanceDetails>(eCollectionName.Instances, (inst) => inst.InstanceAddress == instance.InstanceAddress);
                 }
 
-                _mongoDBService.InsertDocument<AwsInstanceDetails>(eCollectionName.Instances, instance);
+                await _mongoDBService.InsertDocument<AwsInstanceDetails>(eCollectionName.Instances, instance);
             }
         }
 

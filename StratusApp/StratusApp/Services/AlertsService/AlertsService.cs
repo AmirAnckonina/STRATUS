@@ -6,6 +6,7 @@ using StratusApp.Services.MongoDBServices;
 using System.Timers;
 using Utils.DTO;
 using Utils.Enums;
+using Utils.Utils;
 
 namespace StratusApp.Services.AlertsService
 {
@@ -106,7 +107,7 @@ namespace StratusApp.Services.AlertsService
 
         private string GetUserSession()
         {
-            return _httpContextAccessor.HttpContext.Request.Cookies["Stratus"];
+            return SessionUtils.GetSessionId(_httpContextAccessor);
         }
 
         private async void InsertAlertsToDB(List<AlertData> alerts)

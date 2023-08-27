@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <PackageReference Include="AWSSDK.CloudWatch" Version="3.7.104.28" />
+    <PackageReference Include="Microsoft.AspNetCore.Session" Version="2.2.0" />
     <PackageReference Include="MongoDB.Driver" Version="2.20.0" />
     <PackageReference Include="Selenium.Support" Version="4.10.0" />
     <PackageReference Include="Selenium.WebDriver" Version="4.10.0" />
