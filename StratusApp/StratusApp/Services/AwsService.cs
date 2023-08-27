@@ -7,6 +7,7 @@ using StratusApp.Services.MongoDBServices;
 using System.Collections.Generic;
 using Utils.DTO;
 using Utils.Enums;
+using Utils.Utils;
 using AwsClient = CloudApiClient.CloudApiClient;
 
 namespace StratusApp.Services
@@ -84,7 +85,7 @@ namespace StratusApp.Services
 
         private string GetUserSession()
         {
-            return _httpContextAccessor.HttpContext.Request.Cookies["Stratus"];
+            return SessionUtils.GetSessionId(_httpContextAccessor);
         }
 
 

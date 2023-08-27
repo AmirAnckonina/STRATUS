@@ -5,6 +5,7 @@ using StratusApp.Services.MongoDBServices;
 using System.Collections.Generic;
 using System.Reflection.PortableExecutable;
 using Utils.DTO;
+using Utils.Utils;
 
 namespace StratusApp.Services.Recommendations
 {
@@ -62,7 +63,7 @@ namespace StratusApp.Services.Recommendations
         public async Task<List<CustomInstances>> GetInstancesRecommendation()
         {
             //TODO get only user instances !
-            string userEmail = _httpContextAccessor.HttpContext.Request.Cookies["Stratus"];
+            string userEmail = SessionUtils.GetSessionId(_httpContextAccessor);
             var user = _mongoDatabase.GetDocuments<StratusUser>(eCollectionName.Users, (StratusUser user) => user.Email.Equals(userEmail)).Result.FirstOrDefault();
             var userInstances = await _mongoDatabase.GetDocuments<AwsInstanceDetails>(eCollectionName.Instances, (AwsInstanceDetails userInstances) => userInstances.UserEmail == user.Email);
             List<CustomInstances> customInstances = new List<CustomInstances>();
