@@ -319,25 +319,33 @@ namespace StratusApp.Services.Collector
             // Complete procedure by getting the right specs from Prometheus
             foreach (AwsInstanceDetails singleInstanceDetails in instanceDetailsList)
             {
-                string instaceAddr = "34.125.220.240";// singleInstanceDetails.InstanceAddress;
+                try
+                {
+                    string instaceAddr = "34.125.220.240";// singleInstanceDetails.InstanceAddress;
 
-                //OS
-                singleInstanceDetails.Specifications.OperatingSystem = "Linux";
+                    //OS
+                    singleInstanceDetails.Specifications.OperatingSystem = "Linux";
 
-                // Memory
-                double totalMemSize = await GetTotalMemorySizeInGB(instaceAddr);
-                Memory memory = new Memory(Math.Round(totalMemSize, 3), eSizeUnit.GB);
-                singleInstanceDetails.Specifications.Memory = memory;
+                    // Memory
+                    double totalMemSize = await GetTotalMemorySizeInGB(instaceAddr);
+                    Memory memory = new Memory(Math.Round(totalMemSize, 3), eSizeUnit.GB);
+                    singleInstanceDetails.Specifications.Memory = memory;
 
-                // Storage
-                double totalStorageSize = await GetTotalDiskSizeInGB(instaceAddr);
-                Storage storage = new Storage(Math.Round(totalStorageSize, 3), eSizeUnit.GB);
-                singleInstanceDetails.Specifications.Storage = storage;
-                singleInstanceDetails.Specifications.Storage.AsString = singleInstanceDetails.Specifications.Storage.ToString();
+                    // Storage
+                    double totalStorageSize = await GetTotalDiskSizeInGB(instaceAddr);
+                    Storage storage = new Storage(Math.Round(totalStorageSize, 3), eSizeUnit.GB);
+                    singleInstanceDetails.Specifications.Storage = storage;
+                    singleInstanceDetails.Specifications.Storage.AsString = singleInstanceDetails.Specifications.Storage.ToString();
 
-                // vCpu
-                int numOfVCpus = await GetNumberOfvCPU(instaceAddr);
-                singleInstanceDetails.Specifications.VCPU = numOfVCpus;
+                    // vCpu
+                    int numOfVCpus = await GetNumberOfvCPU(instaceAddr);
+                    singleInstanceDetails.Specifications.VCPU = numOfVCpus;
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
+                    throw;
+                }
             }
 
             // Update DB with all the data collected.

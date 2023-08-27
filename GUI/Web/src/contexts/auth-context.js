@@ -164,7 +164,7 @@ export const AuthProvider = (props) => {
 
     const user = {
       id: response.id,
-      //avatar: '/assets/avatars/avatar-anika-visser.png',
+      avatar: '/assets/avatars/avatar-anika-visser.png',
       name: response.name,
       email: email
     };
@@ -223,7 +223,7 @@ export const AuthProvider = (props) => {
 
     const user = {
       id: response.id,
-      avatar: '/assets/avatars/avatar-anika-visser.png',
+      //avatar: '/assets/avatars/avatar-anika-visser.png',
       name: response.name,
       email: email
     };

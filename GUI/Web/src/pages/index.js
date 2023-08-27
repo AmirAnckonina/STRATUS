@@ -46,7 +46,7 @@ const Page = () => {
       });
   }, []);
 
-  useEffect(() => {
+  /*useEffect(() => {
     
     axios.get('https://localhost:7094/GetAvgCpuUtilizationByCpu?instance=' + selectedMachine, {
       withCredentials: true // Include cookies in the request
@@ -56,7 +56,7 @@ const Page = () => {
         setcpuUtilizations(data);
       })
       .catch(error => console.error(error));
-  }, []);
+  }, []);*/
 
   const handleMachineChange = (event) => {
     
