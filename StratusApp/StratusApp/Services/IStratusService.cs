@@ -7,8 +7,7 @@ namespace StratusApp.Services
 {
     public interface IStratusService
     {
-        Task<ActionResult<StratusResponse<StratusUser>>> GetStratusUser(string username);
-
-        Task<ActionResult<StratusResponse<List<StratusUser>>>> GetAllStratusUsers();
+        Task<StratusUser?> GetUserByEmail(string email);
+        Task<bool> UpdateUserDetails(string userEmail, StratusUser user);
     }
 }

@@ -10,6 +10,8 @@ namespace Utils.DTO
 
         [BsonElement("username")]
         public string Username { get; set; }
+        [BsonElement("lastName")]
+        public string LastName { get; set; }
         [BsonElement("email")]
         public string Email { get; set; }
         [BsonElement("password")]
@@ -20,6 +22,8 @@ namespace Utils.DTO
         public string SecretKey { get; set; }
         [BsonElement("region")]
         public string Region { get; set; }
+        [BsonElement("country")]
+        public string Country { get; set; }
         public StratusUser(string username, string email, string password, string accessKey, string secretKey, string region)
         {
             Username = username;
