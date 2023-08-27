@@ -44,19 +44,7 @@ const Page = () => {
       .catch(error => {
         console.error('Axios error:', error);
       });
-  }, []);
-
-  useEffect(() => {
-    
-    axios.get('https://localhost:7094/GetAvgCpuUtilizationByCpu?instance=' + selectedMachine, {
-      withCredentials: true // Include cookies in the request
-    })
-      .then(response => {
-        const data = response.data.data;
-        setcpuUtilizations(data);
-      })
-      .catch(error => console.error(error));
-  }, []);
+  }, []); 
 
   const handleMachineChange = (event) => {
     
