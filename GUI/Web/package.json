@@ -28,6 +28,8 @@
     "@mui/x-date-pickers": "5.0.19",
     "apexcharts": "3.37.0",
     "axios": "^1.4.0",
+    "countries-list": "^2.6.1",
+    "country-flag-icons": "^1.5.7",
     "date-fns": "2.29.3",
     "formik": "2.2.9",
     "js-cookie": "^3.0.5",

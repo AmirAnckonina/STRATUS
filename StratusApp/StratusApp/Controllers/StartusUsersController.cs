@@ -1,43 +1,65 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using DTO;
+using Microsoft.AspNetCore.Cors;
+using Microsoft.AspNetCore.Mvc;
 using StratusApp.Models;
 using StratusApp.Models.Responses;
 using StratusApp.Services;
+using StratusApp.Services.AlertsService;
 using Utils.DTO;
 
 namespace StratusApp.Controllers
 {
+    [EnableCors("AllowAnyOrigin")]
     public class StartusUsersController : Controller
     {
         private readonly IStratusService _stratusService;
-        //private readonly CloudApiClient _cloudApiClient;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public StartusUsersController(IStratusService stratusService) 
+        public StartusUsersController(IStratusService stratusService, IHttpContextAccessor httpContextAccessor)
         {
             _stratusService = stratusService;
+            _httpContextAccessor = httpContextAccessor;
         }
 
-        [HttpGet("GetUserByUsername")]
-        public async Task<ActionResult<StratusResponse<StratusUser>>> GetStratusUser(string username)
+        [HttpGet("GetUserByEmail")]
+        public async Task<ActionResult<StratusResponse<StratusUser>>> GetUserByEmail()
         {
-            var getStratusUserResp = await _stratusService.GetStratusUser(username);
+            string email = _httpContextAccessor.HttpContext.Request.Cookies["Stratus"];
 
-            if  (getStratusUserResp != null)
+            StratusResponse<StratusUser> userResponse = new StratusResponse<StratusUser>();
+            try
             {
-                return Ok(getStratusUserResp);
+                userResponse.Data = await _stratusService.GetUserByEmail(email);
+
+                return Ok(userResponse);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+
+        }
+
+
+        [HttpPost("UpdateUserDetails")]
+        public async Task<ActionResult<StratusResponse<string>>> UpdateUserDetails([FromBody] StratusUser user)
+        {
+            string email = _httpContextAccessor.HttpContext.Request.Cookies["Stratus"];
+            bool result = await _stratusService.UpdateUserDetails(email, user);
+
+            if (result)
+            {
+                var response = new StratusResponse<string>
+                {
+                    Data = "Configurations saved successfully"
+                };
+
+                return Ok(response);
             }
             else
             {
-                return BadRequest(getStratusUserResp);
+                return BadRequest();
             }
         }
-
-        [HttpGet("GetAllStratusUsers")]
-        public async Task<ActionResult<StratusResponse<StratusUser>>> GetAllStratusUsers()
-        {
-            var getllStratusUsersResp = await _stratusService.GetAllStratusUsers();
-
-            return Ok(getllStratusUsersResp);
-           
-        } 
     }
 }

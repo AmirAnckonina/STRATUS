@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-import React, { useContext } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import BellIcon from '@heroicons/react/24/solid/BellIcon';
 import UsersIcon from '@heroicons/react/24/solid/UsersIcon';
 import Bars3Icon from '@heroicons/react/24/solid/Bars3Icon';
@@ -18,15 +18,58 @@ import { alpha } from '@mui/material/styles';
 import { usePopover } from 'src/hooks/use-popover';
 import { AccountPopover } from './account-popover';
 import { ProfileContext } from 'src/contexts/profile-picture-context';
+import axios from 'axios';
 
 const SIDE_NAV_WIDTH = 280;
 const TOP_NAV_HEIGHT = 64;
 
 export const TopNav = (props) => {
   const { onNavOpen } = props;
+  const [user, setUser] = useState({});
   const lgUp = useMediaQuery((theme) => theme.breakpoints.up('lg'));
   const accountPopover = usePopover();
-  const { selectedPicture } = useContext(ProfileContext);
+  
+  function stringToColor(string) {
+    let hash = 0;
+    let i;
+  
+    /* eslint-disable no-bitwise */
+    for (i = 0; i < string.length; i += 1) {
+      hash = string.charCodeAt(i) + ((hash << 5) - hash);
+    }
+  
+    let color = '#';
+  
+    for (i = 0; i < 3; i += 1) {
+      const value = (hash >> (i * 8)) & 0xff;
+      color += `00${value.toString(16)}`.slice(-2);
+    }
+    /* eslint-enable no-bitwise */
+  
+    return color;
+  }
+  
+  function stringAvatar(name) {
+    return {
+      sx: {
+        bgcolor: name ? stringToColor(name) : null,
+      },
+      children: `${name ? name[0] : ''}`,
+    };
+  }
+
+  useEffect(() => {
+  
+    axios
+      .get('https://localhost:7094/GetUserByEmail')
+      .then((response) => {
+        console.log('dataaa:', response.data);
+        setUser(response.data.data);
+       })
+      .catch((error) => {
+        console.error('Error fetching data:', error);
+      });
+  }, []);
 
   return (
     <>
@@ -94,15 +137,9 @@ export const TopNav = (props) => {
                 </Badge>
               </IconButton>
             </Tooltip>
-            <Avatar
+            <Avatar {...stringAvatar(user.username)}
               onClick={accountPopover.handleOpen}
-              ref={accountPopover.anchorRef}
-              sx={{
-                cursor: 'pointer',
-                height: 40,
-                width: 40
-              }}
-              src= {selectedPicture ? selectedPicture : "/assets/avatars/avatar-anika-visser.png"}
+              ref={accountPopover.anchorRef}   
             />
           </Stack>
         </Stack>
