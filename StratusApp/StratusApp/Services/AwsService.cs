@@ -88,7 +88,7 @@ namespace StratusApp.Services
         }
 
 
-        internal void InsertUserInstancesToDB(List<AwsInstanceDetails> instances)
+        internal async void InsertUserInstancesToDB(List<AwsInstanceDetails> instances)
         {
             //Get DB instances here to prevent redundant DB calls
             var dBInstances = _mongoDBService.GetCollectionAsList<AwsInstanceDetails>(eCollectionName.Instances).Result;
@@ -99,10 +99,10 @@ namespace StratusApp.Services
 
                 if (IsInstanceExistsInDB(instance, dBInstances))
                 {
-                    _mongoDBService.DeleteDocument<AwsInstanceDetails>(eCollectionName.Instances, (inst) => inst.InstanceAddress == instance.InstanceAddress);
+                    await _mongoDBService.DeleteDocument<AwsInstanceDetails>(eCollectionName.Instances, (inst) => inst.InstanceAddress == instance.InstanceAddress);
                 }
 
-                _mongoDBService.InsertDocument<AwsInstanceDetails>(eCollectionName.Instances, instance);
+                await _mongoDBService.InsertDocument<AwsInstanceDetails>(eCollectionName.Instances, instance);
             }
         }
 
