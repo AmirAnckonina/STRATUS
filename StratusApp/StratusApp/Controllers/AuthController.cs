@@ -119,6 +119,13 @@ namespace StratusApp.Controllers
             generateRandomKeyResp.Data = randomKey;
             return Ok(generateRandomKeyResp);
         }
-
+        [HttpGet("LogOutFromStratusService")]
+        public async Task<ActionResult<StratusResponse<string>>> LogOutFromStratusService()
+        {
+            var logOutFromStratusServiceResp = new StratusResponse<string>();
+            _authService.LogOutFromStratusService();
+            logOutFromStratusServiceResp.Message = "Logged out successfully";
+            return Ok(logOutFromStratusServiceResp);
+        }
     }
 }
