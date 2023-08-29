@@ -156,9 +156,7 @@ export const TopNav = (props) => {
             <Avatar {...stringAvatar(user.username)}
               onClick={accountPopover.handleOpen}
               ref={accountPopover.anchorRef}
-              sx={{
-                cursor: 'pointer',
-              }}   
+             
             />
           </Stack>
         </Stack>
