@@ -45,7 +45,7 @@ const endIndex = startIndex + 6;
   
     <Head>
       <title>
-        Custom Machines | STRATUS
+        Recommendations | STRATUS
       </title>
     </Head>
     <Box
@@ -64,7 +64,7 @@ const endIndex = startIndex + 6;
           >
             <Stack spacing={1}>
               <Typography variant="h4">
-              Custom Machines
+              Recommendations
               </Typography>
               <Stack
                 alignItems="center"

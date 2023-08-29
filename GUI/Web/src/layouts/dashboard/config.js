@@ -29,7 +29,7 @@ export const items = [
     )
   },
   {
-    title: 'Custom Machines',
+    title: 'Recommendations',
     path: '/CustomMachines',
     icon: (
       <SvgIcon fontSize="small">

@@ -24,7 +24,7 @@ export const CustomMachineCard = (props) => {
 
   // Function to determine arrow color based on value
   const getArrowColor = (value, index) => {
-    return index === 0 || index === 1  || value === 0 ? theme.palette.grey.main : value < 0 ? theme.palette.error.main : theme.palette.success.main;
+    return index === 3 || index === 0 || index === 1  || value === 0 ? theme.palette.grey.main : value < 0 ? theme.palette.error.main : theme.palette.success.main;
   };
 
   return (
@@ -77,9 +77,9 @@ export const CustomMachineCard = (props) => {
                 <TableCell>{data.alternativeValue}</TableCell>
                 <TableCell>
                   <Box sx={{ display: 'flex', alignItems: 'center', color: index === 5? getArrowColor(data.difference * -1, index) :  getArrowColor(data.difference, index)}}>
-                    {index === 0 || index === 1 ||  data.difference === 0 ? <MinusIcon/> : data.difference > 0 ? <ArrowUpIcon fontSize="small" /> : <ArrowDownIcon fontSize="small"/>}
+                    {index === 3 || index === 0 || index === 1 ||  data.difference === 0 ? <MinusIcon/> : data.difference > 0 ? <ArrowUpIcon fontSize="small" /> : <ArrowDownIcon fontSize="small"/>}
                     
-                      {index === 0 || index === 1 ? null : `${Math.abs(data.difference.toFixed(2))}%`}                    
+                      {index === 3 || index === 0 || index === 1 ? null : `${Math.abs(data.difference.toFixed(2))}%`}                    
                   </Box>
                 </TableCell>
               </TableRow>
