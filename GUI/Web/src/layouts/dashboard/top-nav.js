@@ -12,7 +12,11 @@ import {
   Stack,
   SvgIcon,
   Tooltip,
-  useMediaQuery
+  useMediaQuery,
+  Popover,
+  List,
+  ListItem,
+  Alert,
 } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 import { usePopover } from 'src/hooks/use-popover';
@@ -28,6 +32,21 @@ export const TopNav = (props) => {
   const [user, setUser] = useState({});
   const lgUp = useMediaQuery((theme) => theme.breakpoints.up('lg'));
   const accountPopover = usePopover();
+  const [notifications, setNotifications] = useState([
+    { id: 1, message: "CPU: Detected 21.3% usage at 27/08/23 18:32" },
+    { id: 2, message: "Memory: Detected 32.3% usage at 27/08/23 19:32" },
+    // Add more dummy notifications as needed
+  ]);
+  const [notificationPopoverOpen, setNotificationPopoverOpen] = useState(false);
+
+  const handleNotificationPopoverOpen = () => {
+    setNotificationPopoverOpen(true);
+  };
+  
+  const handleNotificationPopoverClose = () => {
+    setNotificationPopoverOpen(false);
+  };
+  
   
   function stringToColor(string) {
     let hash = 0;
@@ -125,17 +144,14 @@ export const TopNav = (props) => {
             spacing={2}
           >
             <Tooltip title="Notifications">
-              <IconButton>
-                <Badge
-                  badgeContent={4}
-                  color="success"
-                  variant="dot"
-                >
-                  <SvgIcon fontSize="small">
-                    <BellIcon />
-                  </SvgIcon>
-                </Badge>
-              </IconButton>
+            <IconButton onClick={handleNotificationPopoverOpen}>
+  <Badge badgeContent={notifications.length} color="warning">
+    <SvgIcon fontSize="medium">
+      <BellIcon />
+    </SvgIcon>
+  </Badge>
+</IconButton>
+
             </Tooltip>
             <Avatar {...stringAvatar(user.username)}
               onClick={accountPopover.handleOpen}
@@ -149,10 +165,45 @@ export const TopNav = (props) => {
         open={accountPopover.open}
         onClose={accountPopover.handleClose}
       />
+      <NotificationList
+        anchorEl={accountPopover.anchorRef.current}
+        open={notificationPopoverOpen}
+        onClose={handleNotificationPopoverClose}
+        notifications={notifications}
+      />
     </>
   );
 };
 
 TopNav.propTypes = {
   onNavOpen: PropTypes.func
+};
+
+const NotificationList = ({ anchorEl, open, onClose, notifications }) => {
+  return (
+    <Popover
+      anchorEl={anchorEl}
+      open={open}
+      onClose={onClose}
+      anchorOrigin={{
+        vertical: 'bottom',
+        horizontal: 'right',
+      }}
+      transformOrigin={{
+        vertical: 'top',
+        horizontal: 'right',
+      }}
+    >
+      <List>
+        {notifications.map((notification) => (
+          <ListItem key={notification.id}>
+            {/* Render an Alert component for each notification */}
+            <Alert severity="warning" onClose={() => {}}>
+              {notification.message}
+            </Alert>
+          </ListItem>
+        ))}
+      </List>
+    </Popover>
+  );
 };

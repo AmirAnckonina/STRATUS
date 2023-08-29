@@ -6,6 +6,7 @@ using StratusApp.Models.Responses;
 using StratusApp.Services;
 using StratusApp.Services.AlertsService;
 using Utils.DTO;
+using Utils.Utils;
 
 namespace StratusApp.Controllers
 {
@@ -24,7 +25,7 @@ namespace StratusApp.Controllers
         [HttpGet("GetUserByEmail")]
         public async Task<ActionResult<StratusResponse<StratusUser>>> GetUserByEmail()
         {
-            string email = _httpContextAccessor.HttpContext.Request.Cookies["Stratus"];
+            string email = SessionUtils.GetSessionId(_httpContextAccessor);
 
             StratusResponse<StratusUser> userResponse = new StratusResponse<StratusUser>();
             try
@@ -44,14 +45,14 @@ namespace StratusApp.Controllers
         [HttpPost("UpdateUserDetails")]
         public async Task<ActionResult<StratusResponse<string>>> UpdateUserDetails([FromBody] StratusUser user)
         {
-            string email = _httpContextAccessor.HttpContext.Request.Cookies["Stratus"];
+            string email = SessionUtils.GetSessionId(_httpContextAccessor);
             bool result = await _stratusService.UpdateUserDetails(email, user);
 
             if (result)
             {
                 var response = new StratusResponse<string>
                 {
-                    Data = "Configurations saved successfully"
+                    Data = "User Details saved successfully"
                 };
 
                 return Ok(response);
