@@ -64,7 +64,7 @@ export const OverviewLatestMachines = ({ onMachineSelect }) => {
 
   return (
     <Card>
-      <CardHeader title="Latest Machines" />
+      <CardHeader title="My Resources" />
       <Scrollbar sx={{ flexGrow: 1 }}>
         <Box sx={{ minWidth: 800 }}>
           <Table>
