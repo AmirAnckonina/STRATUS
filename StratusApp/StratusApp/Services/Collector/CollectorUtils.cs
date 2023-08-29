@@ -68,23 +68,29 @@ namespace StratusApp.Services.Collector
             }
 
             DateTime loopDateTime = startTime;
-
+     
             while (loopDateTime <= endTime)
             {
                 // Group loop DateTime by the step (hour, day, month, etc.)
                 DateTime groupedLoopDateTime = GroupDateTimeByStep(step, loopDateTime);
 
-                double value = 0.0;
+                /*double value = 0.0;
 
                 if (timestampValueMap.ContainsKey(groupedLoopDateTime))
                 {
                     value = timestampValueMap[groupedLoopDateTime];
+                } */
+
+                // Set zero value to timestamp which doesn't filled by the promQL repsonse.
+                if (!timestampValueMap.ContainsKey(groupedLoopDateTime))
+                {
+                    timestampValueMap[groupedLoopDateTime] = 0.0;
                 }
 
                 cpuUsageDataList.Add(new CpuUsageData
                 {
                     Date = FormatDateBasedOnStep(step, loopDateTime),
-                    Usage = value
+                    Usage = timestampValueMap[groupedLoopDateTime]
                 });
 
                 IncrementLoopDateTime(step, ref loopDateTime);
