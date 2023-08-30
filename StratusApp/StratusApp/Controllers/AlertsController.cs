@@ -27,7 +27,7 @@ namespace StratusApp.Controllers
         {
             var alertResponse = new StratusResponse<List<AlertData>>();
 
-            alertResponse.Data = _alertsService.GetAlertsCollection().Result;
+            alertResponse.Data = await _alertsService.GetAlertsCollection(); //.Result;
 
             return Ok(alertResponse);
         }

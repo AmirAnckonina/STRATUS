@@ -96,6 +96,11 @@ export const AlertsTable = (props) => {
     id: index + 1,
     percentageUsage: item.percentageUsage.toFixed(3),
   }));
+
+  const sortedItems = [...sequentialItems].sort((a, b) => {
+    return new Date(b.creationTime) - new Date(a.creationTime);
+    });
+
   useEffect(() => {
     console.log('Items:', items);
   }, [items]);
@@ -132,7 +137,7 @@ export const AlertsTable = (props) => {
     },
     {
       field: 'percentageUsage',
-      headerName: 'Average usage percentage',
+      headerName: 'Average Usage Percentage',
       flex: 1,
       filterOperators: [
         {
@@ -222,7 +227,7 @@ export const AlertsTable = (props) => {
               <Scrollbar>
                 <div style={{ height: 500, width: '100%' }}>
                   <DataGrid
-                    rows={sequentialItems}
+                    rows={sortedItems}
                     columns={columns}
                     checkboxSelection
                     slots={{ toolbar: GridToolbar }}

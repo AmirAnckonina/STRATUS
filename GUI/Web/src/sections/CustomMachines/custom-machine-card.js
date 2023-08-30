@@ -105,7 +105,7 @@ export const CustomMachineCard = (props) => {
             display="inline"
             variant="body2"
           >
-            You can save up to 50% in month !
+            {/* You can save up to 50% in month ! */}
           </Typography>
         </Stack>
         <Stack

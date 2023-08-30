@@ -74,14 +74,6 @@ namespace StratusApp.Services.Collector
                 // Group loop DateTime by the step (hour, day, month, etc.)
                 DateTime groupedLoopDateTime = GroupDateTimeByStep(step, loopDateTime);
 
-                /*double value = 0.0;
-
-                if (timestampValueMap.ContainsKey(groupedLoopDateTime))
-                {
-                    value = timestampValueMap[groupedLoopDateTime];
-                } */
-
-                // Set zero value to timestamp which doesn't filled by the promQL repsonse.
                 if (!timestampValueMap.ContainsKey(groupedLoopDateTime))
                 {
                     timestampValueMap[groupedLoopDateTime] = 0.0;
