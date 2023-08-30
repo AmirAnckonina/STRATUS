@@ -18,7 +18,7 @@ namespace StratusApp.Services.AlertsService
         private readonly AlertsManager _alertsManager;
         private readonly object _alertLock = new object();
 
-        private const string INTERVAL_FILTER = "day";        
+        private const string INTERVAL_FILTER = "month";        
 
         public EmailService EmailService { get; internal set; }
 
@@ -71,8 +71,8 @@ namespace StratusApp.Services.AlertsService
                         if (instance.UserEmail == alertTimer.UserEmail)
                         {
                             double avgCpuUsageUtilization = _collectorService.GetAvgCpuUsageUtilization(instance.InstanceAddress, INTERVAL_FILTER).Result;
-                            double avgFreeDiskSpaceInGB = _collectorService.GetAvgFreeDiskSpaceInGB(instance.InstanceAddress, INTERVAL_FILTER).Result;
-                            double avgFreeMemorySizeInGB = _collectorService.GetAvgFreeMemorySizeInGB(instance.InstanceAddress, INTERVAL_FILTER).Result;
+                            double avgFreeDiskSpaceInGB = _collectorService.GetAvgDiskSpaceUsagePercentage(instance.InstanceAddress, INTERVAL_FILTER).Result;
+                            double avgFreeMemorySizeInGB = _collectorService.GetAvgMemorySizeUsagePercentage(instance.InstanceAddress, INTERVAL_FILTER).Result;
 
                             DetectAndInsertLowUsage(alerts, alertTimer.UserEmail, instance.InstanceAddress, avgCpuUsageUtilization, eAlertType.CPU);
                             DetectAndInsertLowUsage(alerts, alertTimer.UserEmail, instance.InstanceAddress, avgFreeDiskSpaceInGB, eAlertType.STORAGE);

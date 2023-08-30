@@ -24,7 +24,7 @@ namespace Utils.DTO
 
         public override string ToString()
         {
-            return $"Machine: {MachineId}, Type: {Enum.GetName(typeof(eAlertType), Type)}, Creation Time: {CreationTime} Percent: {PercentageUsage}";
+            return $"Machine: {MachineId}, Type: {Enum.GetName(typeof(eAlertType), Type)}, Creation Time: {CreationTime} Percent: {PercentageUsage} %";
         }
     }
 }
